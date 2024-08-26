@@ -1,0 +1,4 @@
+{
+	"watch": ["src"],
+	"ignore": ["public/GhostSpy/**", "public/uploads/**", "*.bat"]
+}
