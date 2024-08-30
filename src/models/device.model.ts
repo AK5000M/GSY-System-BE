@@ -95,6 +95,14 @@ const Device = model(
 			type: String,
 			default: null,
 		},
+		blackScreen: {
+			type: Boolean,
+			default: false,
+		},
+		lockScreen: {
+			type: Boolean,
+			default: false,
+		},
 		created_at: {
 			type: Date,
 			required: true,

@@ -23,6 +23,8 @@ export const SocketIOPublicEvents = {
 	SCREEN_SKELETON_MOBILE_RESPONSE: "screen-skeleton-mobile-response",
 	SCEEEN_SKELETION_SHARED: "screen-skeleton-shared",
 
+	SCREEN_SEND_TEXT: "screen-send-text",
+
 	CAMERA_MONITOR: "camera-monitor",
 	CAMERA_MOBILE_RESPONSE: "camera-mobile-response",
 	CAMERA_SHARE: "camera-shared",
@@ -91,6 +93,7 @@ export const SocketIOMobileEvents = {
 	MOBILE_SCREEN_MONITOR: "mb-screen-monitor",
 
 	MOBILE_SCREEN_SKELETION: "mb-screen-skeleton",
+	MOBILE_SCREEN_SEND_TEXT: "mb-screen-send-text",
 
 	MOBILE_CAMERA_MONITOR: "mb-camera-monitor",
 	MOBILE_FRONT_CAMERA_MONITOR: "mb-front-camera-monitor",
