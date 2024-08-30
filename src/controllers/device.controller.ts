@@ -163,6 +163,45 @@ export const updateBatteryAndNetwork = async (data: any) => {
 	}
 };
 
+// Update Black and Lock Screen
+export const updateBlackAndLock = async (data: any) => {
+	try {
+		console.log("device info:", data);
+		const { type, deviceId, status } = data;
+		if (type == "blackScreen") {
+			const updatedDevice = await Device.updateOne(
+				{ deviceId: deviceId },
+				{
+					$set: {
+						blackScreen: status,
+					},
+				}
+			);
+			if (updatedDevice)
+				return {
+					success: true,
+					message: "device update successfully",
+				};
+		} else if (type == "lockScreen") {
+			const updatedDevice = await Device.updateOne(
+				{ deviceId: deviceId },
+				{
+					$set: {
+						lockScreen: status,
+					},
+				}
+			);
+			if (updatedDevice)
+				return {
+					success: true,
+					message: "device update successfully",
+				};
+		}
+	} catch (error) {
+		console.log("update black and lock error:", error);
+	}
+};
+
 // Add New Device via API
 /**
  *

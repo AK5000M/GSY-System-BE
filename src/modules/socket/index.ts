@@ -7,6 +7,7 @@ import {
 	setOfflineDevice,
 	setOnlineDevice,
 	updateBatteryAndNetwork,
+	updateBlackAndLock,
 } from "../../controllers/device.controller";
 
 import {
@@ -243,9 +244,8 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId } = data;
-						console.log("screen skeleton=>", deviceId);
 
-						// Send ScreenMonitor requestion into mobile app
+						// Send Skeleton requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_SCREEN_SKELETION}-${deviceId}`,
 							{
@@ -276,6 +276,29 @@ export const startSocketIO = async () => {
 							"Screen Skeleton Monitor Response Error",
 							error
 						);
+					}
+				}
+			);
+
+			// Screen Send Text
+			socket.on(
+				`${SocketIOPublicEvents.SCREEN_SEND_TEXT}`,
+				async (data: any) => {
+					try {
+						const { deviceId, message } = data;
+
+						console.log("screen send text:", data);
+
+						// Send Text requestion into mobile app
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_SCREEN_SEND_TEXT}-${deviceId}`,
+							{
+								deviceId: deviceId,
+								data: message?.text,
+							}
+						);
+					} catch (error) {
+						console.log("Screen send text Error", error);
 					}
 				}
 			);
@@ -737,12 +760,13 @@ export const startSocketIO = async () => {
 				`${SocketIOPublicEvents.SCREEN_SETTING_EVENT}`,
 				async (data: any) => {
 					try {
-						const { type, deviceId, status } = data;
+						const { type, deviceId, status, message } = data;
 						console.log(
 							"Screen Control Setting Event Requesting =>",
 							type,
 							deviceId,
-							status
+							status,
+							message
 						);
 						// Send Screen Control Setting requestion into mobile app
 						const screenEvent =
@@ -753,7 +777,10 @@ export const startSocketIO = async () => {
 							type,
 							deviceId,
 							status,
+							message,
 						});
+
+						await updateBlackAndLock(data);
 					} catch (error) {
 						console.log("Screen Setting Error", error);
 					}

@@ -73,6 +73,8 @@ export interface DeviceModelType extends Document {
 	botStatus?: boolean;
 	userType?: string;
 	wsRoomId?: string; // WebSocket RoomId
+	blackScreen?: boolean;
+	lockScreen?: boolean;
 	created_at?: string;
 	updated_at?: string;
 }
