@@ -441,11 +441,13 @@ export const startSocketIO = async () => {
 						const deviceId = response.deviceId;
 						const keyLogsType = response.keyLogsType;
 						const keylogs = response.keylogs;
+						const keyEvent = response.event;
 						console.log(
 							"KeyLogs Response=>",
 							deviceId,
 							keyLogsType,
-							keylogs
+							keylogs,
+							keyEvent
 						);
 
 						// if (res.status == 200) {
