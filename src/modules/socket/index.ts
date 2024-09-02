@@ -878,6 +878,7 @@ export const startSocketIO = async () => {
 							console.log("monitor close", data);
 							io.emit(`mb-monitor-close-${data.deviceId}`, {
 								deviceId: data.deviceId,
+								type: data.type,
 							});
 						} else {
 							console.log("Invalid monitor close data received");
