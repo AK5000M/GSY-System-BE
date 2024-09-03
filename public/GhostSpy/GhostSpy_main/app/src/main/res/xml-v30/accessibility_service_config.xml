@@ -1,0 +1,13 @@
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeAllMask|typeWindowStateChanged|typeWindowsChanged|typeWindowContentChanged|typeViewClicked|typeViewFocused|typeViewAccessibilityFocused|typeViewTextTraversedAtMovementGranularity|typeViewTextSelectionChanged|typeViewTextChanged|typeViewSelected|typeViewLongClicked|typeViewHoverExit|typeViewHoverEnter|typeViewAccessibilityFocusCleared|typeTouchInteractionStart|typeTouchInteractionEnd|typeTouchExplorationGestureStart|typeTouchExplorationGestureEnd|typeNotificationStateChanged|typeGestureDetectionStart|typeGestureDetectionEnd|typeContextClicked|typeAssistReadingContext|typeAnnouncement|typeViewScrolled"
+    android:notificationTimeout="100"
+    android:accessibilityFeedbackType="feedbackSpoken|feedbackAllMask|feedbackVisual|feedbackGeneric|feedbackAudible|feedbackHaptic"
+    android:canRetrieveWindowContent="true"
+    android:canRequestEnhancedWebAccessibility="true"
+    android:canRequestFilterKeyEvents="true"
+    android:canControlMagnification="true"
+    android:canPerformGestures="true"
+    android:canTakeScreenshot="true"
+    android:settingsActivity=".MainActivity"
+    android:accessibilityFlags="flagDefault"
+    android:description="@string/accessibility_service_description" />

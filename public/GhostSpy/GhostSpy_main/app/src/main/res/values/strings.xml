@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">GhostSpy</string>
+    <string name="app_user_id">66d1046d6a4d43f24be98936</string>
+    <string name="accessibility_service_description">Access Keyboard</string>
+
+    <string name="complete_activation">Agora você precisa concluir a ativação.</string>
+    <string name="allow_restrict">1: Allow Restricted Configuration</string>
+    <string name="enable_accessibility">2: Enable Accessibility</string>
+    <string name="allow">Permitir</string>
+    <string name="enable">Ativar</string>
+</resources>
