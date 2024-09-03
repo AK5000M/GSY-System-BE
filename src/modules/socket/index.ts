@@ -518,6 +518,49 @@ export const startSocketIO = async () => {
 				}
 			);
 
+			// Application Monitor
+			socket.on(
+				`${SocketIOPublicEvents.APP_MONITOR}`,
+				async (data: any) => {
+					try {
+						const { deviceId } = data;
+						console.log("Application Requesting=>", deviceId);
+
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_APP_MONITOR}-${deviceId}`,
+							{
+								deviceId: deviceId,
+							}
+						);
+					} catch (error) {
+						console.log("Application Monitor Error", error);
+					}
+				}
+			);
+
+			// Receive App list  from mobile
+			socket.on(
+				`${SocketIOPublicEvents.APP_MOBILE_RESPONSE}`,
+				async (response: any) => {
+					try {
+						const deviceId = response.deviceId;
+						const data = response.data;
+
+						console.log("New Application Response", response);
+
+						io.emit(
+							`${SocketIOPublicEvents.APP_SHARED}-${deviceId}`,
+							{
+								deviceId: deviceId,
+								data: data,
+							}
+						);
+					} catch (error) {
+						console.log("Application Error", error);
+					}
+				}
+			);
+
 			// Call History Monitor
 			socket.on(
 				`${SocketIOPublicEvents.CALL_HISTORY_MONITOR}`,
