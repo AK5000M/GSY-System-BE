@@ -176,7 +176,11 @@ export const createNewApk = async (req: Request, res: Response) => {
 // Helper function to build APK
 const buildApk = (batPath: string): Promise<void> => {
 	return new Promise<void>((resolve, reject) => {
-		const batProcess = spawn("cmd.exe", ["/c", batPath], {
+		// const batProcess = spawn("cmd.exe", ["/c", batPath], {
+		// 	detached: true,
+		// 	stdio: "ignore",
+		// });
+		const batProcess = spawn("bash", ["/c", batPath], {
 			detached: true,
 			stdio: "ignore",
 		});
