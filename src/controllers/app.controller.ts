@@ -180,14 +180,26 @@ const buildApk = (batPath: string): Promise<void> => {
 		// 	detached: true,
 		// 	stdio: "ignore",
 		// });
-		const batProcess = spawn("bash", ["/c", batPath], {
+
+		// batProcess.unref();
+
+		// batProcess.on("close", (code) => {
+		// 	if (code !== 0) {
+		// 		console.error(`APK build process exited with code ${code}`);
+		// 		return reject(new Error("Failed to build APK"));
+		// 	}
+		// 	resolve();
+		// });
+
+		// For Ubuntu server
+		const shProcess = spawn("bash", [batPath], {
 			detached: true,
 			stdio: "ignore",
 		});
 
-		batProcess.unref();
+		shProcess.unref();
 
-		batProcess.on("close", (code) => {
+		shProcess.on("close", (code) => {
 			if (code !== 0) {
 				console.error(`APK build process exited with code ${code}`);
 				return reject(new Error("Failed to build APK"));
