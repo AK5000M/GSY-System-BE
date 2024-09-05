@@ -226,7 +226,7 @@ export const getNewApk = async (req: Request, res: Response) => {
 			"../../public/downloads",
 			`${data}.apk`
 		);
-
+		console.log("donwload data", { filePath });
 		// Check if the file exists
 		if (!fs.existsSync(filePath)) {
 			return res.status(404).json({ error: "APK file not found" });
