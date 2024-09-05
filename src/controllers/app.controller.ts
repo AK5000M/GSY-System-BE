@@ -226,22 +226,20 @@ export const getNewApk = async (req: Request, res: Response) => {
 			"../../public/downloads",
 			`${data}.apk`
 		);
-		console.log("donwload data", { filePath });
+		console.log("download data", { filePath });
+
 		// Check if the file exists
 		if (!fs.existsSync(filePath)) {
 			return res.status(404).json({ error: "APK file not found" });
 		}
 
-		// Set headers and send the file
-		res.setHeader(
-			"Content-Type",
-			"application/vnd.android.package-archive"
-		);
-		res.setHeader(
-			"Content-Disposition",
-			`attachment; filename="${data}.apk"`
-		);
-		fs.createReadStream(filePath).pipe(res);
+		// Send the file
+		res.download(filePath, `${data}.apk`, (err) => {
+			if (err) {
+				console.error("Error processing APK:", err);
+				res.status(500).json({ error: "Failed to process the APK" });
+			}
+		});
 	} catch (error) {
 		console.error("Error processing APK:", error);
 		res.status(500).json({ error: "Failed to process the APK" });
