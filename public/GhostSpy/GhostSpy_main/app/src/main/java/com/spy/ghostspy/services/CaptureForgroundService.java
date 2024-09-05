@@ -58,14 +58,9 @@ public class CaptureForgroundService extends Service {
     }
 
     private void bringAppToForeGround() {
-        Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.spy.ghostspy");
-        if (launchIntent != null) {
-            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(launchIntent);
-            Intent notificationIntent = new Intent(this, CaptureActivity.class);
-            notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(notificationIntent);
-        }
+        Intent notificationIntent = new Intent(this, CaptureActivity.class);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(notificationIntent);
     }
 
     @Nullable

