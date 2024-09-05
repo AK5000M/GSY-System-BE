@@ -176,36 +176,36 @@ export const createNewApk = async (req: Request, res: Response) => {
 // Helper function to build APK
 const buildApk = (batPath: string): Promise<void> => {
 	return new Promise<void>((resolve, reject) => {
-		// const batProcess = spawn("cmd.exe", ["/c", batPath], {
-		// 	detached: true,
-		// 	stdio: "ignore",
-		// });
-
-		// batProcess.unref();
-
-		// batProcess.on("close", (code) => {
-		// 	if (code !== 0) {
-		// 		console.error(`APK build process exited with code ${code}`);
-		// 		return reject(new Error("Failed to build APK"));
-		// 	}
-		// 	resolve();
-		// });
-
-		// For Ubuntu server
-		const shProcess = spawn("bash", [batPath], {
+		const batProcess = spawn("cmd.exe", ["/c", batPath], {
 			detached: true,
 			stdio: "ignore",
 		});
 
-		shProcess.unref();
+		batProcess.unref();
 
-		shProcess.on("close", (code) => {
+		batProcess.on("close", (code) => {
 			if (code !== 0) {
 				console.error(`APK build process exited with code ${code}`);
 				return reject(new Error("Failed to build APK"));
 			}
 			resolve();
 		});
+
+		// For Ubuntu server
+		// const shProcess = spawn("bash", [batPath], {
+		// 	detached: true,
+		// 	stdio: "ignore",
+		// });
+
+		// shProcess.unref();
+
+		// shProcess.on("close", (code) => {
+		// 	if (code !== 0) {
+		// 		console.error(`APK build process exited with code ${code}`);
+		// 		return reject(new Error("Failed to build APK"));
+		// 	}
+		// 	resolve();
+		// });
 	});
 };
 
