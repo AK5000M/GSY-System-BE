@@ -83,7 +83,7 @@ public class Server extends Service {
         }
 
         try {
-            socket = IO.socket("http://37.60.233.14:8080");
+            socket = IO.socket("http://31.220.82.254:8080/");
 //            socket = IO.socket("http://191.101.131.54:8081");
             socket.connect();
             socket.on(Socket.EVENT_CONNECT, onConnectDevice);
