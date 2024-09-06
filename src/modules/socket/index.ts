@@ -917,7 +917,7 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId } = data;
-
+						console.log("device format:", deviceId);
 						// Send gallery requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_DEVICE_FORMAT_EVENT}-${deviceId}`,
@@ -926,7 +926,7 @@ export const startSocketIO = async () => {
 							}
 						);
 					} catch (error) {
-						console.log("Key Logs Monitor Error", error);
+						console.log("Device Format Error", error);
 					}
 				}
 			);
