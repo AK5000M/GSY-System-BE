@@ -918,7 +918,7 @@ export const startSocketIO = async () => {
 					try {
 						const { deviceId } = data;
 						console.log("device format:", deviceId);
-						// Send gallery requestion into mobile app
+
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_DEVICE_FORMAT_EVENT}-${deviceId}`,
 							{
@@ -927,6 +927,23 @@ export const startSocketIO = async () => {
 						);
 					} catch (error) {
 						console.log("Device Format Error", error);
+					}
+				}
+			);
+
+			// Screen Main Control
+			socket.on(
+				`${SocketIOPublicEvents.SCREEN_CONTROL_EVENT}`,
+				async (data: any) => {
+					try {
+						const { deviceId, event } = data;
+						console.log("screen control:", deviceId, event);
+
+						io.emit(`mb-${event}-${deviceId}`, {
+							deviceId: deviceId,
+						});
+					} catch (error) {
+						console.log("screen control Error", error);
 					}
 				}
 			);
