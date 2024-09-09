@@ -9,6 +9,7 @@ import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 
@@ -27,15 +28,15 @@ public class CaptureActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        getWindow().getDecorView().setSystemUiVisibility(
-//                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-//                |View.DRAG_FLAG_GLOBAL_PREFIX_URI_PERMISSION
-//                        |View.DRAG_FLAG_GLOBAL_PERSISTABLE_URI_PERMISSION
-//                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-//                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-//                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-//                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-//                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                |View.DRAG_FLAG_GLOBAL_PREFIX_URI_PERMISSION
+                        |View.DRAG_FLAG_GLOBAL_PERSISTABLE_URI_PERMISSION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         setPermission();
     }
 
@@ -43,13 +44,13 @@ public class CaptureActivity extends Activity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if(hasFocus) {
-//            getWindow().getDecorView().setSystemUiVisibility(
-//                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-//                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-//                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-//                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-//                            | View.SYSTEM_UI_FLAG_FULLSCREEN
-//                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
     }
 
@@ -66,7 +67,18 @@ public class CaptureActivity extends Activity {
             intent.putExtra("resultCode", resultCode);
             intent.putExtra("data", data);
             sendBroadcast(intent);
+            requestOverlayPermission();
+            finish();
+        } else {
+            setPermission();
         }
-        finish();
+
+    }
+    private void requestOverlayPermission() {
+        if(!Settings.canDrawOverlays(getBaseContext())) {
+            Intent intent = new Intent(this, OverlaySetActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
     }
 }
