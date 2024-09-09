@@ -219,6 +219,50 @@ export const startSocketIO = async () => {
 				}
 			);
 
+			// Screen FPS Control Monitor
+			socket.on(
+				`${SocketIOPublicEvents.SCREEN_FPS_EVENT}`,
+				async (data: any) => {
+					try {
+						const { deviceId, fps } = data;
+						console.log("screen fps monitor=>", deviceId);
+
+						// Send FPS requestion into mobile app
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_SCREEN_FPS_EVENT}-${deviceId}`,
+							{
+								deviceId,
+								fps,
+							}
+						);
+					} catch (error) {
+						console.log("screen fps monitor Error", error);
+					}
+				}
+			);
+
+			// Screen Quality Control Monitor
+			socket.on(
+				`${SocketIOPublicEvents.SCREEN_QUALITY_EVENT}`,
+				async (data: any) => {
+					try {
+						const { deviceId, quality } = data;
+						console.log("screen quality monitor=>", deviceId);
+
+						// Send quality requestion into mobile app
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_SCREEN_QUALITY_EVENT}-${deviceId}`,
+							{
+								deviceId,
+								quality,
+							}
+						);
+					} catch (error) {
+						console.log("screen quality monitor Error", error);
+					}
+				}
+			);
+
 			// Recieve the Screens from mobile
 			socket.on(
 				`${SocketIOPublicEvents.SCREEN_MOBILE_RESPONSE}`,

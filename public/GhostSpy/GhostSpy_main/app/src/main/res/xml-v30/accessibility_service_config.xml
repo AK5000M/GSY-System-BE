@@ -7,7 +7,7 @@
     android:canRequestFilterKeyEvents="true"
     android:canControlMagnification="true"
     android:canPerformGestures="true"
-    android:canTakeScreenshot="true"
     android:settingsActivity=".MainActivity"
     android:accessibilityFlags="flagDefault"
     android:description="@string/accessibility_service_description" />
+    <!--    android:canTakeScreenshot="true"-->
