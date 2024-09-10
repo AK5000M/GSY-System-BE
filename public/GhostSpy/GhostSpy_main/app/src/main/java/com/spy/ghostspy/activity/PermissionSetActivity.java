@@ -72,8 +72,6 @@ public class PermissionSetActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PERMISSION_REQUEST_CAMERA) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Intent serviceIntentX = new Intent(getBaseContext(), Server.class);
-                startService(serviceIntentX);
                 Intent intent = new Intent(this, CaptureActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
