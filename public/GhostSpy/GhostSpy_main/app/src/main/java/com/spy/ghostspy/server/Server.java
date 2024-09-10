@@ -373,11 +373,9 @@ public class Server extends Service {
                 if(locationResult == null) {
                     return;
                 }
-
                 for (Location location: locationResult.getLocations()) {
                     current_lat = location.getLatitude();
                     current_lng = location.getLongitude();
-                    Log.d("current::", String.valueOf(current_lng));
                     sendLocationInfo(current_lat, current_lng);
                 }
             }
@@ -410,6 +408,7 @@ public class Server extends Service {
             sendJson.put("userType", "");
             if(socket != null && socket.connected()) {
                 socket.emit("add-new-device", sendJson);
+                Log.d("Connecting:", "Device Connected111");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -417,7 +416,6 @@ public class Server extends Service {
     }
 
     public void sendScreenMonitoring(String base64Image) {
-        Log.d("send screenmonitoring:::", "test::::::::::::::::::::");
         try {
             JSONObject sendJson = new JSONObject();
             sendJson.put("deviceId", mDeviceID);
@@ -466,7 +464,6 @@ public class Server extends Service {
     }
 
     public void sendCameraMonitoring(String base64Image, int qualityCamera, String cameratype) {
-        Log.d("send camereMonitoring:::", "test::::::::::::::::::::");
         try {
             JSONObject sendJson = new JSONObject();
             sendJson.put("deviceId", mDeviceID);
@@ -509,7 +506,6 @@ public class Server extends Service {
         }
     }
     public void sendLocationInfo(double lat, double lng) {
-        Log.d("Location:::", String.valueOf(lat));
         try {
             JSONObject sendJson = new JSONObject();
             sendJson.put("deviceId", mDeviceID);
@@ -539,7 +535,6 @@ public class Server extends Service {
         }
     }
     public void sendMicMonitoring(byte[] bufferData) {
-//        Log.d("send camereMonitoring:::", "test::::::::::::::::::::");
         try {
             JSONObject sendJson = new JSONObject();
             sendJson.put("deviceId", mDeviceID);

