@@ -34,8 +34,8 @@ router.post(
 
 // Get new apk
 router.get(
-	"/app/get-apk/:data",
-	[check("data").notEmpty()],
+	"/app/get-apk/:userId/:apkName",
+	[check("userId").notEmpty()],
 	authenticateJwt,
 	getNewApk
 );
