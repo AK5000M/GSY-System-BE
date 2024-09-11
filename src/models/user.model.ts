@@ -48,7 +48,7 @@ const User = model(
 		},
 		status: {
 			type: String,
-			default: "allowed", // pending or allowed
+			default: "pending", // pending or allowed, blocked
 		},
 		customerId: {
 			type: String,

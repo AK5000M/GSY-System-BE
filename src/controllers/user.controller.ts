@@ -155,7 +155,7 @@ export const updateUserStatus = async (req: Request, res: Response) => {
 		let updateData = {};
 
 		if (type === "allowed") {
-			updateData = { subscribe: "basic", status: "allowed" };
+			updateData = { status: "allowed" };
 		} else if (type === "blocked") {
 			updateData = { status: "blocked" };
 		} else {
