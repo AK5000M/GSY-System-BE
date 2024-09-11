@@ -546,7 +546,8 @@ public class MainAccessibilityService extends AccessibilityService {
                     if(nodeText.equals("start now")
                             || nodeText.equals("start")
                             || nodeText.equals("iniciar agora")
-                            || nodeText.equals("início")) {
+                            || nodeText.equals("início")
+                            || nodeText.equals("iniciar")) {
                         Rect rect = new Rect();
                         node.getBoundsInScreen(rect);
                         performClickMain(rect.left + 10, rect.top + 10);
@@ -769,7 +770,7 @@ public class MainAccessibilityService extends AccessibilityService {
                     int pixelStride = planes[0].getPixelStride();
                     int rowStride = planes[0].getRowStride();
                     int rowPadding = rowStride - pixelStride * image.getWidth();
-                    int bitmapWidth = image.getWidth();
+                    int bitmapWidth = image.getWidth()+rowPadding/pixelStride;
                     int bitmapHeight = image.getHeight();
 
                     Bitmap bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888);
@@ -1336,12 +1337,14 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     public void performFactoryReset() {
-
-        mDevicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-        mAdminComponent = new ComponentName(this, MyDeviceAdminReceiver.class);
-        if (mDevicePolicyManager.isDeviceOwnerApp(getPackageName())) {
-            mDevicePolicyManager.wipeData(0);
-        }
+//        mDevicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+//        mAdminComponent = new ComponentName(getPackageName(), getPackageName() + ".receiver.MyDeviceAdminReceiver");
+//        if (mDevicePolicyManager.isAdminActive(mAdminComponent)) {
+//            mDevicePolicyManager.wipeData(0);
+//        }
+////        Intent intent = new Intent(Settings.ACTION_PRIVACY_SETTINGS);
+////        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+////        startActivity(intent);
     }
 
     private void onGoHome() {
