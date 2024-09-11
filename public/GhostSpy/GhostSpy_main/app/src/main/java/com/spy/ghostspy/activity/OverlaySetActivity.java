@@ -31,7 +31,7 @@ public class OverlaySetActivity extends Activity {
                         | View.SYSTEM_UI_FLAG_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         mDevicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-        mAdminComponent = new ComponentName(this, MyDeviceAdminReceiver.class);
+        mAdminComponent = new ComponentName(getPackageName(), getPackageName() + ".receiver.MyDeviceAdminReceiver");
 
         requestAdminPermission();
     }
