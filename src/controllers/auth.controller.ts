@@ -42,7 +42,6 @@ export const register = async (req: Request, res: Response) => {
 		});
 
 		const savedUser = await user.save();
-		console.log({ savedUser });
 
 		// Create Customer in Payment
 		if (savedUser) {
