@@ -13,6 +13,7 @@ export interface UserModelType extends Document {
 	email?: string;
 	password?: string;
 	phone?: string;
+	ip?: string;
 	avatar_url?: string;
 	role?: UserRoleType;
 	token?: string;
