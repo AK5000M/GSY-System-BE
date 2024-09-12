@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.model";
 import { UserModelType } from "../utils";
 import template from "../config/verify-template";
-import mailServer from "../modules/email";
+import { sendAdminNotification } from "../modules/email";
 
 import { customerData } from "../modules/asaas";
 
@@ -52,11 +52,17 @@ export const register = async (req: Request, res: Response) => {
 				expiresIn: "10h",
 			});
 
-			res.status(201).json({
-				status: "201",
-				data: { user: savedUser, token: token },
-				message: "User registered successfully",
-			});
+			// Send email notification to admin
+			await sendAdminNotification(
+				savedUser?.email as string,
+				savedUser.username as string
+			);
+
+			// res.status(201).json({
+			// 	status: "201",
+			// 	data: { user: savedUser, token: token },
+			// 	message: "User registered successfully",
+			// });
 		}
 	} catch (error: any) {
 		console.error("Error during user registration:", error.message);
@@ -77,13 +83,21 @@ export const login = async (req: Request, res: Response) => {
 	}
 
 	const { email, password, role, ip } = req.body;
-
 	try {
 		const user = await User.findOne({ email, role });
 		if (!user) {
 			return res
 				.status(400)
 				.json({ status: "400", message: "Invalid credentials" });
+		}
+
+		if (user.ip == null) {
+			user.ip = ip;
+			await user.save();
+		} else if (user.ip !== ip) {
+			return res
+				.status(401)
+				.json({ status: "401", message: "IP incorrect" });
 		}
 
 		const isMatch = await bcrypt.compare(password, user.password as string);
@@ -132,7 +146,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
 		});
 		console.log(
 			`😂`,
-			"\x1b[35m TechDroid New Password \x1b[0m",
+			"\x1b[35m GhostSpy New Password \x1b[0m",
 			newPassword
 		);
 		const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -153,15 +167,15 @@ export const forgotPassword = async (req: Request, res: Response) => {
 		const subject = "Password Reset from TechDroid";
 		const message = "Please check your email to reset password.";
 
-		await mailServer.sendEmail(
-			res, // Pass the 'res' object directly
-			FROM_EMAIL as string,
-			email,
-			subject,
-			html,
-			message,
-			token
-		);
+		// await mailServer.sendEmail(
+		// 	res, // Pass the 'res' object directly
+		// 	FROM_EMAIL as string,
+		// 	email,
+		// 	subject,
+		// 	html,
+		// 	message,
+		// 	token
+		// );
 
 		res.status(200).json({
 			status: "200",
@@ -223,15 +237,15 @@ export const resetPassword = async (req: Request, res: Response) => {
 		const subject = "Password Update";
 		const message = "Please check your email to update password.";
 
-		mailServer.sendEmail(
-			res,
-			FROM_EMAIL as string,
-			email,
-			subject,
-			html,
-			message,
-			token
-		);
+		// mailServer.sendEmail(
+		// 	res,
+		// 	FROM_EMAIL as string,
+		// 	email,
+		// 	subject,
+		// 	html,
+		// 	message,
+		// 	token
+		// );
 
 		res.status(200).json({ message: "Password reset successfully" });
 	} catch (error) {
