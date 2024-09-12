@@ -2,6 +2,7 @@ import express from "express";
 import {
 	register,
 	login,
+	adminLogin,
 	forgotPassword,
 	resetPassword,
 	signout,
@@ -27,6 +28,13 @@ router.post(
 	"/auth/login",
 	[check("email").isEmail(), check("password").notEmpty()],
 	login
+);
+
+// Admin Login route
+router.post(
+	"/auth/admin/login",
+	[check("email").isEmail(), check("password").notEmpty()],
+	adminLogin
 );
 
 // ForgotPassword route

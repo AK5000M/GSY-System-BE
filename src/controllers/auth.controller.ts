@@ -112,6 +112,50 @@ export const login = async (req: Request, res: Response) => {
 	}
 };
 
+// Admin Auth Login
+/**
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+export const adminLogin = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
+	const { email, password, role } = req.body;
+	try {
+		const user = await User.findOne({ email, role });
+		if (!user) {
+			return res
+				.status(400)
+				.json({ status: "400", message: "Invalid credentials" });
+		}
+
+		const isMatch = await bcrypt.compare(password, user.password as string);
+		if (!isMatch) {
+			return res
+				.status(400)
+				.json({ status: "400", message: "Invalid credentials" });
+		}
+
+		const payload = { id: user.id };
+
+		const token = jwt.sign(payload, process.env.JWT_SECRET as string, {
+			expiresIn: "10h",
+		});
+
+		res.status(201).json({
+			status: "201",
+			data: { user: user, token: token },
+		});
+	} catch (error: any) {
+		console.error(error.message);
+		res.status(500).json({ message: "Server error" });
+	}
+};
+
 // Auth Forgot Password
 /**
  *
