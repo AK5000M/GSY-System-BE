@@ -21,6 +21,10 @@ const User = model(
 			type: String,
 			default: null,
 		},
+		ip: {
+			type: String,
+			default: null,
+		},
 		avatar_url: {
 			type: String,
 			default: null,

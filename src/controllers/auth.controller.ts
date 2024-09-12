@@ -24,7 +24,7 @@ export const register = async (req: Request, res: Response) => {
 	if (!errors.isEmpty()) {
 		return res.status(400).json({ errors: errors.array() });
 	}
-	const { email, password, username } = req.body;
+	const { email, password, username, ip } = req.body;
 
 	try {
 		let user = await User.findOne({ email });
@@ -39,6 +39,7 @@ export const register = async (req: Request, res: Response) => {
 			email,
 			password: hashedPassword,
 			username,
+			ip,
 		});
 
 		const savedUser = await user.save();
@@ -75,7 +76,7 @@ export const login = async (req: Request, res: Response) => {
 		return res.status(400).json({ errors: errors.array() });
 	}
 
-	const { email, password, role } = req.body;
+	const { email, password, role, ip } = req.body;
 
 	try {
 		const user = await User.findOne({ email, role });
