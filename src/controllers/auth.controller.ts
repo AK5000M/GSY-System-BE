@@ -1,17 +1,12 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
-import randomstring from "randomstring"; // Import randomstring library
+import randomstring from "randomstring";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 import User from "../models/user.model";
 import { UserModelType } from "../utils";
 import template from "../config/verify-template";
-import { sendAdminNotification } from "../modules/email";
-
-import { customerData } from "../modules/asaas";
-
-const { FROM_EMAIL } = process.env;
 
 // Auth Register
 /**
@@ -52,17 +47,11 @@ export const register = async (req: Request, res: Response) => {
 				expiresIn: "10h",
 			});
 
-			// Send email notification to admin
-			await sendAdminNotification(
-				savedUser?.email as string,
-				savedUser.username as string
-			);
-
-			// res.status(201).json({
-			// 	status: "201",
-			// 	data: { user: savedUser, token: token },
-			// 	message: "User registered successfully",
-			// });
+			res.status(201).json({
+				status: "201",
+				data: { user: savedUser, token: token },
+				message: "User registered successfully",
+			});
 		}
 	} catch (error: any) {
 		console.error("Error during user registration:", error.message);
