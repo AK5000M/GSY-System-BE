@@ -181,6 +181,47 @@ export const updateUserStatus = async (req: Request, res: Response) => {
 	}
 };
 
+// Update User IP
+/**
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+export const updateUserIP = async (req: Request, res: Response) => {
+	// Check for validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
+	const { userId, ip } = req.body;
+
+	try {
+		let updateData = {};
+
+		if (ip !== null) {
+			updateData = { ip: ip };
+		}
+
+		const user = await User.findByIdAndUpdate(userId, updateData, {
+			new: true,
+		});
+
+		if (!user) {
+			return res.status(404).json({ error: "User not found" });
+		}
+
+		res.status(200).json({
+			success: true,
+			message: "User ip updated successfully",
+			user,
+		});
+	} catch (error) {
+		console.error("Error updating user ip:", error);
+		res.status(500).json({ error: "Failed to update user ip" });
+	}
+};
+
 // Add Extra Device Count
 export const AddExtraDeviceCount = async (req: Request, res: Response) => {
 	// Check for validation errors

@@ -6,6 +6,7 @@ import {
 	generateQRCode,
 	getAllUsers,
 	updateUserStatus,
+	updateUserIP,
 	AddExtraDeviceCount,
 	createNewSubscription,
 	getNewSubscription,
@@ -132,6 +133,14 @@ router.put(
 	[check("userId").notEmpty()],
 	authenticateJwt,
 	updateUserStatus
+);
+
+// Update User IP by Admin
+router.put(
+	"/admin/user/ip",
+	[check("userId").notEmpty()],
+	authenticateJwt,
+	updateUserIP
 );
 
 // Extra Device Count by Admin
