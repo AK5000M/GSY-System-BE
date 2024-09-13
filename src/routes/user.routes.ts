@@ -7,6 +7,7 @@ import {
 	getAllUsers,
 	updateUserStatus,
 	updateUserIP,
+	updateUserLicense,
 	AddExtraDeviceCount,
 	createNewSubscription,
 	getNewSubscription,
@@ -141,6 +142,14 @@ router.put(
 	[check("userId").notEmpty()],
 	authenticateJwt,
 	updateUserIP
+);
+
+// Update User License by Admin
+router.put(
+	"/admin/user/license",
+	[check("userId").notEmpty()],
+	authenticateJwt,
+	updateUserLicense
 );
 
 // Extra Device Count by Admin

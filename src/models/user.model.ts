@@ -70,6 +70,20 @@ const User = model(
 			type: String,
 			default: "none", // none or Apk names
 		},
+		license_at: {
+			type: Date,
+			required: true,
+			default: Date.now(),
+		},
+		license_duration: {
+			type: String,
+			default: "none",
+		},
+		license_expire_at: {
+			type: Date,
+			required: true,
+			default: Date.now(),
+		},
 		created_at: {
 			type: Date,
 			required: true,
