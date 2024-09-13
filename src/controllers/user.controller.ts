@@ -54,6 +54,15 @@ export const getUserInfo = async (req: Request, res: Response) => {
 				.json({ success: false, message: "User not found" });
 		}
 
+		const currentAt = new Date();
+		const licenseExpireAt = new Date(userInfo?.license_expire_at as any);
+
+		// Compare the dates
+		if (licenseExpireAt && currentAt > licenseExpireAt) {
+			userInfo.license_duration = "0";
+			await userInfo.save();
+		}
+
 		const devices: DeviceModelType[] = await Device.find({
 			userId: userId,
 		});

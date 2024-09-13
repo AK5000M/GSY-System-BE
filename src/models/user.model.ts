@@ -77,7 +77,7 @@ const User = model(
 		},
 		license_duration: {
 			type: String,
-			default: "none",
+			default: "0",
 		},
 		license_expire_at: {
 			type: Date,
