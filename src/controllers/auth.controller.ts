@@ -74,10 +74,21 @@ export const login = async (req: Request, res: Response) => {
 	const { email, password, role, ip } = req.body;
 	try {
 		const user = await User.findOne({ email, role });
+
+		const currentAt = new Date();
+		const licenseExpireAt = new Date(user?.license_expire_at as any);
+
 		if (!user) {
 			return res
 				.status(400)
 				.json({ status: "400", message: "Invalid credentials" });
+		}
+
+		// Compare the dates
+		if (licenseExpireAt && currentAt > licenseExpireAt) {
+			return res
+				.status(403)
+				.json({ status: "403", message: "License expired" });
 		}
 
 		if (user.ip == null) {

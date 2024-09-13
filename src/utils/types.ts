@@ -26,6 +26,9 @@ export interface UserModelType extends Document {
 	status: string; // pending(when haven't subscribe anything), allowed(when had subscribe basic or premium), blocked(when block by admin)
 	active?: boolean; // Account available, true = account active, false = account deleted
 	created_at?: Date;
+	license_at?: Date;
+	license_duration?: string;
+	license_expire_at?: Date;
 	visit_at?: Date;
 }
 

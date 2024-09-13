@@ -54,6 +54,15 @@ export const getUserInfo = async (req: Request, res: Response) => {
 				.json({ success: false, message: "User not found" });
 		}
 
+		const currentAt = new Date();
+		const licenseExpireAt = new Date(userInfo?.license_expire_at as any);
+
+		// Compare the dates
+		if (licenseExpireAt && currentAt > licenseExpireAt) {
+			userInfo.license_duration = "0";
+			await userInfo.save();
+		}
+
 		const devices: DeviceModelType[] = await Device.find({
 			userId: userId,
 		});
@@ -219,6 +228,55 @@ export const updateUserIP = async (req: Request, res: Response) => {
 	} catch (error) {
 		console.error("Error updating user ip:", error);
 		res.status(500).json({ error: "Failed to update user ip" });
+	}
+};
+
+// Update User License
+/**
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+export const updateUserLicense = async (req: Request, res: Response) => {
+	// Check for validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
+	const { userId, license } = req.body;
+
+	try {
+		// Current date (timestamp for license_at)
+		const licenseAt = new Date();
+
+		// Calculate the expiration date by adding the license duration in days
+		const licenseExpireAt = new Date(
+			licenseAt.getTime() + license * 24 * 60 * 60 * 1000
+		); // license * 1 day (in ms)
+
+		const updateData = {
+			license_duration: license,
+			license_at: licenseAt,
+			license_expire_at: licenseExpireAt,
+		};
+
+		const user = await User.findByIdAndUpdate(userId, updateData, {
+			new: true,
+		});
+
+		if (!user) {
+			return res.status(404).json({ error: "User not found" });
+		}
+
+		res.status(200).json({
+			success: true,
+			message: "User ip updated successfully",
+			user,
+		});
+	} catch (error) {
+		console.error("Error updating user license:", error);
+		res.status(500).json({ error: "Failed to update user license" });
 	}
 };
 
