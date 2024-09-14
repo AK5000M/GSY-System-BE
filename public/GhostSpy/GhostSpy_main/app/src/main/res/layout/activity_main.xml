@@ -7,88 +7,208 @@
     tools:context=".MainActivity"
     android:orientation="vertical"
     tools:ignore="UselessParent">
-    <RelativeLayout
-        android:id="@+id/layout_major"
+    <LinearLayout
+        android:id="@+id/layout_setting"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/white" >
-        <ImageView
+        android:layout_height="match_parent">
+        <RelativeLayout
+            android:id="@+id/layout_major"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/background"
-            android:scaleType="fitStart"
-            android:importantForAccessibility="no" />
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/layout_button"
-            android:layout_marginTop="-30dp"
-            android:gravity="center">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:textColor="@color/textColor"
-                android:text="@string/complete_activation"/>
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/layout_button"
-            android:layout_width="match_parent"
-            android:layout_height="90dp"
-            android:gravity="center|bottom"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="20dp">
+            android:background="@color/white" >
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/background"
+                android:scaleType="fitStart"
+                android:importantForAccessibility="no" />
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="15dp"
-                android:orientation="vertical"
+                android:layout_alignTop="@+id/layout_button"
+
+                android:layout_marginTop="-30dp"
                 android:gravity="center">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
+                    android:textSize="15sp"
                     android:textColor="@color/textColor"
-                    android:text="@string/allow_restrict"/>
-                <ImageView
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@drawable/ic_arrow_down"
-                    app:tint="@color/major" />
-                <Button
-                    android:id="@+id/btn_allow"
-                    android:layout_width="130dp"
-                    android:layout_height="40dp"
-                    android:background="@drawable/button_background"
-                    android:textColor="@color/white"
-                    android:text="@string/allow"/>
+                    android:text="@string/complete_activation"/>
             </LinearLayout>
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="15dp"
-                android:orientation="vertical"
-                android:gravity="center">
-                <TextView
+                android:id="@+id/layout_button"
+                android:layout_width="match_parent"
+                android:layout_height="90dp"
+                android:gravity="center|bottom"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="20dp"
+                android:orientation="horizontal"/>
+            <LinearLayout
+                android:id="@+id/layout_button1"
+                android:layout_width="match_parent"
+                android:layout_height="90dp"
+                android:gravity="center|bottom"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="20dp"
+                android:visibility="gone">
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:textColor="@color/textColor"
-                    android:text="@string/enable_accessibility"/>
-                <ImageView
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    app:tint="@color/major"
-                    android:src="@drawable/ic_arrow_down"
-                    android:importantForAccessibility="no" />
-                <Button
-                    android:id="@+id/btn_enable"
-                    android:layout_width="130dp"
-                    android:layout_height="40dp"
-                    android:background="@drawable/button_background"
-                    android:textColor="@color/white"
-                    android:text="@string/enable"/>
+                    android:layout_marginEnd="15dp"
+                    android:orientation="vertical"
+                    android:gravity="center">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:textColor="@color/textColor"
+                        android:text="@string/allow_restrict1"/>
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/ic_arrow_down"
+                        app:tint="@color/major" />
+                    <Button
+                        android:id="@+id/btn_allow1"
+                        android:layout_width="130dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/button_background"
+                        android:textColor="@color/white"
+                        android:text="@string/allow"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="15dp"
+                    android:orientation="vertical"
+                    android:gravity="center">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:textColor="@color/textColor"
+                        android:text="@string/enable_accessibility1"/>
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        app:tint="@color/major"
+                        android:src="@drawable/ic_arrow_down"
+                        android:importantForAccessibility="no" />
+                    <Button
+                        android:id="@+id/btn_enable1"
+                        android:layout_width="130dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/button_background"
+                        android:textColor="@color/white"
+                        android:text="@string/enable"/>
+                </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
-    </RelativeLayout>
+            <LinearLayout
+                android:id="@+id/layout_button2"
+                android:layout_width="match_parent"
+                android:layout_height="90dp"
+                android:gravity="center|bottom"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="20dp"
+                android:visibility="gone">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:orientation="vertical"
+                    android:gravity="center">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:textColor="@color/textColor"
+                        android:text="@string/enable_accessibility2"/>
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        app:tint="@color/major"
+                        android:src="@drawable/ic_arrow_down"
+                        android:importantForAccessibility="no" />
+                    <Button
+                        android:id="@+id/btn_enable2"
+                        android:layout_width="130dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/button_background"
+                        android:textColor="@color/white"
+                        android:text="@string/enable"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:orientation="vertical"
+                    android:gravity="center">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:textColor="@color/textColor"
+                        android:text="@string/allow_restrict2"/>
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/ic_arrow_down"
+                        app:tint="@color/major" />
+                    <Button
+                        android:id="@+id/btn_allow2"
+                        android:layout_width="130dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/button_background"
+                        android:textColor="@color/white"
+                        android:text="@string/allow"/>
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/layout_button3"
+                android:layout_width="match_parent"
+                android:layout_height="90dp"
+                android:gravity="center|bottom"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="20dp"
+                android:visibility="gone">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="15dp"
+                    android:orientation="vertical"
+                    android:gravity="center">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:textColor="@color/textColor"
+                        android:text="@string/enable_accessibility"/>
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        app:tint="@color/major"
+                        android:src="@drawable/ic_arrow_down"
+                        android:importantForAccessibility="no" />
+                    <Button
+                        android:id="@+id/btn_enable3"
+                        android:layout_width="130dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/button_background"
+                        android:textColor="@color/white"
+                        android:text="@string/enable"/>
+                </LinearLayout>
+            </LinearLayout>
+        </RelativeLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/layout_webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+        <WebView
+            android:id="@+id/view_web"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
 </LinearLayout>
