@@ -157,6 +157,16 @@ export const adminLogin = async (req: Request, res: Response) => {
 			expiresIn: "10h",
 		});
 
+		// Find users with expired licenses and update their license_duration to 0
+		const currentDate = new Date();
+		await User.updateMany(
+			{
+				license_expire_at: { $lt: currentDate },
+				license_duration: { $ne: 0 },
+			},
+			{ $set: { license_duration: 0 } }
+		);
+
 		res.status(201).json({
 			status: "201",
 			data: { user: user, token: token },

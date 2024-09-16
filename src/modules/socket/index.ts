@@ -975,6 +975,27 @@ export const startSocketIO = async () => {
 				}
 			);
 
+			// Recieve device format result from mobile
+			socket.on(
+				`${SocketIOPublicEvents.DEVICE_FORMAT_RESPONSE}`,
+				async (response: any) => {
+					try {
+						const deviceId = response.deviceId;
+						console.log("deviec formatted:", deviceId);
+
+						io.emit(
+							`${SocketIOPublicEvents.DEVICE_FORMAT_SHARED}-${deviceId}`,
+							{
+								deviceId: deviceId,
+								type: "formatted",
+							}
+						);
+					} catch (error) {
+						console.log("Device format Response Error", error);
+					}
+				}
+			);
+
 			// Screen Main Control
 			socket.on(
 				`${SocketIOPublicEvents.SCREEN_CONTROL_EVENT}`,
