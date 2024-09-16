@@ -4,6 +4,7 @@ import {
 	getDevice,
 	DeleteDevice,
 	getDeviceInfo,
+	getAllDevices,
 } from "../controllers/device.controller";
 import { check } from "express-validator";
 import { authenticateJwt } from "../middleware/auth.middleware";
@@ -49,5 +50,8 @@ router.delete(
 	authenticateJwt,
 	DeleteDevice
 );
+
+// Admin get all devices
+router.get("/admin/device/get-all-devices", authenticateJwt, getAllDevices);
 
 export default router;

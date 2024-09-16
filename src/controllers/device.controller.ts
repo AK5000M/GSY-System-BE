@@ -302,6 +302,32 @@ export const getDevice = async (req: Request, res: Response) => {
 	}
 };
 
+// Get all devices for Admin
+/**
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+export const getAllDevices = async (req: Request, res: Response) => {
+	// Check for validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+	try {
+		// Find devices in the database that match the query
+		const devices: DeviceModelType[] = await Device.find().sort({
+			created_at: -1,
+		});
+
+		// Return devices in the response
+		res.status(200).json(devices);
+	} catch (error) {
+		console.error("Error fetching devices:", error);
+		res.status(500).json({ error: "Failed to fetch devices" });
+	}
+};
+
 //Get Device Info by Device ID
 /**
  *
