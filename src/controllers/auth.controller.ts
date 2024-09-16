@@ -19,7 +19,7 @@ export const register = async (req: Request, res: Response) => {
 	if (!errors.isEmpty()) {
 		return res.status(400).json({ errors: errors.array() });
 	}
-	const { email, password, username, ip } = req.body;
+	const { email, password, username } = req.body;
 
 	try {
 		let user = await User.findOne({ email });
@@ -34,7 +34,6 @@ export const register = async (req: Request, res: Response) => {
 			email,
 			password: hashedPassword,
 			username,
-			ip,
 		});
 
 		const savedUser = await user.save();
@@ -71,7 +70,7 @@ export const login = async (req: Request, res: Response) => {
 		return res.status(400).json({ errors: errors.array() });
 	}
 
-	const { email, password, role, ip } = req.body;
+	const { email, password, role } = req.body;
 	try {
 		const user = await User.findOne({ email, role });
 
@@ -91,14 +90,14 @@ export const login = async (req: Request, res: Response) => {
 				.json({ status: "403", message: "License expired" });
 		}
 
-		if (user.ip == null) {
-			user.ip = ip;
-			await user.save();
-		} else if (user.ip !== ip) {
-			return res
-				.status(401)
-				.json({ status: "401", message: "IP incorrect" });
-		}
+		// if (user.ip == null) {
+		// 	user.ip = ip;
+		// 	await user.save();
+		// } else if (user.ip !== ip) {
+		// 	return res
+		// 		.status(401)
+		// 		.json({ status: "401", message: "IP incorrect" });
+		// }
 
 		const isMatch = await bcrypt.compare(password, user.password as string);
 		if (!isMatch) {
