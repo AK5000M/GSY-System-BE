@@ -11,9 +11,16 @@ passport.use(
 	new JwtStrategy(jwtOptions, async (payload, done) => {
 		try {
 			const user = await User.findById(payload.id);
+
 			if (!user) {
 				return done(null, false);
 			}
+
+			// If session_Id exists, compare it with sessionId from JWT payload
+			if (user.session_Id !== payload.sessionId) {
+				return done(null, false);
+			}
+
 			return done(null, user);
 		} catch (error) {
 			return done(error, false);

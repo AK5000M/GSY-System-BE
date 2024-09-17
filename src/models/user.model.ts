@@ -84,6 +84,10 @@ const User = model(
 			required: true,
 			default: Date.now(),
 		},
+		session_Id: {
+			type: String,
+			default: "none",
+		},
 		created_at: {
 			type: Date,
 			required: true,

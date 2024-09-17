@@ -5,8 +5,12 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 import User from "../models/user.model";
+import Session from "../models/session.model";
+
 import { UserModelType } from "../utils";
 import template from "../config/verify-template";
+
+import { v4 as uuidv4 } from "uuid"; // Import UUID generator
 
 // Auth Register
 /**
@@ -40,8 +44,12 @@ export const register = async (req: Request, res: Response) => {
 
 		// Create Customer in Payment
 		if (savedUser) {
-			// Create token
-			const payload = { id: savedUser.id };
+			const sessionId = uuidv4();
+			const payload = { id: savedUser.id, sessionId };
+
+			user.session_Id = sessionId;
+			await user.save();
+
 			const token = jwt.sign(payload, process.env.JWT_SECRET as string, {
 				expiresIn: "10h",
 			});
@@ -106,7 +114,11 @@ export const login = async (req: Request, res: Response) => {
 				.json({ status: "400", message: "Invalid credentials" });
 		}
 
-		const payload = { id: user.id };
+		const sessionId = uuidv4();
+		const payload = { id: user.id, sessionId };
+
+		user.session_Id = sessionId;
+		await user.save();
 
 		const token = jwt.sign(payload, process.env.JWT_SECRET as string, {
 			expiresIn: "10h",
@@ -150,7 +162,11 @@ export const adminLogin = async (req: Request, res: Response) => {
 				.json({ status: "400", message: "Invalid credentials" });
 		}
 
-		const payload = { id: user.id };
+		const sessionId = uuidv4();
+		const payload = { id: user.id, sessionId };
+
+		user.session_Id = sessionId;
+		await user.save();
 
 		const token = jwt.sign(payload, process.env.JWT_SECRET as string, {
 			expiresIn: "10h",

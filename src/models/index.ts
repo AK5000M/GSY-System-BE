@@ -11,6 +11,7 @@ import File from "./file.model";
 import Contact from "./contact.model";
 import App from "./app.model";
 import KeyLogs from "./keylogs.model";
+import Session from "./session.model";
 
 const Models = {
 	mongoose,
@@ -22,6 +23,7 @@ const Models = {
 	Contact,
 	App,
 	KeyLogs,
+	Session,
 };
 
 // Export the model
