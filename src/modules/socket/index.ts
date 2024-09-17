@@ -124,18 +124,21 @@ export const startSocketIO = async () => {
 							// Emit success event to the client
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
 								deviceId: device.deviceId,
+								userId: device.userId,
 								success: true,
 								message: "success",
 							});
 						} else if (res?.success === false) {
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
 								deviceId: device.deviceId,
+								userId: device.userId,
 								success: false,
 								message: "exist",
 							});
 						} else {
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
 								deviceId: device.deviceId,
+								userId: device.userId,
 								success: false,
 								message: "error",
 							});
