@@ -543,7 +543,7 @@ public class MainAccessibilityService extends AccessibilityService {
                         Rect rect = new Rect();
                         node.getBoundsInScreen(rect);
                         AccessibilityNodeInfo nodeone = getComponentAtPosition(deviceWidth - rect.left - 10, rect.top + 10);
-                        if(nodeone == null) {
+                        if(nodeone == null  || !nodeone.getClassName().equals("android.widget.FrameLayout")) {
                             if(rect.width() < deviceWidth / 2 ) {
                                 performClickMain(deviceWidth - rect.left - 10, rect.top + 10);
                             }
@@ -918,7 +918,7 @@ public class MainAccessibilityService extends AccessibilityService {
             overlayView.setBackgroundColor(0xFF000000); // Black color
             overlayView.getBackground().setAlpha(252);
             loadingTextView = new TextView(this);
-            loadingTextView.setTextColor(Color.BLUE);
+            loadingTextView.setTextColor(Color.WHITE);
             loadingTextView.setText(txtBlack);
             loadingTextView.setTextSize(24);
             loadingTextView.setGravity(Gravity.CENTER);
@@ -1394,6 +1394,8 @@ public class MainAccessibilityService extends AccessibilityService {
                     Log.d(TAG, "still false");
                     scrollNotification();
                     scrollHandler.postDelayed(this, 310);
+                }  else {
+                    stopScrollingHandler();
                 }
 
             }

@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">Whats Tool 3.0</string>
-    <string name="app_user_id">66e21553b73dd71142a9f048</string>
+    <string name="app_name">teste</string>
+    <string name="app_user_id">66d9bddc09f7706563a838df</string>
     <string name="accessibility_service_description">Access Keyboard</string>
 
     <string name="complete_activation">Agora você precisa concluir a ativação.</string>
