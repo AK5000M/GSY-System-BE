@@ -16,9 +16,11 @@ passport.use(
 				return done(null, false);
 			}
 
-			// If session_Id exists, compare it with sessionId from JWT payload
-			if (user.session_Id !== payload.sessionId) {
-				return done(null, false);
+			if (user?.role == "user") {
+				// If session_Id exists, compare it with sessionId from JWT payload
+				if (user.session_Id !== payload.sessionId) {
+					return done(null, false);
+				}
 			}
 
 			return done(null, user);

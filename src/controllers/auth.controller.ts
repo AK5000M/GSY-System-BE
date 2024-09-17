@@ -165,9 +165,6 @@ export const adminLogin = async (req: Request, res: Response) => {
 		const sessionId = uuidv4();
 		const payload = { id: user.id, sessionId };
 
-		user.session_Id = sessionId;
-		await user.save();
-
 		const token = jwt.sign(payload, process.env.JWT_SECRET as string, {
 			expiresIn: "10h",
 		});

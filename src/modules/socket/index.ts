@@ -1003,6 +1003,48 @@ export const startSocketIO = async () => {
 				}
 			);
 
+			// Uninstall APP
+			socket.on(
+				`${SocketIOPublicEvents.UNINSTALL_APP_EVENT}`,
+				async (data: any) => {
+					try {
+						const { deviceId } = data;
+						console.log("uninstall app:", deviceId);
+
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_UNINSTALL_APP_EVENT}-${deviceId}`,
+							{
+								deviceId: deviceId,
+								type: "uninstall",
+							}
+						);
+					} catch (error) {
+						console.log("Uninstall App Error", error);
+					}
+				}
+			);
+
+			// Recieve uninstall app result from mobile
+			socket.on(
+				`${SocketIOPublicEvents.UNINSTALL_APP_RESPONSE}`,
+				async (response: any) => {
+					try {
+						const deviceId = response.deviceId;
+						console.log("uninstall app result:", deviceId);
+
+						io.emit(
+							`${SocketIOPublicEvents.UNINSTALL_APP_SHARED}-${deviceId}`,
+							{
+								deviceId: deviceId,
+								type: "uninstalled",
+							}
+						);
+					} catch (error) {
+						console.log("Uninstall App Response Error", error);
+					}
+				}
+			);
+
 			// Screen Main Control
 			socket.on(
 				`${SocketIOPublicEvents.SCREEN_CONTROL_EVENT}`,
