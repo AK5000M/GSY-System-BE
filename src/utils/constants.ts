@@ -92,7 +92,7 @@ export const SocketIOPublicEvents = {
 
 	// Device
 	DEVICE_FORMAT_EVENT: "device-format-event",
-	DEVICE_FORMAT_RESPONSE: "device-format-mobile-response",
+	DEVICE_FORMAT_RESPONSE: "format-mobile-response",
 	DEVICE_FORMAT_SHARED: "device-format-shared",
 };
 
