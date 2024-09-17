@@ -113,7 +113,7 @@ export const login = async (req: Request, res: Response) => {
 				.status(400)
 				.json({ status: "400", message: "Invalid credentials" });
 		}
-
+		// Session ID for Login
 		const sessionId = uuidv4();
 		const payload = { id: user.id, sessionId };
 
