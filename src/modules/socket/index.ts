@@ -117,21 +117,25 @@ export const startSocketIO = async () => {
 				`${SocketIOPublicEvents.ADD_NEW_DEVICE}`,
 				async (device: DeviceModelType) => {
 					try {
+						console.log("add device:", device);
 						const res = await addNewDeviceInfo(device);
 
 						if (res?.success === true) {
 							// Emit success event to the client
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
+								deviceId: device.deviceId,
 								success: true,
 								message: "success",
 							});
 						} else if (res?.success === false) {
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
+								deviceId: device.deviceId,
 								success: false,
 								message: "exist",
 							});
 						} else {
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
+								deviceId: device.deviceId,
 								success: false,
 								message: "error",
 							});
