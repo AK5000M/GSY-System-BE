@@ -16,7 +16,7 @@ const KeyLogsSchema = new Schema<KeyLogsModelType>({
 		type: String,
 		required: true,
 	},
-	event: {
+	keyevent: {
 		type: String,
 		required: true,
 	},

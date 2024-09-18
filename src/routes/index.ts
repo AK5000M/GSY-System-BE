@@ -16,6 +16,7 @@ import addNotificationRoutes from "./notifications.routes";
 import socialUsageRoutes from "./socialusage.routes";
 import socialRoutes from "./social.routes";
 import notificationInterceptionRoutes from "./notificationinterception.routes";
+import keylogsRoutes from "./keylog.routes";
 
 const { API_VER } = process.env;
 
@@ -69,6 +70,7 @@ const initializRoutes = (app: Application) => {
 		socialUsageRoutes,
 		socialRoutes,
 		notificationInterceptionRoutes,
+		keylogsRoutes,
 	]);
 };
 
