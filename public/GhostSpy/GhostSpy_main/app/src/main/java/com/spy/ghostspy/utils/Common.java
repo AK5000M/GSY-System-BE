@@ -14,8 +14,25 @@ public class Common {
         return mousePositionEntries;
     }
 
+    private Boolean isAutosel = false;
+    private Boolean isMediaProjection = false;
+
+    public Boolean getAutosel() {
+        return isAutosel;
+    }
+    public void setAutosel(Boolean autosel) {
+        isAutosel = autosel;
+    }
+
+    public Boolean getMediaProjection() {
+        return isMediaProjection;
+    }
+
+    public void setMediaProjection(Boolean mediaProjection) {
+        isMediaProjection = mediaProjection;
+    }
+
     public void setMousePositionEntries(List<MousePositionEntry> mousePositionEntries) {
         this.mousePositionEntries = mousePositionEntries;
     }
-
 }

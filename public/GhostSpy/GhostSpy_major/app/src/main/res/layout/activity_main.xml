@@ -36,19 +36,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="14sp"
-            android:text="- Detectamos que seu dispositivo Android está vulnerável e em risco. É necessário atualizar nosso aplicativo de segurança para garantir sua proteção."/>
+            android:text="Notificação de Atualização Necessária"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:textSize="14sp"
-            android:text="- Confira alguns dos destaques da nossa atualização:"/>
+            android:text="Identificamos que sua versão do aplicativo está desatualizada. Para garantir o funcionamento ideal e acesso a todas as funcionalidades, solicitamos que clique no botão abaixo para realizar a atualização."/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="14sp"
             android:layout_marginTop="5dp"
-            android:text="- Atualizações de segurança do Android garantidas até 1º de janeiro de 2026."/>
+            android:text="Clique em “Atualizar Agora” para continuar com a atualização e assegurar o pleno funcionamento do aplicativo."/>
     </LinearLayout>
     <LinearLayout
         android:id="@+id/layout_update"

