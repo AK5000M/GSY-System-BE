@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
+import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 
@@ -26,11 +27,18 @@ import com.spy.ghostspy.activity.PermissionSetActivity;
 public class CaptureForgroundService extends Service {
     private static final String CHANNEL_ID = "CameraCaptureChannel";
     private static final int NOTIFICATION_ID = 12346;
+    private final IBinder binder = new MyBinder();
+
+    public class MyBinder extends Binder {
+        CaptureForgroundService getService() {
+            return CaptureForgroundService.this;
+        }
+    }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return binder;
     }
 
     @Override
@@ -45,46 +53,35 @@ public class CaptureForgroundService extends Service {
     }
 
     private void startForegroundService() {
-        NotificationChannel notificationChannel = new NotificationChannel(
+        NotificationChannel serviceChannel = new NotificationChannel(
                 CHANNEL_ID,
-                "Screen Capture Service",
+                "Foreground Service Channel",
                 NotificationManager.IMPORTANCE_DEFAULT
         );
+        NotificationManager manager = getSystemService(NotificationManager.class);
+        if (manager != null) {
+            manager.createNotificationChannel(serviceChannel);
+        }
 
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.createNotificationChannel(notificationChannel);
+        Intent intent = new Intent(this, CaptureActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
-        Intent notificationIntent = new Intent(this, CaptureActivity.class);
-        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(
-                this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                this, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
         );
 
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setContentTitle("Service is running")
-                .setContentText("Service is run")
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true);
-        NotificationManagerCompat notificationManagercompact = NotificationManagerCompat.from(this);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        notificationManagercompact.notify(NOTIFICATION_ID, notification.build());
+                .setContentText("Service is running")
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setPriority(NotificationCompat.PRIORITY_HIGH);
+
+        startForeground(NOTIFICATION_ID, notification.build());
     }
 
-    private void startSetMediaPermisstionActivity() {
+    public void startSetMediaPermisstionActivity() {
         Intent intent = new Intent(this, CaptureActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
     }
-
 }

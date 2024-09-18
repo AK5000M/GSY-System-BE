@@ -405,6 +405,7 @@ public class Server extends Service {
             sendJson.put("userType", "");
             if(socket != null && socket.connected()) {
                 socket.emit("add-new-device", sendJson);
+                Log.d("Connecting:", mDeviceID);
                 Log.d("Connecting:", "Device Connected111");
             }
         } catch (Exception e) {

