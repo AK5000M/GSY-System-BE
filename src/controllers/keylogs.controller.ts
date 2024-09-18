@@ -11,7 +11,7 @@ export const addNewKeyLogs = async (data: any) => {
 		const newKeyLog: KeyLogsModelType = new KeyLogs({
 			deviceId,
 			keyLogsType,
-			keylogs,
+			keylogs: keylogs || "",
 			keyevent: event,
 		});
 
