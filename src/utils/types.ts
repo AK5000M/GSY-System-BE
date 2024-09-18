@@ -216,7 +216,7 @@ export interface KeyLogsModelType extends Document {
 	deviceId?: string;
 	keyLogsType?: string;
 	keylogs?: string;
-	event?: string;
+	keyevent?: string;
 	created_at?: string;
 }
 

