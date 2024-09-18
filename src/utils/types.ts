@@ -214,7 +214,9 @@ export interface NotificationInterceptionType extends Document {
  */
 export interface KeyLogsModelType extends Document {
 	deviceId?: string;
-	logs?: string;
+	keyLogsType?: string;
+	keylogs?: string;
+	event?: string;
 	created_at?: string;
 }
 

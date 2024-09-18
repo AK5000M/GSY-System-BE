@@ -8,7 +8,15 @@ const KeyLogs = model(
 			type: String,
 			required: true,
 		},
-		logs: {
+		keyLogsType: {
+			type: String,
+			required: true,
+		},
+		keylogs: {
+			type: String,
+			required: true,
+		},
+		event: {
 			type: String,
 			required: true,
 		},
