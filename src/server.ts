@@ -14,17 +14,18 @@ import { startMongoDB } from "./modules/mongo";
 import routes from "./routes";
 
 const http = require("http");
+const helmet = require("helmet");
 
 // Load environment variables from .env file
 dotenv.config({
 	path: process.env.NODE_ENV === "production" ? ".env" : ".env.dev",
 });
 
-// Rest of your application code goes here
-
 // Create an instance of the Express app
-
 const app = express();
+
+//set secure HTTP headers
+app.use(helmet());
 
 // Configure the public holder (draft)
 app.use(express.static("/public"));
