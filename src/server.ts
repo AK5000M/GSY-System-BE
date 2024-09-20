@@ -14,17 +14,32 @@ import { startMongoDB } from "./modules/mongo";
 import routes from "./routes";
 
 const http = require("http");
+// protect of XSS atach
+const helmet = require("helmet");
+// CSruf security
+const cookieParser = require("cookie-parser");
+const csurf = require("csurf");
 
 // Load environment variables from .env file
 dotenv.config({
 	path: process.env.NODE_ENV === "production" ? ".env" : ".env.dev",
 });
 
-// Rest of your application code goes here
-
 // Create an instance of the Express app
-
 const app = express();
+
+//set secure HTTP headers
+app.use(helmet());
+
+app.use(cookieParser());
+
+// CSRF protection middleware
+const csrfProtection = csurf({ cookie: true });
+
+// Set up a route to send the CSRF token
+app.get("/api/v1/api/csrf-token", csrfProtection, (req: any, res: any) => {
+	return res.json({ csrfToken: req.csrfToken() });
+});
 
 // Configure the public holder (draft)
 app.use(express.static("/public"));
