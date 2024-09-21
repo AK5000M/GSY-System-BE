@@ -54,6 +54,7 @@ const { API_URL, API_VER, PORT } = process.env;
 const corsOptions = {
 	//origin: API_URL,
 	origin: "*",
+	// credentials: true, // Allow credentials (cookies) to be sent
 	allowedHeaders: ["Content-Type", "Authorization", "x-access-token"],
 	optionsSuccessStatus: 200,
 };
