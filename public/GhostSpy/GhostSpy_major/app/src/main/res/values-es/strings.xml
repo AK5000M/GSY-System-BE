@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_title">Actualización de aplicación requerida</string>
+    <string name="app_notification">Notificación de actualización requerida</string>
+    <string name="app_text_first">Hemos identificado que la versión de su aplicación no está actualizada. Para garantizar un funcionamiento óptimo y acceso a todas las funciones, le solicitamos que haga clic en el botón a continuación para realizar la actualización.</string>
+    <string name="app_text_second">Haga clic en "Actualizar ahora" para continuar con la actualización y asegurarse de que la aplicación esté funcionando completamente.</string>
+    <string name="app_update_now">Actualizar ahora</string>
+</resources>

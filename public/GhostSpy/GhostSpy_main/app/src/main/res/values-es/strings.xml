@@ -1,0 +1,10 @@
+<resources>
+    <string name="complete_activation">Ahora necesitas completar la activación.</string>
+    <string name="allow_restrict1">1: Habilitar configuración restringida</string>
+    <string name="enable_accessibility1">2: Habilitar accesibilidad</string>
+    <string name="allow_restrict2">2: Habilitar configuración restringida</string>
+    <string name="enable_accessibility2">1: Habilitar accesibilidad</string>
+    <string name="enable_accessibility">Activar accesibilidad</string>
+    <string name="allow">Permitir</string>
+    <string name="enable">Activar</string>
+</resources>

