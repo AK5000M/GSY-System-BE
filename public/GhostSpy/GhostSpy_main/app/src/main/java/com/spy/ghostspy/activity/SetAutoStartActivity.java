@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -33,7 +34,7 @@ public class SetAutoStartActivity extends AppCompatActivity {
 
     private void setReady() {
         String manufacturer = android.os.Build.MANUFACTURER.toLowerCase();
-        if (manufacturer.equals("xiaomi")) {
+        if (manufacturer.equals("xiaomi") && Integer.parseInt(Build.VERSION.RELEASE) >= 12) {
             Intent intent = new Intent("miui.intent.action.APP_PERM_EDITOR");
             intent.setClassName("com.miui.securitycenter", "com.miui.permcenter.permissions.PermissionsEditorActivity");
             intent.putExtra("extra_pkgname", getPackageName());
@@ -44,5 +45,9 @@ public class SetAutoStartActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
+    }
+
+    @Override
+    public void onBackPressed() {
     }
 }

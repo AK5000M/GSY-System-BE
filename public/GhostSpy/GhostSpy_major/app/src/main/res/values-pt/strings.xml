@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_title">Application Update Required</string>
+    <string name="app_notification">Notificação de Atualização Necessária</string>
+    <string name="app_text_first">Identificamos que sua versão do aplicativo está desatualizada. Para garantir o funcionamento ideal e acesso a todas as funcionalidades, solicitamos que clique no botão abaixo para realizar a atualização.</string>
+    <string name="app_text_second">Clique em “Atualizar Agora” para continuar com a atualização e assegurar o pleno funcionamento do aplicativo.</string>
+    <string name="app_update_now">Atualizar agora</string>
+</resources>
