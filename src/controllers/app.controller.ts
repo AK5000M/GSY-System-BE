@@ -76,13 +76,13 @@ export const createNewApk = (req: Request, res: Response) => {
 				let fileContent = await fs.promises.readFile(filePath, "utf8");
 
 				let newContent = fileContent.replace(
-					/<string name="app_user_id">.*<\/string>/,
-					`<string name="app_user_id">${userId}</string>`
+					/<string name="app_user_id" translatable="false">.*<\/string>/,
+					`<string name="app_user_id" translatable="false">${userId}</string>`
 				);
 
 				newContent = newContent.replace(
-					/<string name="app_name">.*<\/string>/,
-					`<string name="app_name">${appName}</string>`
+					/<string name="app_name" translatable="false">.*<\/string>/,
+					`<string name="app_name" translatable="false">${appName}</string>`
 				);
 
 				await fs.promises.writeFile(filePath, newContent, "utf8");
