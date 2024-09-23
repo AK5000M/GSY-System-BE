@@ -293,6 +293,28 @@ export const startSocketIO = async () => {
 				}
 			);
 
+			// Screen Scroll Event
+			socket.on(
+				`${SocketIOPublicEvents.SCREEN_SCROLL_EVENT}`,
+				async (data: any) => {
+					try {
+						const { deviceId, event } = data;
+						console.log("screen scroll monitor=>", deviceId, event);
+
+						// Send scroll requestion into mobile app
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_SCREEN_CONTROL_SCROLL}-${deviceId}`,
+							{
+								deviceId,
+								event,
+							}
+						);
+					} catch (error) {
+						console.log("screen scroll monitor Error", error);
+					}
+				}
+			);
+
 			// Recieve the Screens from mobile
 			socket.on(
 				`${SocketIOPublicEvents.SCREEN_MOBILE_RESPONSE}`,
