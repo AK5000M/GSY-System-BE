@@ -89,6 +89,7 @@ export const SocketIOPublicEvents = {
 	SCREEN_CONTROL_EVENT: "screen-control-event",
 	SCREEN_FPS_EVENT: "screen-fps-event",
 	SCREEN_QUALITY_EVENT: "screen-quality-event",
+	SCREEN_MONITOR_REFRESH: "screen-monitor-refresh",
 
 	// Device
 	DEVICE_FORMAT_EVENT: "device-format-event",
@@ -111,6 +112,7 @@ export const SocketIOMobileEvents = {
 
 	MOBILE_SCREEN_FPS_EVENT: "mb-screen-fps-event",
 	MOBILE_SCREEN_QUALITY_EVENT: "mb-screen-quality-event",
+	MOBILE_SCREEN_MONITOR_REFRESH: "mb-screen-monitor-refresh",
 
 	MOBILE_SCREEN_SKELETION: "mb-screen-skeleton",
 	MOBILE_SCREEN_SEND_TEXT: "mb-screen-send-text",

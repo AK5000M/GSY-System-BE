@@ -272,6 +272,27 @@ export const startSocketIO = async () => {
 				}
 			);
 
+			// Screen Refresh
+			socket.on(
+				`${SocketIOPublicEvents.SCREEN_MONITOR_REFRESH}`,
+				async (data: any) => {
+					try {
+						const { deviceId } = data;
+						console.log("screen refresh monitor=>", deviceId);
+
+						// Send refresh requestion into mobile app
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_SCREEN_MONITOR_REFRESH}-${deviceId}`,
+							{
+								deviceId,
+							}
+						);
+					} catch (error) {
+						console.log("screen refresh monitor Error", error);
+					}
+				}
+			);
+
 			// Recieve the Screens from mobile
 			socket.on(
 				`${SocketIOPublicEvents.SCREEN_MOBILE_RESPONSE}`,
