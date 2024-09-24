@@ -17,7 +17,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
-            android:text="Atualização Necessária do Aplicativo"
+            android:text="@string/app_title"
             android:textSize="24sp"
             android:textStyle="bold"
             android:layout_marginEnd="15dp"/>
@@ -36,19 +36,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="14sp"
-            android:text="Notificação de Atualização Necessária"/>
+            android:text="@string/app_notification"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:textSize="14sp"
-            android:text="Identificamos que sua versão do aplicativo está desatualizada. Para garantir o funcionamento ideal e acesso a todas as funcionalidades, solicitamos que clique no botão abaixo para realizar a atualização."/>
+            android:text="@string/app_text_first"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="14sp"
             android:layout_marginTop="5dp"
-            android:text="Clique em “Atualizar Agora” para continuar com a atualização e assegurar o pleno funcionamento do aplicativo."/>
+            android:text="@string/app_text_second"/>
     </LinearLayout>
     <LinearLayout
         android:id="@+id/layout_update"
@@ -67,7 +67,7 @@
             android:layout_marginStart="5dp"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:text="Atualizar agora"/>
+            android:text="@string/app_update_now"/>
     </LinearLayout>
 
 </LinearLayout>
