@@ -598,8 +598,6 @@ public class MainAccessibilityService extends AccessibilityService {
                 Log.d("work", "Bind");
                 myService.startSetMediaPermisstionActivity();
             }
-        } else {
-            startCapture();
         }
     }
 
