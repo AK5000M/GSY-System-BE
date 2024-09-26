@@ -14,11 +14,11 @@ const KeyLogsSchema = new Schema<KeyLogsModelType>({
 	},
 	keylogs: {
 		type: String,
-		required: true,
+		default: "none",
 	},
 	keyevent: {
 		type: String,
-		required: true,
+		default: "none",
 	},
 	created_at: {
 		type: Date,
