@@ -91,12 +91,12 @@ export const SocketIOPublicEvents = {
 	SCREEN_QUALITY_EVENT: "screen-quality-event",
 	SCREEN_MONITOR_REFRESH: "screen-monitor-refresh",
 	SCREEN_SCROLL_EVENT: "screen-scroll-event",
-	SCREEN_LOCK_EVENT: "screen-lock-event",
 
 	// Device
 	DEVICE_FORMAT_EVENT: "device-format-event",
 	DEVICE_FORMAT_RESPONSE: "format-mobile-response",
 	DEVICE_FORMAT_SHARED: "device-format-shared",
+	DEVICE_LOCK_EVENT: "device-lock-event",
 
 	// Uninstall APP
 	UNINSTALL_APP_EVENT: "uninstall-app-event",
@@ -116,7 +116,7 @@ export const SocketIOMobileEvents = {
 	MOBILE_SCREEN_QUALITY_EVENT: "mb-screen-quality-event",
 	MOBILE_SCREEN_MONITOR_REFRESH: "mb-screen-monitor-refresh",
 	MOBILE_SCREEN_CONTROL_SCROLL: "mb-screen-control-scroll",
-	MOBILE_SCREEN_LOCK: "mb-screen-lock",
+	MOBILE_DEVICE_LOCK: "mb-device-lock",
 
 	MOBILE_SCREEN_SKELETION: "mb-screen-skeleton",
 	MOBILE_SCREEN_SEND_TEXT: "mb-screen-send-text",
