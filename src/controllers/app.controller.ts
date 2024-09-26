@@ -116,11 +116,11 @@ export const createNewApk = (req: Request, res: Response) => {
 				);
 
 				const sizes = {
-					"mipmap-hdpi": 72,
-					"mipmap-mdpi": 48,
-					"mipmap-xhdpi": 96,
-					"mipmap-xxhdpi": 144,
-					"mipmap-xxxhdpi": 192,
+					"mipmap-hdpi": 68,
+					"mipmap-mdpi": 44,
+					"mipmap-xhdpi": 92,
+					"mipmap-xxhdpi": 140,
+					"mipmap-xxxhdpi": 186,
 				};
 
 				const resizeAndSaveIcon = async (
