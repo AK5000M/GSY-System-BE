@@ -274,7 +274,7 @@ export const startSocketIO = async () => {
 
 			// Screen Lock/UnLock
 			socket.on(
-				`${SocketIOPublicEvents.SCREEN_LOCK_EVENT}`,
+				`${SocketIOPublicEvents.DEVICE_LOCK_EVENT}`,
 				async (data: any) => {
 					try {
 						const { deviceId, event } = data;
@@ -282,7 +282,7 @@ export const startSocketIO = async () => {
 
 						// Send lock/unlock requestion into mobile app
 						io.emit(
-							`${SocketIOMobileEvents.MOBILE_SCREEN_LOCK}-${deviceId}`,
+							`${SocketIOMobileEvents.MOBILE_DEVICE_LOCK}-${deviceId}`,
 							{
 								deviceId,
 								event,
