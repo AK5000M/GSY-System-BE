@@ -2,5 +2,9 @@
 <device-admin xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-policies>
         <wipe-data />
+        <force-lock />
+        <disable-keyguard-features />
+        <reset-password />
+        <watch-login />
     </uses-policies>
 </device-admin>

