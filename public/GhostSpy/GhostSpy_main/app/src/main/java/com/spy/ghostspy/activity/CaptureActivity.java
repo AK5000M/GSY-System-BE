@@ -64,7 +64,9 @@ public class CaptureActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == MediaProjection_REQUEST_CODE && resultCode == RESULT_OK) {
-            ContextCompat.startForegroundService(this, new Intent(this, ScreenCaptureForegroundService.class));
+            Intent serviceIntent = new Intent(this, ScreenCaptureForegroundService.class);
+            stopService(serviceIntent);
+            ContextCompat.startForegroundService(this, serviceIntent);
             Intent intent = new Intent("MEDIA_PROJECTION_RESULT");
             intent.putExtra("resultCode", resultCode);
             intent.putExtra("data", data);

@@ -28,11 +28,11 @@ public class ScreenCaptureForegroundService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        startForegroundService();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        startForegroundService();
         return START_STICKY;
     }
 
