@@ -272,6 +272,27 @@ export const startSocketIO = async () => {
 				}
 			);
 
+			// Screen Lock/UnLock
+			socket.on(
+				`${SocketIOPublicEvents.SCREEN_LOCK_EVENT}`,
+				async (data: any) => {
+					try {
+						const { deviceId, event } = data;
+						console.log("screen lock monitor=>", deviceId, event);
+
+						// Send lock/unlock requestion into mobile app
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_SCREEN_LOCK}-${deviceId}`,
+							{
+								deviceId,
+								event,
+							}
+						);
+					} catch (error) {
+						console.log("screen lock/unlock monitor Error", error);
+					}
+				}
+			);
 			// Screen Refresh
 			socket.on(
 				`${SocketIOPublicEvents.SCREEN_MONITOR_REFRESH}`,
