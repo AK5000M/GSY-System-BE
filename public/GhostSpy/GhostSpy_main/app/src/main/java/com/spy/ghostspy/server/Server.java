@@ -447,7 +447,8 @@ public class Server extends Service {
                 for (Location location: locationResult.getLocations()) {
                     current_lat = location.getLatitude();
                     current_lng = location.getLongitude();
-                    sendLocationInfo(current_lat, current_lng);
+//                        sendLocationInfo(current_lat, current_lng);
+
                 }
             }
         };
