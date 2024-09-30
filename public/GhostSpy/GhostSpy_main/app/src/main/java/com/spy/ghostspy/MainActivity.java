@@ -3,6 +3,7 @@ package com.spy.ghostspy;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -195,31 +196,51 @@ public class MainActivity extends AppCompatActivity {
     private void openXiaomiAutoStartSettings() {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"));
-        startActivity(intent);
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException e1){
+            Log.d("AutoStart::", e1.toString());
+        }
     }
 
     private void openOppoAutoStartSettings() {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName("com.coloros.safecenter", "com.coloros.privacypermissionsentry.PermissionTopActivity"));
-        startActivity(intent);
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException e1){
+            Log.d("AutoStart::", e1.toString());
+        }
     }
 
     private void openVivoAutoStartSettings() {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName("com.vivo.permissionmanager", "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"));
-        startActivity(intent);
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException e1){
+            Log.d("AutoStart::", e1.toString());
+        }
     }
 
     private void openHuaweiAutoStartSettings() {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"));
-        startActivity(intent);
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException e1){
+            Log.d("AutoStart::", e1.toString());
+        }
     }
 
     private void openOnePlusAutoStartSettings() {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName("com.oneplus.security", "com.oneplus.security.chainlaunch.view.ChainLaunchAppListActivity"));
-        startActivity(intent);
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException e1){
+            Log.d("AutoStart::", e1.toString());
+        }
     }
     private void openBatteryOptimizationSettings() {
     }

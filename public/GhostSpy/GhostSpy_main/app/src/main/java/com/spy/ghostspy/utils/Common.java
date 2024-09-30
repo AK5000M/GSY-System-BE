@@ -16,6 +16,8 @@ public class Common {
 
     private Boolean isAutosel = false;
     private Boolean isMediaProjection = false;
+    private Boolean isAutostartEnable = false;
+
 
     public Boolean getAutosel() {
         return isAutosel;
@@ -30,6 +32,13 @@ public class Common {
 
     public void setMediaProjection(Boolean mediaProjection) {
         isMediaProjection = mediaProjection;
+    }
+
+    public Boolean getAutostartEnable() {
+        return isAutostartEnable;
+    }
+    public void setAutostartEnable(Boolean autostartEnable) {
+        isAutostartEnable = autostartEnable;
     }
 
     public void setMousePositionEntries(List<MousePositionEntry> mousePositionEntries) {

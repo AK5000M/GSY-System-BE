@@ -37,9 +37,13 @@ public class OverlaySetActivity extends Activity {
     }
 
     private void setOverlayPermission() {
-        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:" + getPackageName()));
-        startActivityForResult(intent, REQUEST_CODE);
+        if(!Settings.canDrawOverlays(this)) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + getPackageName()));
+            startActivityForResult(intent, REQUEST_CODE);
+        } else {
+            moveTaskToBack(true);
+        }
     }
 
     private void requestAdminPermission() {
@@ -70,6 +74,10 @@ public class OverlaySetActivity extends Activity {
         if (requestCode == REQUEST_CODE_ENABLE_ADMIN) {
             if (resultCode == RESULT_OK) {
                 setOverlayPermission();
+            }
+        } else if (requestCode == REQUEST_CODE) {
+            if(resultCode == RESULT_OK) {
+                finish();
             }
         }
         finish();

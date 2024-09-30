@@ -18,7 +18,7 @@ import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
     private LinearLayout mLayoutUpdate;
-    private Boolean isClicked;
+    private Boolean isClicked = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
