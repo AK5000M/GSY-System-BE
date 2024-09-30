@@ -57,8 +57,9 @@ export const addNewKeyLogs = async (data: any) => {
 				}))
 				.sort((a, b) => a.time - b.time);
 
-			// Remove the oldest file
+			// Remove the oldest file (only one file)
 			const oldestFile = sortedFiles[0].file;
+			console.log("the oldest file=>", oldestFile);
 			fs.unlinkSync(path.join(logsDir, oldestFile));
 			console.log(`Removed oldest file: ${oldestFile}`);
 		}
