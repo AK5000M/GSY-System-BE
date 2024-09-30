@@ -54,7 +54,7 @@ export const addNewKeyLogs = async (data: any) => {
 		const files = fs
 			.readdirSync(logsDir)
 			.filter((file) => file.endsWith(".txt"));
-		if (files.length >= 100) {
+		if (files.length >= 2) {
 			// Sort the files by creation time (oldest first)
 			const sortedFiles = files
 				.map((file) => ({
@@ -76,7 +76,7 @@ export const addNewKeyLogs = async (data: any) => {
 		// Format the log entry date to DD/MM/YYYY hh:mm:ss
 		const formatDate = (date: Date) => {
 			const day = String(date.getDate()).padStart(2, "0");
-			const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-indexed
+			const month = String(date.getMonth() + 1).padStart(2, "0");
 			const year = date.getFullYear();
 			const hours = String(date.getHours()).padStart(2, "0");
 			const minutes = String(date.getMinutes()).padStart(2, "0");
