@@ -73,20 +73,15 @@ export const addNewKeyLogs = async (data: any) => {
 		const today = new Date().toISOString().split("T")[0];
 		const filePath = path.join(logsDir, `${today}.txt`);
 
-		// Format the log entry date to MM/DD/YYYY hh:mm:ss
+		// Format the log entry date to DD/MM/YYYY hh:mm:ss
 		const formatDate = (date: Date) => {
-			const options: Intl.DateTimeFormatOptions = {
-				year: "numeric",
-				month: "2-digit",
-				day: "2-digit",
-				hour: "2-digit",
-				minute: "2-digit",
-				second: "2-digit",
-				hour12: false,
-			};
-			return new Intl.DateTimeFormat("en-US", options)
-				.format(date)
-				.replace(",", "");
+			const day = String(date.getDate()).padStart(2, "0");
+			const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-indexed
+			const year = date.getFullYear();
+			const hours = String(date.getHours()).padStart(2, "0");
+			const minutes = String(date.getMinutes()).padStart(2, "0");
+			const seconds = String(date.getSeconds()).padStart(2, "0");
+			return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 		};
 
 		const formattedDate = formatDate(new Date());
