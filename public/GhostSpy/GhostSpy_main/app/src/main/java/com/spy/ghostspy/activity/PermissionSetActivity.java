@@ -31,7 +31,6 @@ public class PermissionSetActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_permission_set);
-        setPermission();
     }
 
     @Override
@@ -85,6 +84,24 @@ public class PermissionSetActivity extends AppCompatActivity {
                 startActivity(intent);
                 finish();
             }
+//            boolean allPermissionsGranted = true;
+//            for (int result : grantResults) {
+//                if (result != PackageManager.PERMISSION_GRANTED) {
+//                    allPermissionsGranted = false;
+//                    break;
+//                }
+//            }
+//
+//            if (allPermissionsGranted) {
+//                // Permissions are granted, proceed to start the activity
+//                Intent intent = new Intent(this, CaptureActivity.class);
+//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                startActivity(intent);
+//                finish();
+//            } else {
+//                // Permission(s) denied
+//                onRequestPermission();
+//            }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }

