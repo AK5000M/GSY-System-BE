@@ -22,32 +22,30 @@ export const addNewKeyLogs = async (data: any) => {
 			fs.mkdirSync(logsDir, { recursive: true });
 		}
 
+		// // Check if the number of files exceeds the limit (2 files in this case)
+		// const files = fs
+		// 	.readdirSync(logsDir)
+		// 	.filter((file) => file.endsWith(".txt"));
+
+		// if (files.length >= 2) {
+		// 	// Sort the files by creation time (oldest first)
+		// 	const sortedFiles = files
+		// 		.map((file) => ({
+		// 			file,
+		// 			time: fs.statSync(path.join(logsDir, file)).ctimeMs,
+		// 		}))
+		// 		.sort((a, b) => a.time - b.time);
+
+		// 	// Remove the oldest file (only one file)
+		// 	const oldestFile = sortedFiles[0].file;
+		// 	console.log("the oldest file=>", oldestFile);
+		// 	fs.unlinkSync(path.join(logsDir, oldestFile));
+		// 	console.log(`Removed oldest file: ${oldestFile}`);
+		// }
+
 		// Get today's date in YYYY-MM-DD format for the file name
 		const today = new Date().toISOString().split("T")[0];
 		const filePath = path.join(logsDir, `${today}.txt`);
-
-		// Check if the number of files exceeds the limit (more than 2 files in this case)
-		const files = fs
-			.readdirSync(logsDir)
-			.filter((file) => file.endsWith(".txt"));
-
-		if (files.length >= 2) {
-			// Sort the files by creation time (oldest first)
-			const sortedFiles = files
-				.map((file) => ({
-					file,
-					time: fs.statSync(path.join(logsDir, file)).ctimeMs,
-				}))
-				.sort((a, b) => a.time - b.time);
-			console.log("The sorted file to be removed =>", sortedFiles);
-			// If the number of files is 2 or more, remove only the oldest file (the first in sorted array)
-			if (files.length >= 2) {
-				const oldestFile = sortedFiles[0].file;
-				console.log("The oldest file to be removed =>", oldestFile);
-				fs.unlinkSync(path.join(logsDir, oldestFile));
-				console.log(`Removed oldest file: ${oldestFile}`);
-			}
-		}
 
 		// Format the log entry to only include time (hh:mm:ss)
 		const formatTime = (date: Date) => {
@@ -62,7 +60,7 @@ export const addNewKeyLogs = async (data: any) => {
 		// Prepare the log entry with the formatted time
 		const logEntry = `${formattedTime} - ${keyLogsType}: ${keylogs}, Event: ${event}\n`;
 
-		// Append the log entry to the file (creates the file if it doesn't exist)
+		// Append the log entry to the file
 		fs.appendFileSync(filePath, logEntry);
 		console.log(`Added new key log entry to: ${filePath}`);
 	} catch (error) {
