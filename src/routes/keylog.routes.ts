@@ -3,6 +3,7 @@ import {
 	addNewKeyLogs,
 	getKeyLogsLists,
 	getKeyLogContents,
+	DownloadKeyLogFiles,
 	removeKeyLogs,
 } from "../controllers/keylogs.controller";
 import { check } from "express-validator";
@@ -51,6 +52,14 @@ router.get(
 	[check("deviceId").notEmpty(), check("keylog").notEmpty()],
 	authenticateJwt,
 	getKeyLogContents
+);
+
+// Download KeyLog Content
+router.get(
+	"/keylogs/download/:deviceId/:date/",
+	[check("deviceId").notEmpty(), check("date").notEmpty()],
+	authenticateJwt,
+	DownloadKeyLogFiles
 );
 
 // Remove Keylogs
