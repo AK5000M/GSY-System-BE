@@ -5,6 +5,7 @@ import {
 	DeleteDevice,
 	getDeviceInfo,
 	getAllDevices,
+	updateDeviceName,
 } from "../controllers/device.controller";
 import { check } from "express-validator";
 import { authenticateJwt } from "../middleware/auth.middleware";
@@ -41,6 +42,14 @@ router.get(
 	[check("userId").notEmpty()],
 	authenticateJwt,
 	getDevice
+);
+
+// Update Device Name
+router.post(
+	"/device/update/deviceName/",
+	[check("deviceId").notEmpty(), check("editedManufacturer").notEmpty()],
+	authenticateJwt,
+	updateDeviceName
 );
 
 // Delete a device

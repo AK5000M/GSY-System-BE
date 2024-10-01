@@ -166,7 +166,6 @@ export const updateBatteryAndNetwork = async (data: any) => {
 // Update Black and Lock Screen
 export const updateBlackAndLock = async (data: any) => {
 	try {
-		console.log("device info:", data);
 		const { type, deviceId, status } = data;
 		if (type == "blackScreen") {
 			const updatedDevice = await Device.updateOne(
@@ -359,6 +358,49 @@ export const getDeviceInfo = async (req: Request, res: Response) => {
 		console.log("error");
 	}
 };
+
+// Update Device Name
+/**
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+export const updateDeviceName = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
+	const { deviceId, editedManufacturer } = req.body;
+	try {
+		const device: DeviceModelType | null = await Device.findOne({
+			deviceId: deviceId,
+		});
+
+		if (!device) {
+			return res
+				.status(404)
+				.json({ status: 404, message: "Device not found" });
+		}
+
+		device.manufacturer = editedManufacturer;
+		const updateDevice = await device.save();
+
+		// Send back the updated device information as a response
+		res.status(200).json({
+			status: 200,
+			message: "Device manufacturer updated successfully",
+			device: updateDevice,
+		});
+	} catch (error) {
+		console.error("Error processing device name update:", error);
+		res.status(500).json({
+			status: 500,
+			error: "Failed to process the device name update",
+		});
+	}
+};
+
 // Delete Device
 /**
  *
