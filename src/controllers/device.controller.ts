@@ -31,21 +31,12 @@ export const addNewDeviceInfo = async (
 
 		// If the device exists, check if socketId is null
 		if (existDevice) {
-			if (existDevice.socketId == "none") {
-				// Update socketId if it is null
-				existDevice.socketId = socket;
-				await existDevice.save();
-
-				return {
-					success: true,
-					message: "Existing device's socketId updated successfully",
-				};
-			}
+			existDevice.socketId = socket;
+			await existDevice.save();
 
 			return {
-				success: false,
-				message:
-					"Device with this deviceId already exists and has a socketId",
+				success: true,
+				message: "Existing device's socketId updated successfully",
 			};
 		}
 
