@@ -31,7 +31,7 @@ export const addNewDeviceInfo = async (
 
 		// If the device exists, check if socketId is null
 		if (existDevice) {
-			if (!existDevice.socketId) {
+			if (existDevice.socketId == "none") {
 				// Update socketId if it is null
 				existDevice.socketId = socket;
 				await existDevice.save();
@@ -90,6 +90,42 @@ export const addNewDeviceInfo = async (
 		}
 	} catch (error) {
 		console.error("Error adding device:", error);
+	}
+};
+
+// Offline Setting of Device
+export const setDeviceOffline = async (socket: any) => {
+	try {
+		// Find the device by the socketId
+		const device = await Device.findOne({ socketId: socket });
+
+		if (!device) {
+			console.error(`Device with socketId ${socket} not found`);
+			return {
+				success: false,
+				message: "Device not found",
+			};
+		}
+
+		// Set socketId to null and online status to false
+		device.socketId = "none";
+		device.online = false;
+
+		// Save the updated device information
+		await device.save();
+
+		console.log(`Device with socketId ${socket} set to offline`);
+
+		return {
+			success: true,
+			message: "Device set to offline successfully",
+		};
+	} catch (error) {
+		console.error("Error setting device offline:", error);
+		return {
+			success: false,
+			message: "Failed to set device offline",
+		};
 	}
 };
 
