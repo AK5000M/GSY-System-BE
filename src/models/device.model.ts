@@ -15,6 +15,10 @@ const Device = model(
 			type: String,
 			required: true,
 		},
+		socketId: {
+			type: String,
+			default: null,
+		},
 		deviceInfo: {
 			type: String,
 			default: null,

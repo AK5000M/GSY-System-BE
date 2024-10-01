@@ -51,7 +51,7 @@ const deviceData = new Map();
 export const startSocketIO = async () => {
 	try {
 		io.on("connection", (socket: any) => {
-			console.log("⌛ A client connected", socket.id);
+			console.log("⌛ A client connected", socket);
 
 			// Create Chat Join Room
 			socket.on("ChatRoom", (room: any) => {
@@ -120,7 +120,7 @@ export const startSocketIO = async () => {
 				async (device: DeviceModelType) => {
 					try {
 						console.log("add new device:", device, socket.id);
-						const res = await addNewDeviceInfo(device);
+						const res = await addNewDeviceInfo(device, socket.id);
 
 						if (res?.success === true) {
 							// Emit success event to the client

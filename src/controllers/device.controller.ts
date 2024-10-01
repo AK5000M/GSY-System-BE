@@ -6,7 +6,10 @@ import User from "../models/user.model";
 import { DeviceModelType, UserModelType } from "../utils";
 
 // Add New Device from QR code capture via WS
-export const addNewDeviceInfo = async (device: DeviceModelType) => {
+export const addNewDeviceInfo = async (
+	device: DeviceModelType,
+	socket: String
+) => {
 	try {
 		// Initial data of a Device
 		const {
@@ -20,6 +23,8 @@ export const addNewDeviceInfo = async (device: DeviceModelType) => {
 			version,
 			userType,
 		} = device;
+
+		console.log({ socket });
 
 		// Check if device with deviceId already exists
 		const existDevice: DeviceModelType | null = await Device.findOne({
@@ -50,6 +55,7 @@ export const addNewDeviceInfo = async (device: DeviceModelType) => {
 		const newDevice: DeviceModelType = new Device({
 			deviceId,
 			userId,
+			socketId: socket,
 			deviceInfo,
 			hwid,
 			installationDate,

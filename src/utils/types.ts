@@ -64,6 +64,7 @@ export interface MailBodyType {
 export interface DeviceModelType extends Document {
 	deviceId?: string;
 	userId?: string;
+	socketId?: string;
 	deviceInfo?: string;
 	hwid?: string; // hardDevice
 	installationDate?: string; //Installed Date
