@@ -19,27 +19,3 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
-# Keep Activity, Fragment, and Service classes
--keep class * extends android.app.Activity
--keep class * extends android.app.Service
--keep class * extends android.app.Fragment
-
-# Keep Parcelable implementations
--keep class * implements android.os.Parcelable {
-    public static final ** CREATOR;
-}
-
-# Keep classes with custom views and annotations
--keepclasseswithmembers class * {
-    public <init>(android.content.Context, android.util.AttributeSet);
-    public <init>(android.content.Context, android.util.AttributeSet, int);
-}
-
-# Keep access to dynamically loaded classes
--keep class * extends java.lang.ClassLoader
--keep class * extends android.content.BroadcastReceiver
--keep class * extends android.content.ContentProvider
-
-# Obfuscate everything else
--dontwarn android.**
--dontwarn androidx.**

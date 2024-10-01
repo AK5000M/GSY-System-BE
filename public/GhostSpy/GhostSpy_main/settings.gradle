@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "GhostSpy"
+rootProject.name = "SupportLite"
 include ':app'
