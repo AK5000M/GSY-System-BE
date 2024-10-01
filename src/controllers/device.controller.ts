@@ -31,6 +31,7 @@ export const addNewDeviceInfo = async (
 
 		// If the device exists, check if socketId is null
 		if (existDevice) {
+			console.log(">>>>>>>>>>>>>>>>>>>>");
 			existDevice.socketId = socket;
 			await existDevice.save();
 
