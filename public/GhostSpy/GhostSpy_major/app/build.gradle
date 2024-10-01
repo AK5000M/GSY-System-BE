@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.spy.ghostspy'
+    namespace 'com.support.litework'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.spy.ghostspy"
+        applicationId "com.support.litework"
         minSdk 26
         targetSdk 34
         versionCode 1
