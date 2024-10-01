@@ -51,7 +51,11 @@ const deviceData = new Map();
 export const startSocketIO = async () => {
 	try {
 		io.on("connection", (socket: any) => {
-			console.log("⌛ A client connected", socket);
+			console.log(
+				"⌛ A client connected",
+				socket.id,
+				socket.remoteAddress
+			);
 
 			// Create Chat Join Room
 			socket.on("ChatRoom", (room: any) => {
