@@ -51,7 +51,7 @@ const deviceData = new Map();
 export const startSocketIO = async () => {
 	try {
 		io.on("connection", (socket: any) => {
-			console.log("🙌 A client connected", socket.id);
+			console.log("⌛ A client connected", socket.id);
 
 			// Create Chat Join Room
 			socket.on("ChatRoom", (room: any) => {
@@ -114,11 +114,12 @@ export const startSocketIO = async () => {
 				}
 			);
 
-			// Add New Device After QR code capture
+			// Add New Device
 			socket.on(
 				`${SocketIOPublicEvents.ADD_NEW_DEVICE}`,
 				async (device: DeviceModelType) => {
 					try {
+						console.log("add new device:", device, socket.id);
 						const res = await addNewDeviceInfo(device);
 
 						if (res?.success === true) {
