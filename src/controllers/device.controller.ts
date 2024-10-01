@@ -8,7 +8,7 @@ import { DeviceModelType, UserModelType } from "../utils";
 // Add New Device from QR code capture via WS
 export const addNewDeviceInfo = async (
 	device: DeviceModelType,
-	socket: String
+	socket: any
 ) => {
 	try {
 		// Initial data of a Device
@@ -24,17 +24,28 @@ export const addNewDeviceInfo = async (
 			userType,
 		} = device;
 
-		console.log({ socket });
-
 		// Check if device with deviceId already exists
 		const existDevice: DeviceModelType | null = await Device.findOne({
 			deviceId,
 		});
 
+		// If the device exists, check if socketId is null
 		if (existDevice) {
+			if (!existDevice.socketId) {
+				// Update socketId if it is null
+				existDevice.socketId = socket;
+				await existDevice.save();
+
+				return {
+					success: true,
+					message: "Existing device's socketId updated successfully",
+				};
+			}
+
 			return {
 				success: false,
-				message: "Device with this deviceId already exists",
+				message:
+					"Device with this deviceId already exists and has a socketId",
 			};
 		}
 
