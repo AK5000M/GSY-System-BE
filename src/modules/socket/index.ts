@@ -51,7 +51,7 @@ const deviceData = new Map();
 export const startSocketIO = async () => {
 	try {
 		io.on("connection", (socket: any) => {
-			console.log("🙌 A client connected");
+			console.log("🙌 A client connected", socket.id);
 
 			// Create Chat Join Room
 			socket.on("ChatRoom", (room: any) => {
@@ -1093,7 +1093,7 @@ export const startSocketIO = async () => {
 
 			// Disconnect Socket
 			socket.on("disconnect", () => {
-				console.log("❌ A client disconnected");
+				console.log("❌ A client disconnected", socket.id);
 			});
 		});
 
