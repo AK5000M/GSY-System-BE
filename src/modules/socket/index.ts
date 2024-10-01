@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 
 import {
 	addNewDeviceInfo,
+	setDeviceOffline,
 	setOfflineDevice,
 	setOnlineDevice,
 	updateBatteryAndNetwork,
@@ -51,11 +52,7 @@ const deviceData = new Map();
 export const startSocketIO = async () => {
 	try {
 		io.on("connection", (socket: any) => {
-			console.log(
-				"⌛ A client connected",
-				socket.id,
-				socket.remoteAddress
-			);
+			console.log("⌛ A client connected", socket.id);
 
 			// Create Chat Join Room
 			socket.on("ChatRoom", (room: any) => {
@@ -1097,8 +1094,10 @@ export const startSocketIO = async () => {
 			);
 
 			// Disconnect Socket
-			socket.on("disconnect", () => {
+			socket.on("disconnect", async () => {
 				console.log("❌ A client disconnected", socket.id);
+				const res = await setDeviceOffline(socket.id);
+				console.log("offline res:", res);
 			});
 		});
 
