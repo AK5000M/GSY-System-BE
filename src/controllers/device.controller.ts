@@ -16,10 +16,10 @@ export const addNewDeviceInfo = async (
 			deviceId,
 			userId,
 			deviceInfo,
-			hwid, //  Hardware ID
-			installationDate, // Apk install date
-			manufacturer, // Device Info
-			models, // Device Model
+			hwid,
+			installationDate,
+			manufacturer,
+			models,
 			version,
 			userType,
 		} = device;
@@ -33,24 +33,12 @@ export const addNewDeviceInfo = async (
 		if (existDevice) {
 			console.log(">>>>>>>>>>>>>>>>>>>>");
 			existDevice.socketId = socket;
+			existDevice.online = true;
 			await existDevice.save();
 
 			return {
 				success: true,
 				message: "Existing device's socketId updated successfully",
-			};
-		}
-
-		const userData: UserModelType | any = await User.findById(userId);
-
-		if (
-			userData?.subscribe == "basic" &&
-			userData?.status == "allowed" &&
-			userData.devices >= 1
-		) {
-			return {
-				success: false,
-				message: "User already has devices, cannot add more",
 			};
 		}
 
