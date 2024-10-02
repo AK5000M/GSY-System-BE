@@ -91,18 +91,17 @@ export const setDeviceOffline = async (socket: any) => {
 		device.online = false;
 
 		// Save the updated device information
-		await device.save();
-
-		console.log(`Device with socketId ${socket} set to offline`);
-
+		const updatedDevice = await device.save();
 		return {
 			success: true,
-			message: "Device set to offline successfully",
+			device: updatedDevice,
+			message: "success",
 		};
 	} catch (error) {
 		console.error("Error setting device offline:", error);
 		return {
 			success: false,
+
 			message: "Failed to set device offline",
 		};
 	}
