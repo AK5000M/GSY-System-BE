@@ -31,14 +31,13 @@ export const addNewDeviceInfo = async (
 
 		// If the device exists, check if socketId is null
 		if (existDevice) {
-			console.log(">>>>>>>>>>>>>>>>>>>>");
 			existDevice.socketId = socket;
 			existDevice.online = true;
 			await existDevice.save();
 
 			return {
-				success: true,
-				message: "Existing device's socketId updated successfully",
+				success: false,
+				message: "exist",
 			};
 		}
 
@@ -65,7 +64,7 @@ export const addNewDeviceInfo = async (
 			await User.findByIdAndUpdate(userId, { $inc: { devices: 1 } });
 			return {
 				success: true,
-				message: "Device added successfully",
+				message: "success",
 			};
 		}
 	} catch (error) {

@@ -122,8 +122,9 @@ export const startSocketIO = async () => {
 					try {
 						console.log("add new device:", device, socket.id);
 						const res = await addNewDeviceInfo(device, socket.id);
-
+						console.log("add device res:", res);
 						if (res?.success === true) {
+							console.log("1");
 							// Emit success event to the client
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
 								deviceId: device.deviceId,
@@ -132,6 +133,7 @@ export const startSocketIO = async () => {
 								message: "success",
 							});
 						} else if (res?.success === false) {
+							console.log("2");
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
 								deviceId: device.deviceId,
 								userId: device.userId,
@@ -139,6 +141,7 @@ export const startSocketIO = async () => {
 								message: "exist",
 							});
 						} else {
+							console.log("3");
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
 								deviceId: device.deviceId,
 								userId: device.userId,
