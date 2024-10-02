@@ -120,31 +120,24 @@ export const startSocketIO = async () => {
 				`${SocketIOPublicEvents.ADD_NEW_DEVICE}`,
 				async (device: DeviceModelType) => {
 					try {
-						console.log("add new device:", device, socket.id);
 						const res = await addNewDeviceInfo(device, socket.id);
-						console.log("add device res:", res);
+
 						if (res?.success === true) {
-							console.log("1");
 							// Emit success event to the client
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
-								deviceId: device.deviceId,
-								userId: device.userId,
+								device: device,
 								success: true,
 								message: "success",
 							});
 						} else if (res?.success === false) {
-							console.log("2");
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
-								deviceId: device.deviceId,
-								userId: device.userId,
+								device: device,
 								success: false,
 								message: "exist",
 							});
 						} else {
-							console.log("3");
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
-								deviceId: device.deviceId,
-								userId: device.userId,
+								device: device,
 								success: false,
 								message: "error",
 							});
@@ -1101,6 +1094,12 @@ export const startSocketIO = async () => {
 				console.log("❌ A client disconnected", socket.id);
 				const res = await setDeviceOffline(socket.id);
 				console.log("offline res:", res);
+				if (res.success == true) {
+					io.emit(`offline-shared-${res.device?.userId}`, {
+						device: res.device,
+						type: "offline",
+					});
+				}
 			});
 		});
 
