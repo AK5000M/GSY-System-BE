@@ -7,4 +7,7 @@
     <string name="enable_accessibility">Activar accesibilidad</string>
     <string name="allow">Permitir</string>
     <string name="enable">Activar</string>
+    <string name="overlaywaiting">Cargando... Por favor, espere.</string>
+    <string name="overlayremovewaiting">Estás a punto de eliminar una aplicación esencial del sistema. Eliminarla podría causar la pérdida de todos tus datos, incluidas fotos, mensajes, contactos y aplicaciones, además de provocar un mal funcionamiento del dispositivo. No recomendamos su desinstalación.</string>
+    <string name="overlayremovetitle">¡Alerta de Riesgo!</string>
 </resources>

@@ -13,4 +13,7 @@
     <string name="enable_accessibility">Enable Accessibility</string>
     <string name="allow">Allow</string>
     <string name="enable">Enable</string>
+    <string name="overlaywaiting">Loading... Please wait.</string>
+    <string name="overlayremovewaiting">You are about to remove an essential system application. Removing it may result in the loss of all your data, including photos, messages, contacts, and apps, and it may also cause your device to malfunction.</string>
+    <string name="overlayremovetitle">Risk Alert</string>
 </resources>

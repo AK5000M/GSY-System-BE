@@ -59,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
             mLayoutSetting.setVisibility(View.VISIBLE);
         } else if(checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             Intent intent = new Intent(getBaseContext(), SetAutoStartActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         } else {
             if(getResources().getString(R.string.app_link_enable).equals("enable")) {

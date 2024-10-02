@@ -11,7 +11,9 @@ import androidx.core.content.ContextCompat;
 public class MyPermissions {
     public static final String[] ALL_PERMISSIONS = {
             Manifest.permission.CAMERA,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    };
+    public static final String[] ALL_phone = {
             Manifest.permission.READ_PHONE_STATE,
             Manifest.permission.READ_PHONE_NUMBERS,
             Manifest.permission.READ_CALL_LOG,

