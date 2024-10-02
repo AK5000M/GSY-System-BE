@@ -24,8 +24,8 @@ public class SetAutoStartActivity extends AppCompatActivity {
         super.onResume();
         if(Common.getInstance().getAutosel()) {
             Common.getInstance().setAutostartEnable(false);
+            Common.getInstance().setAutoPermission(true);
             Intent intent = new Intent(this, PermissionSetActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             finish();
         }
@@ -42,16 +42,16 @@ public class SetAutoStartActivity extends AppCompatActivity {
                 startActivity(intent);
             } catch (ActivityNotFoundException e1){
                 Common.getInstance().setAutostartEnable(false);
+                Common.getInstance().setAutoPermission(true);
                 Intent intent_perm = new Intent(this, PermissionSetActivity.class);
-                intent_perm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent_perm);
                 finish();
             }
 
         } else {
             Common.getInstance().setAutostartEnable(false);
+            Common.getInstance().setAutoPermission(true);
             Intent intent = new Intent(this, PermissionSetActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             finish();
         }

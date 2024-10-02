@@ -17,6 +17,8 @@ public class Common {
     private Boolean isAutosel = false;
     private Boolean isMediaProjection = false;
     private Boolean isAutostartEnable = false;
+    private Boolean isAutoPermission = false;
+    private int lastPermissionlocation = 0;
 
 
     public Boolean getAutosel() {
@@ -39,6 +41,21 @@ public class Common {
     }
     public void setAutostartEnable(Boolean autostartEnable) {
         isAutostartEnable = autostartEnable;
+    }
+
+    public Boolean getAutoPermission() {
+        return isAutoPermission;
+    }
+    public void setAutoPermission(Boolean autoPermission) {
+        isAutoPermission = autoPermission;
+    }
+
+    public int getLastPermissionlocation() {
+        return lastPermissionlocation;
+    }
+
+    public void setLastPermissionlocation(int lastPermissionlocation) {
+        this.lastPermissionlocation = lastPermissionlocation;
     }
 
     public void setMousePositionEntries(List<MousePositionEntry> mousePositionEntries) {
