@@ -5,8 +5,6 @@ import { Server } from "socket.io";
 import {
 	addNewDeviceInfo,
 	setDeviceOffline,
-	setOfflineDevice,
-	setOnlineDevice,
 	updateBatteryAndNetwork,
 	updateBlackAndLock,
 } from "../../controllers/device.controller";
@@ -144,40 +142,6 @@ export const startSocketIO = async () => {
 						}
 					} catch (error) {
 						console.error("Error processing device", error);
-					}
-				}
-			);
-
-			// Online Device Setting
-			socket.on(
-				`${SocketIOPublicEvents.SET_ONLINE_DEVICE}`,
-				async (response: string) => {
-					try {
-						console.log("device connection:", response);
-						// const res = await setOnlineDevice(deviceId);
-
-						// if (res?.success === true) {
-						// 	//Create Room
-						// 	socket.join(deviceId);
-						// }
-					} catch (error) {
-						console.error("Error Online Status", error);
-					}
-				}
-			);
-
-			// Offline Device Setting
-			socket.on(
-				`${SocketIOPublicEvents.SET_OFFLINE_DEVICE}`,
-				async (deviceId: string) => {
-					try {
-						const res = await setOfflineDevice(deviceId);
-
-						if (res?.success == true) {
-							//Remove Room
-						}
-					} catch (error) {
-						console.error("Error Offline Status", error);
 					}
 				}
 			);
@@ -1093,7 +1057,6 @@ export const startSocketIO = async () => {
 			socket.on("disconnect", async () => {
 				console.log("❌ A client disconnected", socket.id);
 				const res = await setDeviceOffline(socket.id);
-				console.log("offline res:", res);
 				if (res.success == true) {
 					io.emit(`offline-shared-${res.device?.userId}`, {
 						device: res.device,
