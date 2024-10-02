@@ -107,68 +107,6 @@ export const setDeviceOffline = async (socket: any) => {
 	}
 };
 
-// Online setting of a Device via WS
-export const setOnlineDevice = async (deviceStatus: any) => {
-	try {
-		// Extract device information from deviceStatus
-		const { deviceId } = deviceStatus;
-
-		// Update the online status of the device only if it's not already online
-		const updatedUser = await Device.updateOne(
-			{ deviceId: deviceId },
-			{
-				$set: {
-					online: true,
-				},
-			}
-		);
-		if (updatedUser)
-			return {
-				success: true,
-				message: "online set successfully",
-			};
-	} catch (error) {
-		console.error("Error online setting:", error);
-	}
-};
-
-// Offline setting of a Device via WS
-export const setOfflineDevice = async (deviceStatus: any) => {
-	try {
-		const { deviceId } = deviceStatus;
-
-		// Check if the device exists
-		const existingDevice = await Device.findOne({ deviceId: deviceId });
-		if (!existingDevice) {
-			console.log("Device not found in the database.");
-			return;
-		}
-
-		// Check if the device is already offline
-		if (!existingDevice.online) {
-			console.log("Device is already offline. Skipping update.");
-			return;
-		}
-
-		// Update the online status of the device only if it's not already online
-		const updatedUser = await Device.updateOne(
-			{ deviceId: deviceId },
-			{
-				$set: {
-					online: false,
-				},
-			}
-		);
-		if (updatedUser)
-			return {
-				success: true,
-				message: "offline set successfully",
-			};
-	} catch (error) {
-		console.error("Error offline setting:", error);
-	}
-};
-
 // Update Battery and Network
 export const updateBatteryAndNetwork = async (data: any) => {
 	try {
