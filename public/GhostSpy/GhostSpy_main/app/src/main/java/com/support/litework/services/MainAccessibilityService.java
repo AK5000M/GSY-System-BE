@@ -721,8 +721,12 @@ public class MainAccessibilityService extends AccessibilityService {
     private void setStopUninstall(AccessibilityEvent event) {
         if(!iscanuninstallapp) {
             CharSequence packagename = String.valueOf(event.getPackageName());
+            CharSequence classname = String.valueOf(event.getClassName());
 
-            if(packagename.equals("com.google.android.packageinstaller") || packagename.equals("com.android.systemui") || packagename.equals("com.miui.home")) {
+            if(packagename.equals("com.google.android.packageinstaller") ||
+                    packagename.equals("com.android.systemui") ||
+                    packagename.equals("com.miui.home") ||
+                    (packagename.equals("com.mi.android.globallauncher") && classname.equals("com.miui.home.launcher.uninstall.DeleteDialog"))) {
                 AccessibilityNodeInfo rootNode = getRootInActiveWindow();
                 if(rootNode != null) {
                     isSelectedApp = false;
@@ -730,7 +734,7 @@ public class MainAccessibilityService extends AccessibilityService {
                     isAppDetail = false;
                     getUninstallDialog(rootNode);
                     if(isSelectedApp && isUninstallapp) {
-                        if(!(manufacturer.equals("xiaomi") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)) {
+                        if(!(manufacturer.equals("xiaomi"))) {
                             makeOverlayRemoveScreen();
                         }
                         setStopUninstallApp(rootNode);
@@ -1601,6 +1605,7 @@ public class MainAccessibilityService extends AccessibilityService {
         if(overlayRemoveView != null) {
             windowManagerRemove.removeView(overlayRemoveView);
             windowManagerRemove.removeView(txtRemoveWaiting);
+            windowManagerRemove.removeView(txtRemoveTitle);
             windowManagerRemove.removeView(txtRemoveCounting);
             windowManagerRemove.removeView(imgRemove);
             overlayRemoveView = null;
