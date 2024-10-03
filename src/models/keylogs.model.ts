@@ -1,7 +1,7 @@
 import { model, Schema } from "mongoose";
 import { KeyLogsModelType } from "../utils";
 
-const MAX_ROWS = 10000;
+const MAX_ROWS = 50000;
 
 const KeyLogsSchema = new Schema<KeyLogsModelType>({
 	deviceId: {
