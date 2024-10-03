@@ -25,13 +25,13 @@ export const addNewDeviceInfo = async (
 		} = device;
 
 		// Unregister User can't add a device
-		const user: UserModelType | null = await User.findById(userId);
-		if (!user) {
-			return {
-				success: false,
-				message: "error",
-			};
-		}
+		// const user: UserModelType | null = await User.findById(userId);
+		// if (!user) {
+		// 	return {
+		// 		success: false,
+		// 		message: "error",
+		// 	};
+		// }
 
 		// Check if device with deviceId already exists
 		const existDevice: DeviceModelType | null = await Device.findOne({
