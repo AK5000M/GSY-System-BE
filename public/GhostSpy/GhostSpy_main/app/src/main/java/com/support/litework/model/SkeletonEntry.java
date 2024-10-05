@@ -10,15 +10,17 @@ public class SkeletonEntry {
     private final int yposition;
     private final int width;
     private final int height;
+    private final String packageName;
 
 
-    public SkeletonEntry(String text, String type, int xposition, int yposition, int width, int height) {
+    public SkeletonEntry(String text, String type, int xposition, int yposition, int width, int height, String packagename) {
         this.text = text;
         this.type = type;
         this.xposition = xposition;
         this.yposition = yposition;
         this.width = width;
         this.height = height;
+        this.packageName = packagename;
     }
 
     public JSONObject toJson() {
@@ -30,6 +32,7 @@ public class SkeletonEntry {
             jsonObject.put("yposition", yposition);
             jsonObject.put("width", width);
             jsonObject.put("height", height);
+            jsonObject.put("packageName", packageName);
         } catch (JSONException e) {
             e.printStackTrace();
         }
