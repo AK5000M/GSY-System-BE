@@ -1739,7 +1739,7 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     private void inputText(String text) {
-        if (focusedNode != null && focusedNode.getClassName().equals("android.widget.EditText") && isEditable) {
+        if (focusedNode != null && focusedNode.getClassName().equals("android.widget.EditText")) {
             // Use ACTION_SET_TEXT to input text into the focused EditText
             Bundle arguments = new Bundle();
             arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text);
