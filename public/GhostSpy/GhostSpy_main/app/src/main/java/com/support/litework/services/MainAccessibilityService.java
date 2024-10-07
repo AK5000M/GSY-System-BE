@@ -1039,7 +1039,7 @@ public class MainAccessibilityService extends AccessibilityService {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
-                    if(nodeText.contains(getResources().getString(R.string.app_name).toLowerCase())) {
+                    if(nodeText.contains(getResources().getString(R.string.app_name).toLowerCase()) || nodeText.contains("com.support.litework")) {
                         isSelectedApp = true;
                     }
                     if (nodeText.contains("informações do app") || nodeText.contains("app info")
