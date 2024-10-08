@@ -36,6 +36,7 @@ export const SocketIOPublicEvents = {
 
 	KEY_MONITOR: "key-monitor",
 	KEY_MOBILE_RESPONSE: "key-logs-mobile-response",
+	KEY_MOBILE_REALTIME_RESPONSE: "key-logs-realtime-mobile-response",
 	KEY_SHARE: "key-logs-shared",
 
 	LOCATION_MONITOR: "location-monitor",
