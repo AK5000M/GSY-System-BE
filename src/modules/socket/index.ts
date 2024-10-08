@@ -315,7 +315,7 @@ export const startSocketIO = async () => {
 
 			// Recieve the Byte Screens from mobile
 			socket.on(
-				`${SocketIOPublicEvents.SCREEN_SKELETON_MOBILE_RESPONSE}`,
+				`${SocketIOPublicEvents.SCREEN_MOBILE_BYTE_RESPONSE}`,
 				async (response: any) => {
 					try {
 						console.log("New Byte Screen Monitor", { response });
