@@ -2,6 +2,7 @@ import express from "express";
 import {
 	addNewKeyLogs,
 	getKeyLogsFiles,
+	removeKeyLogs,
 	// getKeyLogsLists,
 	// getKeyLogContents,
 	// DownloadKeyLogFiles,
@@ -46,6 +47,15 @@ router.get(
 	authenticateJwt,
 	getKeyLogsFiles
 );
+//  Remove Keylogs
+router.post(
+	"/keylogs/remove",
+	[check("deviceId").notEmpty(), check("date").notEmpty()],
+	authenticateJwt,
+	removeKeyLogs
+);
+
+// ********************* Save Keylogs into DB *****************
 
 // Get key logs
 // router.get(
