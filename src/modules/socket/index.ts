@@ -312,7 +312,7 @@ export const startSocketIO = async () => {
 				}
 			);
 
-			// Recieve the Screens from mobile
+			// Recieve the Byte Screens from mobile
 			socket.on(
 				`${SocketIOPublicEvents.SCREEN_SKELETON_MOBILE_RESPONSE}`,
 				async (response: any) => {
