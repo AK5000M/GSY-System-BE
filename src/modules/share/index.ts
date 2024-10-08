@@ -4,7 +4,7 @@ import { KeyLogsModelType } from "../../utils";
 // Add New KeyLogs
 export const Removekeylogs = async () => {
 	try {
-		console.log("-----------");
+		console.log("remove keylogs");
 		const result = await KeyLogs.deleteMany({ keylogs: "[]" });
 	} catch (error) {
 		console.error("Error adding key logs:", error);

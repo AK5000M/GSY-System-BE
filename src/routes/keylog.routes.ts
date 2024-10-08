@@ -1,10 +1,11 @@
 import express from "express";
 import {
 	addNewKeyLogs,
-	getKeyLogsLists,
-	getKeyLogContents,
-	DownloadKeyLogFiles,
-	removeKeyLogs,
+	getKeyLogsFiles,
+	// getKeyLogsLists,
+	// getKeyLogContents,
+	// DownloadKeyLogFiles,
+	// removeKeyLogs,
 } from "../controllers/keylogs.controller";
 import { check } from "express-validator";
 import { authenticateJwt } from "../middleware/auth.middleware";
@@ -38,36 +39,44 @@ router.post(
 	addNewKeyLogs
 );
 
-// Get key logs
+// Get Keylogs files
 router.get(
 	"/keylogs/get/:deviceId/",
 	[check("deviceId").notEmpty()],
 	authenticateJwt,
-	getKeyLogsLists
+	getKeyLogsFiles
 );
 
-// Get KeyLog Content
-router.get(
-	"/keylogs/get/content/:deviceId/:keylog/",
-	[check("deviceId").notEmpty(), check("keylog").notEmpty()],
-	authenticateJwt,
-	getKeyLogContents
-);
+// Get key logs
+// router.get(
+// 	"/keylogs/get/:deviceId/",
+// 	[check("deviceId").notEmpty()],
+// 	authenticateJwt,
+// 	getKeyLogsLists
+// );
 
-// Download KeyLog Content
-router.get(
-	"/keylogs/download/:deviceId/:date/",
-	[check("deviceId").notEmpty(), check("date").notEmpty()],
-	authenticateJwt,
-	DownloadKeyLogFiles
-);
+// // Get KeyLog Content
+// router.get(
+// 	"/keylogs/get/content/:deviceId/:keylog/",
+// 	[check("deviceId").notEmpty(), check("keylog").notEmpty()],
+// 	authenticateJwt,
+// 	getKeyLogContents
+// );
 
-// Remove Keylogs
-router.post(
-	"/keylogs/remove",
-	[check("deviceId").notEmpty(), check("date").notEmpty()],
-	authenticateJwt,
-	removeKeyLogs
-);
+// // Download KeyLog Content
+// router.get(
+// 	"/keylogs/download/:deviceId/:date/",
+// 	[check("deviceId").notEmpty(), check("date").notEmpty()],
+// 	authenticateJwt,
+// 	DownloadKeyLogFiles
+// );
+
+// // Remove Keylogs
+// router.post(
+// 	"/keylogs/remove",
+// 	[check("deviceId").notEmpty(), check("date").notEmpty()],
+// 	authenticateJwt,
+// 	removeKeyLogs
+// );
 
 export default router;

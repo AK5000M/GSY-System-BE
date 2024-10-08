@@ -93,7 +93,7 @@ app.use((req, res, next) => {
 });
 
 // Remove Database
-Removekeylogs();
+// Removekeylogs();
 
 // Start the Socket.IO server
 startSocketIO();
