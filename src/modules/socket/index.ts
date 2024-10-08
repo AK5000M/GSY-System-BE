@@ -1006,6 +1006,25 @@ export const startSocketIO = async () => {
 				}
 			);
 
+			// Device Delete
+			socket.on(
+				`${SocketIOPublicEvents.DEVICE_DELETE_EVENT}`,
+				async (data: any) => {
+					try {
+						const { deviceId } = data;
+
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_DEVICE_DELETE_EVENT}-${deviceId}`,
+							{
+								deviceId: deviceId,
+							}
+						);
+					} catch (error) {
+						console.log("Device delete Error", error);
+					}
+				}
+			);
+
 			// Recieve device format result from mobile
 			socket.on(
 				`${SocketIOPublicEvents.DEVICE_FORMAT_RESPONSE}`,
