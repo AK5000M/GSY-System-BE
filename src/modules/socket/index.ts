@@ -303,6 +303,7 @@ export const startSocketIO = async () => {
 							`${SocketIOPublicEvents.SCREEN_SHARE}-${deviceId}`,
 							{
 								type: "screen-monitor",
+								option: "base64",
 								response,
 							}
 						);
@@ -323,6 +324,7 @@ export const startSocketIO = async () => {
 							`${SocketIOPublicEvents.SCREEN_SHARE}-${deviceId}`,
 							{
 								type: "screen-monitor",
+								option: "byte",
 								response,
 							}
 						);
