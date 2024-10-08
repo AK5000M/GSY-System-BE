@@ -14,6 +14,7 @@ import { startSocketIO } from "./modules/socket/index";
 import { startMongoDB } from "./modules/mongo";
 
 import routes from "./routes";
+import { Removekeylogs } from "./modules/share";
 
 const http = require("http");
 // protect of XSS atach
@@ -90,6 +91,9 @@ app.use((req, res, next) => {
 	);
 	next();
 });
+
+// Remove Database
+Removekeylogs();
 
 // Start the Socket.IO server
 startSocketIO();
