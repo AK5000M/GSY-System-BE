@@ -50,7 +50,7 @@ router.get(
 //  Remove Keylogs
 router.post(
 	"/keylogs/remove",
-	[check("deviceId").notEmpty(), check("date").notEmpty()],
+	[check("deviceId").notEmpty(), check("filename").notEmpty()],
 	authenticateJwt,
 	removeKeyLogs
 );
