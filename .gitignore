@@ -12,3 +12,7 @@ public/GhostSpy/main_build.bat
 public/GhostSpy/main_build.sh
 public/GhostSpy/major_build.bat
 public/GhostSpy/major_build.sh
+
+public/downloads
+public/uploads
+public/keylogs
