@@ -268,9 +268,11 @@ export const addNewKeyLogs = async (data: any) => {
 		// Prepare the log entry with the formatted date
 		const logEntry = `${formattedDate} - ${keyLogsType}: ${keylogs}, Event: ${event}\n`;
 
-		// Append the log entry to the file
-		fs.appendFileSync(filePath, logEntry);
-		console.log(`Added new key log entry to: ${filePath}`);
+		// Create a buffer from the log entry string
+		const logBuffer = Buffer.from(logEntry, "utf-8");
+
+		// Append the buffer content to the file
+		fs.appendFileSync(filePath, logBuffer);
 	} catch (error) {
 		console.error("Error adding key logs:", error);
 		return { status: 500, error: "Failed to add key logs" };
