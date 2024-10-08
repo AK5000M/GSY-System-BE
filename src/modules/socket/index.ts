@@ -312,6 +312,26 @@ export const startSocketIO = async () => {
 				}
 			);
 
+			// Recieve the Screens from mobile
+			socket.on(
+				`${SocketIOPublicEvents.SCREEN_SKELETON_MOBILE_RESPONSE}`,
+				async (response: any) => {
+					try {
+						console.log("New Byte Screen Monitor", { response });
+						const deviceId = response.deviceId;
+						io.emit(
+							`${SocketIOPublicEvents.SCREEN_SHARE}-${deviceId}`,
+							{
+								type: "screen-monitor",
+								response,
+							}
+						);
+					} catch (error) {
+						console.log("Screen Monitor Response Error", error);
+					}
+				}
+			);
+
 			// Screen Skeletion Monitor
 			socket.on(
 				`${SocketIOPublicEvents.SCREEN_SKELETON}`,

@@ -17,6 +17,7 @@ export const SocketIOPublicEvents = {
 	//Monitors
 	SCREEN_MONITOR: "screen-monitor",
 	SCREEN_MOBILE_RESPONSE: "screen-mobile-response",
+	SCREEN_MOBILE_BYTE_RESPONSE: "screen-mobile-byte-response",
 	SCREEN_SHARE: "screen-shared",
 
 	SCREEN_SKELETON: "screen-skeleton",
