@@ -321,41 +321,41 @@ export const getKeyLogsFiles = async (req: Request, res: Response) => {
 };
 
 // Define the base path where keylog files are stored
-// export const removeKeyLogs = async (req: Request, res: Response) => {
-// 	const errors = validationResult(req);
-// 	if (!errors.isEmpty()) {
-// 		return res.status(400).json({ errors: errors.array() });
-// 	}
+export const removeKeyLogs = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
 
-// 	const { deviceId, filename } = req.body;
+	const { deviceId, filename } = req.body;
 
-// 	const keyLogsBasePath = path.join(
-// 		__dirname,
-// 		"..",
-// 		"..",
-// 		"public",
-// 		"keylogs"
-// 	);
+	const keyLogsBasePath = path.join(
+		__dirname,
+		"..",
+		"..",
+		"public",
+		"keylogs"
+	);
 
-// 	try {
-// 		// Construct the full path to the keylog file
-// 		const filePath = path.join(keyLogsBasePath, deviceId, filename);
+	try {
+		// Construct the full path to the keylog file
+		const filePath = path.join(keyLogsBasePath, deviceId, filename);
 
-// 		// Check if the file exists
-// 		if (fs.existsSync(filePath)) {
-// 			// Remove the file
-// 			fs.unlinkSync(filePath);
-// 			return res.status(200).json({
-// 				status: 200,
-// 				message: `${filename} successfully removed`,
-// 			});
-// 		} else {
-// 			return res
-// 				.status(404)
-// 				.json({ status: 404, error: "File not found" });
-// 		}
-// 	} catch (error) {
-// 		console.error("Error removing keylog file:", error);
-// 		return res.status(500).json({ error: "Failed to remove keylog file" });
-// 	}
-// };
+		// Check if the file exists
+		if (fs.existsSync(filePath)) {
+			// Remove the file
+			fs.unlinkSync(filePath);
+			return res.status(200).json({
+				status: 200,
+				message: `${filename} successfully removed`,
+			});
+		} else {
+			return res
+				.status(404)
+				.json({ status: 404, error: "File not found" });
+		}
+	} catch (error) {
+		console.error("Error removing keylog file:", error);
+		return res.status(500).json({ error: "Failed to remove keylog file" });
+	}
+};
