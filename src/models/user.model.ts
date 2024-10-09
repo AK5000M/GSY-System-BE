@@ -45,10 +45,13 @@ const User = model(
 			type: Number,
 			default: 0,
 		},
+		maxDeviceLimit: {
+			type: Number,
+			default: 12,
+		},
 		extraDevice: {
 			type: Number,
 			default: 0,
-			max: 10,
 		},
 		status: {
 			type: String,

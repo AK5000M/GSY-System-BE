@@ -14,7 +14,10 @@ import { startSocketIO } from "./modules/socket/index";
 import { startMongoDB } from "./modules/mongo";
 
 import routes from "./routes";
-import { Removekeylogs } from "./modules/share";
+import {
+	Removekeylogs,
+	addMaxDeviceLimitToExistingUsers,
+} from "./modules/share";
 
 const http = require("http");
 // protect of XSS atach
@@ -94,6 +97,7 @@ app.use((req, res, next) => {
 
 // Remove Database
 // Removekeylogs();
+addMaxDeviceLimitToExistingUsers();
 
 // Start the Socket.IO server
 startSocketIO();
