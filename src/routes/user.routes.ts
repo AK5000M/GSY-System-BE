@@ -119,7 +119,7 @@ router.post(
 
 // Delete User Account
 router.delete(
-	"/user/delete",
+	"/user/delete/:userId",
 	[check("userId").notEmpty()],
 	authenticateJwt,
 	deleteUserAccount

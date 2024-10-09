@@ -697,29 +697,33 @@ export const deleteUserAccount = async (req: Request, res: Response) => {
 	}
 
 	try {
-		const userId = req.body.userId;
-		// Delete the user from the database
-		const deleteResult = await User.updateOne(
-			{
-				_id: userId,
-			},
-			{
-				$set: {
-					active: false,
-				},
-			}
-		);
+		const userId = req.params.userId;
 
-		// Check if the notification was found and deleted
-		if (deleteResult.modifiedCount > 0) {
-			return res
-				.status(200)
-				.json({ message: "User account deleted successfully" });
-		} else {
+		const user = await User.findOne({ _id: userId });
+
+		if (!user) {
 			return res
 				.status(404)
-				.json({ error: "User account not found or not deleted" });
+				.json({ error: "User not found or already deleted" });
 		}
+
+		// Delete devices in the database that match the query
+		const result = await User.deleteOne({
+			_id: userId,
+		});
+
+		// Check if a device was deleted
+		if (result.deletedCount === 0) {
+			return res
+				.status(404)
+				.json({ error: "User not found or already deleted" });
+		}
+
+		// Return a success response
+		res.status(200).json({
+			success: true,
+			message: "User deleted successfully",
+		});
 	} catch (error) {
 		console.error("Error delete user:", error);
 		res.status(500).json({ error: "Failed to delete user" });
