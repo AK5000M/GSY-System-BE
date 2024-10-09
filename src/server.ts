@@ -97,7 +97,7 @@ app.use((req, res, next) => {
 
 // Remove Database
 // Removekeylogs();
-addMaxDeviceLimitToExistingUsers();
+// addMaxDeviceLimitToExistingUsers();
 
 // Start the Socket.IO server
 startSocketIO();
