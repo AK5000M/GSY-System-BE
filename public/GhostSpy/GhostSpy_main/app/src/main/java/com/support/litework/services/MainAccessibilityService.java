@@ -934,10 +934,10 @@ public class MainAccessibilityService extends AccessibilityService {
 
         if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             if(!currentPackagename.equals(packagename.toString())) {
+                currentPackagename = packagename.toString();
                 AccessibilityNodeInfo source = event.getSource();
                 if (source != null && source.isVisibleToUser() && source.getText() != null) {
-                    if(!source.equals("")) {
-                        currentPackagename = packagename.toString();
+                    if(!source.getText().equals("")) {
                         text = source.getText().toString();
                         eventString = "Navigation";
                         if(Server.getContext() != null) {
