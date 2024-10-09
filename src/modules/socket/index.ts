@@ -125,13 +125,27 @@ export const startSocketIO = async () => {
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
 								device: device,
 								success: true,
-								message: "success",
+								message: "deviceAdded",
 							});
-						} else if (res?.success === false) {
+						} else if (
+							res?.success === false &&
+							res?.message == "deviceExists"
+						) {
+							// Device already exist
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
 								device: device,
 								success: false,
-								message: "exist",
+								message: "deviceExists",
+							});
+						} else if (
+							res?.success == false &&
+							res?.message == "deviceLimitReached"
+						) {
+							// Already Full Devices
+							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
+								device: device,
+								success: false,
+								message: "deviceLimitReached",
 							});
 						} else {
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {

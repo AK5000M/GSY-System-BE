@@ -19,6 +19,7 @@ export interface UserModelType extends Document {
 	token?: string;
 	subscribe?: string; // Subscribe available, null = any plan, basic / preminum
 	devices?: number;
+	maxDeviceLimit?: number;
 	extraDevice?: number;
 	customerId?: string;
 	apk?: string;

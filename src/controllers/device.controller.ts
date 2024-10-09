@@ -25,13 +25,23 @@ export const addNewDeviceInfo = async (
 		} = device;
 
 		// Unregister User can't add a device
-		// const user: UserModelType | null = await User.findById(userId);
-		// if (!user) {
-		// 	return {
-		// 		success: false,
-		// 		message: "error",
-		// 	};
-		// }
+		const user: UserModelType | null = await User.findById(userId);
+		if (!user) {
+			return {
+				success: false,
+				message: "userNotFound",
+			};
+		}
+
+		// Check if the user has reached the device limit
+		const totalDeviceLimit =
+			(user?.maxDeviceLimit || 0) + (user?.extraDevice || 0);
+		if ((user.devices as number) >= totalDeviceLimit) {
+			return {
+				success: false,
+				message: "deviceLimitReached",
+			};
+		}
 
 		// Check if device with deviceId already exists
 		const existDevice: DeviceModelType | null = await Device.findOne({
@@ -46,7 +56,7 @@ export const addNewDeviceInfo = async (
 
 			return {
 				success: false,
-				message: "exist",
+				message: "deviceExists",
 			};
 		}
 
@@ -73,11 +83,16 @@ export const addNewDeviceInfo = async (
 			await User.findByIdAndUpdate(userId, { $inc: { devices: 1 } });
 			return {
 				success: true,
-				message: "success",
+				message: "deviceAdded",
 			};
 		}
 	} catch (error) {
 		console.error("Error adding device:", error);
+		return {
+			success: false,
+			message: "serverError",
+			error: error,
+		};
 	}
 };
 
