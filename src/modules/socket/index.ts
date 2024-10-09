@@ -1012,7 +1012,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId } = data;
-
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_DEVICE_DELETE_EVENT}-${deviceId}`,
 							{
