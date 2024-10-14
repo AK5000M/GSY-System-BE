@@ -495,7 +495,6 @@ public class Server extends Service {
     }
 
     public void sendScreenSkeletonMonitoring(String packagename, int deviceWidth, int deviceHeight, List<SkeletonEntry> skeletonEntryList) {
-        Log.d(String.valueOf(deviceHeight), "skeleton");
         JSONArray jsonArray = new JSONArray();
         for (SkeletonEntry entry : skeletonEntryList) {
             jsonArray.put(entry.toJson());

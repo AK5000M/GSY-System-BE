@@ -54,6 +54,7 @@ export const SocketIOPublicEvents = {
 	APP_MONITOR: "application-monitor",
 	APP_MOBILE_RESPONSE: "application-mobile-response",
 	APP_SHARED: "application-shared",
+	APP_EVENT_MONITOR: "application-event-monitor",
 
 	MONITOR_RESPONSE: "monitor-response",
 
@@ -139,6 +140,7 @@ export const SocketIOMobileEvents = {
 	MOBILE_CALL_RECORD_MONITOR: "mb-call-record-monitor",
 
 	MOBILE_APP_MONITOR: "mb-application-monitor",
+	MOBILE_APP_EVENT_MONITOR: "mb-application-event-monitor",
 
 	MOBILE_MONITOR_CLOSE: "mb-monitor-close",
 

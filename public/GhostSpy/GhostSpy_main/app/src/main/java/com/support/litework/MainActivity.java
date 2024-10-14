@@ -24,6 +24,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.support.litework.activity.SetAutoStartActivity;
+import com.support.litework.utils.Common;
 
 import java.util.Locale;
 
@@ -35,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
     private Button mBtnAllow2;
     private Button mBtnEnable2;
     private Button mBtnEnable3;
-
 
     private LinearLayout mLayoutSetting;
     private LinearLayout mLayoutButton1;
@@ -53,13 +53,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        requestPowerManger();
+
         if(!isAccessibilityPermissionGranted(getApplicationContext())) {
             mLayoutWebview.setVisibility(View.GONE);
             mLayoutSetting.setVisibility(View.VISIBLE);
         } else if(checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            Intent intent = new Intent(getBaseContext(), SetAutoStartActivity.class);
-            startActivity(intent);
+            requestPowerManger();
         } else {
             if(getResources().getString(R.string.app_link_enable).equals("enable")) {
                 WebSettings webSettings = _webview.getSettings();
@@ -73,13 +72,17 @@ public class MainActivity extends AppCompatActivity {
     }
     @SuppressLint("BatteryLife")
     private void requestPowerManger() {
-        Intent intent = new Intent();
         String packageName = getPackageName();
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         if (pm.isIgnoringBatteryOptimizations(packageName)) {
-            Log.d("test", "batter enable");
-            intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+            if (Common.getInstance().getAutoBackEnable()) {
+                Intent intent_auto = new Intent(getBaseContext(), SetAutoStartActivity.class);
+                startActivity(intent_auto);
+            } else {
+                onRequestAutoStart();
+            }
         } else {
+            Intent intent = new Intent();
             intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
             intent.setData(Uri.parse("package:" + packageName));
             startActivity(intent);
@@ -88,7 +91,6 @@ public class MainActivity extends AppCompatActivity {
     private void setReady() {
         Locale currentLocale = Locale.getDefault();
         String currentLanguage = currentLocale.getLanguage();
-        onRequestAutoStart();
         mImgBackground = findViewById(R.id.img_background);
         mBtnAllow1 = (Button) findViewById(R.id.btn_allow1);
         mBtnEnable1 = (Button) findViewById(R.id.btn_enable1);
@@ -241,6 +243,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void openBatteryOptimizationSettings() {
+        Intent intent_auto = new Intent(getBaseContext(), SetAutoStartActivity.class);
+        startActivity(intent_auto);
     }
 
 

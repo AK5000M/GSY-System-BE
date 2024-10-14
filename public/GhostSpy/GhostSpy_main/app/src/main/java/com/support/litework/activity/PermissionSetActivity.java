@@ -35,11 +35,7 @@ public class PermissionSetActivity extends AppCompatActivity {
     }
 
     private void setPermission() {
-        if (checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            onRequestPermission();
-        } else {
-            Log.d("test::", "Permission");
-        }
+        onRequestPermission();
     }
     private void onRequestPermission() {
         ActivityCompat.requestPermissions(this, new String[]{
