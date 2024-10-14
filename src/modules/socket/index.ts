@@ -635,7 +635,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId } = data;
-						console.log("Application Requesting=>", deviceId);
 
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_APP_MONITOR}-${deviceId}`,
@@ -666,6 +665,33 @@ export const startSocketIO = async () => {
 						);
 					} catch (error) {
 						console.log("Application Error", error);
+					}
+				}
+			);
+
+			// Application Event Monitor
+			socket.on(
+				`${SocketIOPublicEvents.APP_EVENT_MONITOR}`,
+				async (data: any) => {
+					try {
+						const { deviceId, type, app } = data;
+						console.log(
+							"Application Event Requesting:",
+							deviceId,
+							type,
+							app
+						);
+
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_APP_EVENT_MONITOR}-${deviceId}`,
+							{
+								deviceId,
+								type,
+								app,
+							}
+						);
+					} catch (error) {
+						console.log("Application Event Monitor Error", error);
 					}
 				}
 			);

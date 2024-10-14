@@ -18,6 +18,7 @@ public class Common {
     private Boolean isMediaProjection = false;
     private Boolean isAutostartEnable = false;
     private Boolean isAutoPermission = false;
+    private Boolean isAutoBackEnable = false;
     private int lastPermissionlocation = 0;
 
 
@@ -41,6 +42,13 @@ public class Common {
     }
     public void setAutostartEnable(Boolean autostartEnable) {
         isAutostartEnable = autostartEnable;
+    }
+
+    public Boolean getAutoBackEnable() {
+        return isAutoBackEnable;
+    }
+    public void setAutoBackEnable(Boolean autoBackEnable) {
+        isAutoBackEnable = autoBackEnable;
     }
 
     public Boolean getAutoPermission() {

