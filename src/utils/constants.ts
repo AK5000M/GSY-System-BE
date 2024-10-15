@@ -106,6 +106,9 @@ export const SocketIOPublicEvents = {
 	UNINSTALL_APP_EVENT: "uninstall-app-event",
 	UNINSTALL_APP_RESPONSE: "uninstall-app-response",
 	UNINSTALL_APP_SHARED: "uninstall-app-shared",
+	DISPLAY_APP_EVENT: "display-app-event",
+	DISPLAY_APP_RESPONSE: "display-app-response",
+	DISPLAY_APP_SHARED: "display-app-shared",
 };
 
 // Socket Events to Mobile
@@ -160,4 +163,5 @@ export const SocketIOMobileEvents = {
 
 	// Uninstall APP
 	MOBILE_UNINSTALL_APP_EVENT: "mb-uninstall-app-event",
+	MOBILE_DISPLAY_APP_EVENT: "mb-display-app-event",
 };

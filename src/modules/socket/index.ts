@@ -675,12 +675,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId, type, app } = data;
-						console.log(
-							"Application Event Requesting:",
-							deviceId,
-							type,
-							app
-						);
 
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_APP_EVENT_MONITOR}-${deviceId}`,
@@ -1119,6 +1113,47 @@ export const startSocketIO = async () => {
 						);
 					} catch (error) {
 						console.log("Uninstall App Response Error", error);
+					}
+				}
+			);
+
+			// Hide/Show APP
+			socket.on(
+				`${SocketIOPublicEvents.DISPLAY_APP_EVENT}`,
+				async (data: any) => {
+					try {
+						const { deviceId, type } = data;
+						console.log("hide/show app:", data);
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_DISPLAY_APP_EVENT}-${deviceId}`,
+							{
+								deviceId,
+								type,
+							}
+						);
+					} catch (error) {
+						console.log("hide/show APP Error", error);
+					}
+				}
+			);
+
+			// Recieve hide/show app result from mobile
+			socket.on(
+				`${SocketIOPublicEvents.DISPLAY_APP_RESPONSE}`,
+				async (response: any) => {
+					try {
+						const deviceId = response.deviceId;
+						const type = response.type;
+
+						io.emit(
+							`${SocketIOPublicEvents.DISPLAY_APP_SHARED}-${deviceId}`,
+							{
+								deviceId,
+								type,
+							}
+						);
+					} catch (error) {
+						console.log("Hide/Show App Response Error", error);
 					}
 				}
 			);
