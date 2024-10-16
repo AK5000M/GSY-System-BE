@@ -5,17 +5,7 @@ import SMS from "../models/sms.models";
 import { SMSModelType } from "../utils";
 
 // Add New Messages
-/**
- *
- * @param {*} req
- * @param {*} res
- */
-export const addNewMessage = async (req: Request, res: Response) => {
-	// Check for validation errors
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		return res.status(400).json({ errors: errors.array() });
-	}
+export const addNewMessage = async (data: any) => {
 	try {
 		// Extract device data from the request body
 		const {
@@ -24,7 +14,7 @@ export const addNewMessage = async (req: Request, res: Response) => {
 			sender,
 			receiver,
 			// Add other fields as needed
-		} = req.body;
+		} = data;
 
 		const newMessage: SMSModelType = new SMS({
 			deviceId,
@@ -35,15 +25,13 @@ export const addNewMessage = async (req: Request, res: Response) => {
 		});
 
 		await newMessage.save();
-
-		// Return a success response
-		res.status(201).json({
-			success: true,
-			message: "Message added successfully",
-		});
 	} catch (error) {
 		console.error("Error adding message:", error);
-		res.status(500).json({ error: "Failed to add message" });
+		return {
+			success: false,
+			message: "Failed to add message",
+			error: error,
+		};
 	}
 };
 
