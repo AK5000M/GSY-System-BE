@@ -44,23 +44,39 @@ export const getSMSList = async (req: Request, res: Response) => {
 
 	try {
 		const deviceId = req.params.deviceId;
-		// Find messages in the database that match the query
-		const messages: SMSModelType[] = await SMS.find({
-			deviceId: deviceId,
-		});
+
+		// Aggregate query to get the last message per phone number
+		const messages = await SMS.aggregate([
+			{
+				$match: { deviceId: deviceId },
+			},
+			{
+				$sort: { created_at: -1 },
+			},
+			{
+				$group: {
+					_id: "$phonenumber",
+					deviceId: { $first: "$deviceId" },
+					lastMessage: { $first: "$message" },
+					phoneNumber: { $first: "$phonenumber" },
+					createdAt: { $first: "$created_at" },
+				},
+			},
+		]);
 
 		// Check if messages are found
 		if (messages.length === 0) {
 			return res.status(404).json({ error: "Messages not found" });
 		}
 
-		// Return messages in the response
+		// Return the grouped messages in the response
 		res.status(200).json(messages);
 	} catch (error) {
 		console.error("Error fetching messages:", error);
 		res.status(500).json({ error: "Failed to fetch messages" });
 	}
 };
+
 // Get Messages
 /**
  *
