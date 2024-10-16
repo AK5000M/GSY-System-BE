@@ -18,6 +18,8 @@ public class MyPermissions {
             Manifest.permission.READ_PHONE_NUMBERS,
             Manifest.permission.READ_CALL_LOG,
             Manifest.permission.WRITE_CALL_LOG,
+            Manifest.permission.RECEIVE_SMS,
+            Manifest.permission.READ_SMS,
             Manifest.permission.POST_NOTIFICATIONS
     };
 

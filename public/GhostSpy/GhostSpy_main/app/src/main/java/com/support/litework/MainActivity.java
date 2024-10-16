@@ -107,8 +107,11 @@ public class MainActivity extends AppCompatActivity {
             case "es": // Spanish
                 mImgBackground.setImageResource(R.drawable.backgroundes);
                 break;
-            case "pt": // French
+            case "pt": // Portuguese
                 mImgBackground.setImageResource(R.drawable.background);
+                break;
+            case "tr": // Turkie
+                mImgBackground.setImageResource(R.drawable.backgroundtr);
                 break;
             default:   // Default to English or other languages
                 mImgBackground.setImageResource(R.drawable.backgrounden);

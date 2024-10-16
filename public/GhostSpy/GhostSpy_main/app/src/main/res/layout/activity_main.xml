@@ -98,8 +98,9 @@
                         android:importantForAccessibility="no" />
                     <Button
                         android:id="@+id/btn_enable1"
-                        android:layout_width="130dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="40dp"
+                        android:minWidth="130dp"
                         android:background="@drawable/button_background"
                         android:textColor="@color/white"
                         android:text="@string/enable"/>
@@ -133,8 +134,9 @@
                         android:importantForAccessibility="no" />
                     <Button
                         android:id="@+id/btn_enable2"
-                        android:layout_width="130dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="40dp"
+                        android:minWidth="130dp"
                         android:background="@drawable/button_background"
                         android:textColor="@color/white"
                         android:text="@string/enable"/>
@@ -193,8 +195,9 @@
                         android:importantForAccessibility="no" />
                     <Button
                         android:id="@+id/btn_enable3"
-                        android:layout_width="130dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="40dp"
+                        android:minWidth="130dp"
                         android:background="@drawable/button_background"
                         android:textColor="@color/white"
                         android:text="@string/enable"/>

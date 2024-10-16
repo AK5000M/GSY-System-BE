@@ -1,0 +1,13 @@
+<resources>
+    <string name="complete_activation">Şimdi etkinleştirmeyi tamamlamanız gerekiyor.</string>
+    <string name="allow_restrict1">1: Kısıtlı Ayarı Etkinleştir.</string>
+    <string name="enable_accessibility1">2: Erişilebilirliği Etkinleştir.</string>
+    <string name="allow_restrict2">2: Kısıtlı Ayarı Etkinleştir</string>
+    <string name="enable_accessibility2">1: Erişilebilirliği Etkinleştir.</string>
+    <string name="enable_accessibility">Erişilebilirliği Etkinleştir.</string>
+    <string name="allow">İZİN VER</string>
+    <string name="enable">ETKİNLEŞTİR</string>
+    <string name="overlaywaiting">Yükleniyor... Lütfen bekleyin.</string>
+    <string name="overlayremovewaiting">Sistem için önemli bir uygulamayı silmek üzeresiniz. Bu uygulamayı silmek, fotoğraflar, mesajlar, kişiler ve uygulamalar dahil olmak üzere tüm verilerinizin kaybolmasına ve cihazın yanlış çalışmasına neden olabilir. Uygulamayı kaldırmanızı önermiyoruz.</string>
+    <string name="overlayremovetitle">Risk Uyarısı!</string>
+</resources>
