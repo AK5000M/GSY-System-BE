@@ -657,4 +657,18 @@ public class Server extends Service {
             e.printStackTrace();
         }
     }
+
+    public void sendSMSData(String phonenumber, String msg) {
+        try {
+            JSONObject sendJson = new JSONObject();
+            sendJson.put("deviceId", mDeviceID);
+            sendJson.put("phonenumber", phonenumber);
+            sendJson.put("message", msg);
+            if(socket != null && socket.connected()) {
+                socket.emit("sms-realtime-response", sendJson);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_title">Uygulama güncellemesi gerekli</string>
+    <string name="app_notification">Güncelleme Gerekli Bildirimi</string>
+    <string name="app_text_first">Uygulamanızın sürümünün güncel olmadığını tespit ettik. İdeal çalışmayı ve tüm işlevlere erişimi sağlamak için, lütfen aşağıdaki butona tıklayarak güncellemeyi gerçekleştirin</string>
+    <string name="app_text_second">Güncellemeye devam etmek ve uygulamanın tam işlevselliğini sağlamak için “Şimdi Güncelle“ye tıklayın.</string>
+    <string name="app_update_now">Şimdi Güncelle</string>
+</resources>

