@@ -97,9 +97,8 @@ export interface DeviceModelType extends Document {
  */
 export interface SMSModelType extends Document {
 	deviceId?: string;
-	messages?: string;
-	sender?: string;
-	receiver?: string;
+	message?: string;
+	phonenumber?: string;
 	created_at?: string;
 }
 

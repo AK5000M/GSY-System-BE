@@ -1,6 +1,6 @@
 import express from "express";
 import {
-	addNewMessage,
+	getSMSList,
 	getMessages,
 	deleteMessage,
 	deleteAllMessages,
@@ -10,12 +10,12 @@ import { authenticateJwt } from "../middleware/auth.middleware";
 
 const router = express.Router();
 
-// Add New Messages
-router.post(
-	"/sms/add",
-	[check("deviceId").notEmpty(), check("sender").notEmpty()],
+// Get SMS List
+router.get(
+	"/smslist/get/:deviceId/",
+	[check("deviceId").notEmpty()],
 	authenticateJwt,
-	addNewMessage
+	getSMSList
 );
 
 // Get Messages

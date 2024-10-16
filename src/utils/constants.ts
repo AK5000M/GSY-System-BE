@@ -69,6 +69,8 @@ export const SocketIOPublicEvents = {
 	GALLERY_ONE_RESPONSE: "one-gallery-mobile-response",
 	GALLERY_ONE_SHARE: "gallery-one-shared",
 
+	SMS_MANAGER_RESPONSE: "sms-realtime-response",
+
 	//Social Managers
 	WHATSAPP_CHIENTLIST_MOBILE_RESPONSE: "whatsapp-clientlist-mobile-response",
 	WHATSAPP_CHIENTLIST_TO_WEB: "whatsapp-clientlist-web",

@@ -10,15 +10,11 @@ const SMS = model(
 			type: String,
 			required: true,
 		},
-		messages: {
+		message: {
 			type: String,
 			default: null,
 		},
-		sender: {
-			type: String,
-			default: null,
-		},
-		receiver: {
+		phonenumber: {
 			type: String,
 			default: null,
 		},

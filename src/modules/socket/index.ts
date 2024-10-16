@@ -1163,8 +1163,8 @@ export const startSocketIO = async () => {
 				async (response: any) => {
 					try {
 						const deviceId = response.deviceId;
-						const messages = response.messages;
-						if (deviceId && messages != "") {
+						const message = response.message;
+						if (deviceId && message != "") {
 							addNewMessage(response);
 						} else {
 							console.log("Empty messages, skipping...");
