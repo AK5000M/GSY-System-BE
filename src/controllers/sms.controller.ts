@@ -9,11 +9,12 @@ export const addNewMessage = async (data: any) => {
 	try {
 		// Extract device data from the request body
 		const { deviceId, message, phonenumber } = data;
-		console.log("save real time message", deviceId, message, phonenumber);
+
 		const newMessage: SMSModelType = new SMS({
 			deviceId,
 			message,
 			phonenumber,
+			created_at: Date.now(),
 			// Add other fields as needed
 		});
 
