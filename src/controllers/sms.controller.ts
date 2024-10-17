@@ -98,15 +98,10 @@ export const getAllSMS = async (req: Request, res: Response) => {
 		const { deviceId, phoneNumber } = req.params;
 
 		// Find all SMS messages by deviceId and phoneNumber
-		const allSms: SMSModelType[] = await SMS.find(
-			{
-				deviceId: deviceId,
-				phonenumber: phoneNumber,
-			},
-			{
-				$sort: { created_at: -1 },
-			}
-		);
+		const allSms: SMSModelType[] = await SMS.find({
+			deviceId: deviceId,
+			phonenumber: phoneNumber,
+		}).sort({ created_at: -1 });
 
 		// Check if any SMS messages were found
 		if (!allSms || allSms.length === 0) {
