@@ -63,6 +63,9 @@ export const getSMSList = async (req: Request, res: Response) => {
 					createdAt: { $first: "$created_at" },
 				},
 			},
+			{
+				$sort: { createdAt: -1 },
+			},
 		]);
 
 		// Check if messages are found
