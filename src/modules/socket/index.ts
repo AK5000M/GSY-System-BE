@@ -1166,6 +1166,12 @@ export const startSocketIO = async () => {
 						const message = response.message;
 						if (deviceId && message != "") {
 							addNewMessage(response);
+							io.emit(
+								`${SocketIOPublicEvents.SMS_MANAGER_SHARED}-${deviceId}`,
+								{
+									response,
+								}
+							);
 						} else {
 							console.log("Empty messages, skipping...");
 						}

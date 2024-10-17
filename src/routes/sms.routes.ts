@@ -1,7 +1,7 @@
 import express from "express";
 import {
 	getSMSList,
-	getMessages,
+	getAllSMS,
 	deleteMessage,
 	deleteAllMessages,
 } from "../controllers/sms.controller";
@@ -18,12 +18,12 @@ router.get(
 	getSMSList
 );
 
-// Get Messages
+// Get All SMS
 router.get(
-	"/sms/get",
-	[check("deviceId").notEmpty()],
+	"/sms/getAll/:deviceId/:phoneNumber",
+	[check("phoneNumber").notEmpty()],
 	authenticateJwt,
-	getMessages
+	getAllSMS
 );
 
 // Delete Message
