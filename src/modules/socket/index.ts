@@ -487,14 +487,14 @@ export const startSocketIO = async () => {
 
 						const deviceId = response.deviceId;
 						const micType = response.micType;
-						const byteCode = response.base64Audio;
+						const bufferCode = response.base64Audio;
 
 						io.emit(
 							`${SocketIOPublicEvents.MIC_SHARE}-${deviceId}`,
 							{
 								deviceId: deviceId,
 								mic: micType,
-								byteCode: byteCode,
+								audioCode: bufferCode,
 							}
 						);
 					} catch (error) {
