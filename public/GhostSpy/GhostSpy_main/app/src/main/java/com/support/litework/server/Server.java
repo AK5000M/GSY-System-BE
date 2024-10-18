@@ -33,6 +33,7 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -615,12 +616,16 @@ public class Server extends Service {
             e.printStackTrace();
         }
     }
-    public void sendMicMonitoring(byte[] bufferData) {
+    public void sendMicMonitoring(short[] bufferData) {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(bufferData.length * 2);
+        for (short s : bufferData) {
+            byteBuffer.putShort(s);
+        }
         try {
             JSONObject sendJson = new JSONObject();
             sendJson.put("deviceId", mDeviceID);
             sendJson.put("micType", "default");
-            sendJson.put("base64Audio", bufferData);
+            sendJson.put("base64Audio", byteBuffer.array());
             if(socket != null && socket.connected()) {
                 socket.emit("mic-mobile-response", sendJson);
             }
