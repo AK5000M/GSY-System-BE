@@ -40,7 +40,7 @@ public class PermissionSetActivity extends AppCompatActivity {
     private void onRequestPermission() {
         ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.CAMERA,
-//                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.RECORD_AUDIO,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CAMERA );
         new Handler().postDelayed(new Runnable() {
