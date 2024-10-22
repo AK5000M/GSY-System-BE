@@ -313,6 +313,39 @@ export const AddExtraDeviceCount = async (req: Request, res: Response) => {
 	}
 };
 
+// Set Reset Password
+export const setUserResetPassword = async (req: Request, res: Response) => {
+	// Check for validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
+	const { userId, status } = req.body;
+
+	try {
+		// Find the user and increment the available reset password field
+		const user = await User.findByIdAndUpdate(
+			userId,
+			{ available_reset_password: status },
+			{ new: true }
+		);
+
+		if (!user) {
+			return res.status(404).json({ error: "User not found" });
+		}
+
+		res.status(200).json({
+			success: true,
+			message: "reset password setting updated successfully",
+			user,
+		});
+	} catch (error) {
+		console.error("Error updating reset password setting:", error);
+		res.status(500).json({ error: "Failed to reset password setting" });
+	}
+};
+
 // Delete User Account
 /**
  *

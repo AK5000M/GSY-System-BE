@@ -91,6 +91,10 @@ const User = model(
 			type: String,
 			default: "none",
 		},
+		available_reset_password: {
+			type: Boolean,
+			default: false,
+		},
 		created_at: {
 			type: Date,
 			required: true,

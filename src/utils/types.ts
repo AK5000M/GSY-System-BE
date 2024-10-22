@@ -31,6 +31,7 @@ export interface UserModelType extends Document {
 	license_duration?: string;
 	license_expire_at?: Date;
 	session_Id?: String;
+	available_reset_password: boolean;
 	visit_at?: Date;
 }
 

@@ -197,7 +197,7 @@ export const adminLogin = async (req: Request, res: Response) => {
  */
 export const forgotPassword = async (req: Request, res: Response) => {
 	try {
-		const { email } = req.body;
+		const { email, password } = req.body;
 		const user: UserModelType | null = await User.findOne({ email });
 
 		if (!user) {
@@ -205,48 +205,24 @@ export const forgotPassword = async (req: Request, res: Response) => {
 				.status(404)
 				.json({ status: "404", message: "User not found" });
 		}
+		if (user.available_reset_password == false) {
+			return res.status(403).json({
+				status: "403",
+				message: "Reset Password isn't available",
+			});
+		} else {
+			const hashedPassword = await bcrypt.hash(password, 10);
 
-		const newPassword = randomstring.generate({
-			length: 10,
-			charset: "alphanumeric",
-		});
-		console.log(
-			`😂`,
-			"\x1b[35m GhostSpy New Password \x1b[0m",
-			newPassword
-		);
-		const hashedPassword = await bcrypt.hash(newPassword, 10);
+			// Update user's password in the database
+			user.password = hashedPassword;
+			user.available_reset_password = false;
+			await user.save();
 
-		// Update user's password in the database
-		user.password = hashedPassword;
-		await user.save();
-
-		const token = jwt.sign(
-			{ email: email },
-			process.env.JWT_SECRET as string,
-			{
-				expiresIn: "30m",
-			}
-		);
-
-		const html = template.resetPasswordTemplate(newPassword);
-		const subject = "Password Reset from TechDroid";
-		const message = "Please check your email to reset password.";
-
-		// await mailServer.sendEmail(
-		// 	res, // Pass the 'res' object directly
-		// 	FROM_EMAIL as string,
-		// 	email,
-		// 	subject,
-		// 	html,
-		// 	message,
-		// 	token
-		// );
-
-		res.status(200).json({
-			status: "200",
-			message: "New password set email sent",
-		});
+			res.status(200).json({
+				status: "200",
+				message: "New password set email sent",
+			});
+		}
 	} catch (error) {
 		res.status(500).json({
 			status: "500",

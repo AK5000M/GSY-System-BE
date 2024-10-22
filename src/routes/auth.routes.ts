@@ -36,7 +36,7 @@ router.post(
 router.post(
 	"/auth/forgot-password",
 	verificationLimit,
-	[check("email").isEmail()],
+	[check("email").isEmail(), check("password").isEmail()],
 	forgotPassword
 );
 

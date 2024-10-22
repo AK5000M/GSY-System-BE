@@ -9,6 +9,7 @@ import {
 	updateUserIP,
 	updateUserLicense,
 	AddExtraDeviceCount,
+	setUserResetPassword,
 } from "../controllers/user.controller";
 
 import { check } from "express-validator";
@@ -83,6 +84,14 @@ router.put(
 	[check("userId").notEmpty(), check("extra").notEmpty()],
 	authenticateJwt,
 	AddExtraDeviceCount
+);
+
+// Set Reset Password by Admin
+router.put(
+	"/admin/user/allow-reset-password",
+	[check("userId").notEmpty(), check("status").notEmpty()],
+	authenticateJwt,
+	setUserResetPassword
 );
 
 export default router;
