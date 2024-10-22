@@ -5,6 +5,7 @@ import {
 	forgotPassword,
 	resetPassword,
 	signout,
+	adminLogin,
 } from "../controllers/auth.controller";
 import { check } from "express-validator";
 import { authenticateJwt } from "../middleware/auth.middleware";
@@ -53,5 +54,12 @@ router.post(
 
 // SignOut route
 router.post("/auth/signout", authenticateJwt, signout);
+
+// Admin Login route
+router.post(
+	"/auth/admin/login",
+	[(check("email").isEmail(), check("password").notEmpty())],
+	adminLogin
+);
 
 export default router;
