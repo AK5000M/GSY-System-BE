@@ -9,6 +9,7 @@ import {
 } from "../controllers/device.controller";
 import { check } from "express-validator";
 import { authenticateJwt } from "../middleware/auth.middleware";
+import { deviceRateLimiter, userRateLimiter } from "../modules/limitrate";
 
 const router = express.Router();
 
@@ -33,6 +34,7 @@ router.get(
 	"/device/getInfo/:deviceId",
 	[check("deviceId").notEmpty()],
 	authenticateJwt,
+	deviceRateLimiter,
 	getDeviceInfo
 );
 
@@ -41,6 +43,7 @@ router.get(
 	"/device/get/:userId",
 	[check("userId").notEmpty()],
 	authenticateJwt,
+	userRateLimiter,
 	getDevice
 );
 
@@ -49,6 +52,7 @@ router.post(
 	"/device/update/deviceName/",
 	[check("deviceId").notEmpty(), check("editedManufacturer").notEmpty()],
 	authenticateJwt,
+	deviceRateLimiter,
 	updateDeviceName
 );
 
@@ -57,6 +61,7 @@ router.delete(
 	"/device/delete/:deviceId",
 	[check("deviceId").notEmpty()],
 	authenticateJwt,
+	// deviceRateLimiter,
 	DeleteDevice
 );
 
