@@ -18,6 +18,7 @@ import routes from "./routes";
 import {
 	Removekeylogs,
 	addMaxDeviceLimitToExistingUsers,
+	addAvailableResetPasswordUsers,
 } from "./modules/share";
 
 const http = require("http");
@@ -103,6 +104,7 @@ app.disable("x-powered-by");
 // Remove Database
 // Removekeylogs();
 // addMaxDeviceLimitToExistingUsers();
+// addAvailableResetPasswordUsers();
 
 // Start the Socket.IO server
 startSocketIO();

@@ -40,3 +40,32 @@ export const addMaxDeviceLimitToExistingUsers = async () => {
 		};
 	}
 };
+
+// Function to update existing users by adding available_reset_password field
+export const addAvailableResetPasswordUsers = async () => {
+	try {
+		// Update all users where available_reset_password does not exist
+		const result = await User.updateMany(
+			{ available_reset_password: { $exists: false } }, // Condition to find users without available_reset_password
+			{ $set: { available_reset_password: false } } // Set default available_reset_password value to false
+		);
+
+		console.log(
+			`Updated ${result.modifiedCount} users with available_reset_password.`
+		);
+		return {
+			success: true,
+			message: `${result.modifiedCount} users updated with available_reset_password`,
+		};
+	} catch (error) {
+		console.error(
+			"Error updating available_reset_password for users:",
+			error
+		);
+		return {
+			success: false,
+			message: "Failed to update available_reset_password",
+			error,
+		};
+	}
+};
