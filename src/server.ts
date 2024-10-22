@@ -7,6 +7,7 @@ import bodyParser from "body-parser";
 import passport from "passport";
 import session from "express-session";
 import path from "path";
+
 // import cookieParser from "cookie-parser";
 // import csrf from "csurf";
 
@@ -22,6 +23,7 @@ import {
 const http = require("http");
 // protect of XSS atach
 const helmet = require("helmet");
+
 // CSruf security
 // const cookieParser = require("cookie-parser");
 // const csurf = require("csurf");
@@ -94,6 +96,9 @@ app.use((req, res, next) => {
 	);
 	next();
 });
+
+// Avoid Information Leakage:
+app.disable("x-powered-by");
 
 // Remove Database
 // Removekeylogs();

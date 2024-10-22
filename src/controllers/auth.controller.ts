@@ -11,6 +11,7 @@ import { UserModelType } from "../utils";
 import template from "../config/verify-template";
 
 import { v4 as uuidv4 } from "uuid"; // Import UUID generator
+import { use } from "passport";
 
 // Auth Register
 /**
@@ -82,7 +83,6 @@ export const login = async (req: Request, res: Response) => {
 	const { email, password, role } = req.body;
 	try {
 		const user = await User.findOne({ email, role });
-
 		const currentAt = new Date();
 		const licenseExpireAt = new Date(user?.license_expire_at as any);
 
@@ -130,7 +130,6 @@ export const login = async (req: Request, res: Response) => {
 			data: { user: user, token: token },
 		});
 	} catch (error: any) {
-		console.error(error.message);
 		res.status(500).json({ message: "Server error" });
 	}
 };

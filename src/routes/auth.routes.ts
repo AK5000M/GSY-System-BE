@@ -1,14 +1,14 @@
 import express from "express";
 import {
-	register,
 	login,
-	adminLogin,
+	register,
 	forgotPassword,
 	resetPassword,
 	signout,
 } from "../controllers/auth.controller";
 import { check } from "express-validator";
 import { authenticateJwt } from "../middleware/auth.middleware";
+import { verificationLimit } from "../modules/limitrate";
 
 const router = express.Router();
 
@@ -23,23 +23,18 @@ router.post(
 	register
 );
 
-// Login route
+// Login route (apply the email-based rate limiter here)
 router.post(
 	"/auth/login",
+	verificationLimit,
 	[check("email").isEmail(), check("password").notEmpty()],
 	login
 );
 
-// Admin Login route
-router.post(
-	"/auth/admin/login",
-	[check("email").isEmail(), check("password").notEmpty()],
-	adminLogin
-);
-
-// ForgotPassword route
+// ForgotPassword route (apply the same rate limiter)
 router.post(
 	"/auth/forgot-password",
+	verificationLimit,
 	[check("email").isEmail()],
 	forgotPassword
 );

@@ -5,6 +5,7 @@ import path from "path";
 import { check } from "express-validator";
 import { authenticateJwt } from "../middleware/auth.middleware";
 import { createNewApk, getNewApk } from "../controllers/app.controller";
+import { userRateLimiter } from "../modules/limitrate";
 
 // Set up multer for file uploads
 const storage = multer.diskStorage({
@@ -37,6 +38,7 @@ router.get(
 	"/app/get-apk/:userId/:apkName",
 	[check("userId").notEmpty()],
 	authenticateJwt,
+	userRateLimiter,
 	getNewApk
 );
 
