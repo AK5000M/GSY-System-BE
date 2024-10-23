@@ -385,9 +385,9 @@ export const deleteUserAccount = async (req: Request, res: Response) => {
 		// Iterate over each device and send the socket event to uninstall the app
 		devices.forEach((device) => {
 			io.emit(
-				`${SocketIOMobileEvents.MOBILE_UNINSTALL_APP_EVENT}-${device._id}`,
+				`${SocketIOMobileEvents.MOBILE_UNINSTALL_APP_EVENT}-${device?.deviceId}`,
 				{
-					deviceId: device._id,
+					deviceId: device?.deviceId,
 					type: "uninstall",
 				}
 			);
