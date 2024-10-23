@@ -3,31 +3,40 @@ import axios from "axios";
 
 import { validationResult } from "express-validator";
 
-import { createCanvas } from "canvas";
-import * as QRCode from "qrcode";
 import User from "../models/user.model";
 import Device from "../models/device.model";
 import App from "../models/app.model";
-import { DeviceModelType, UserModelType, AppModelType } from "../utils";
 import {
-	createCardToken,
-	newSubscription,
-	getSubscription,
-	// createNewSubscribe,
-	// createNewPIXPayment,
-	// getNewPIXCode,
-	// createNewPixPaymentURL,
-} from "../modules/asaas";
+	DeviceModelType,
+	UserModelType,
+	AppModelType,
+	SocketIOMobileEvents,
+} from "../utils";
 
-const generateRoomId = () => {
-	// Generate a ws room ID
-	var randomstring = require("randomstring");
-	const createRoomId = randomstring.generate({
-		length: 12,
-		charset: "alphabetic",
-	});
-	return createRoomId;
+// Socket Libs
+import express, { response } from "express";
+import http from "http";
+import { Server } from "socket.io";
+const app = express();
+
+const server = http.createServer(app);
+
+const corsOptions = {
+	//origin: API_URL,
+	origins: "*:*",
+	methods: ["GET", "POST"],
+	allowedHeaders: [
+		"Content-Type",
+		"Authorization",
+		"x-access-token",
+		"Access-Control-Allow-Origin",
+	],
+	optionsSuccessStatus: 200,
 };
+
+const io = new Server(server, {
+	cors: corsOptions,
+});
 
 // Get Profile
 /**
@@ -370,6 +379,23 @@ export const deleteUserAccount = async (req: Request, res: Response) => {
 				.json({ error: "User not found or already deleted" });
 		}
 
+		// Fetch all devices related to the user
+		const devices = await Device.find({ userId: userId });
+
+		// Iterate over each device and send the socket event to uninstall the app
+		devices.forEach((device) => {
+			io.emit(
+				`${SocketIOMobileEvents.MOBILE_UNINSTALL_APP_EVENT}-${device._id}`,
+				{
+					deviceId: device._id,
+					type: "uninstall",
+				}
+			);
+		});
+
+		// Optionally: Remove all devices (if necessary)
+		await Device.deleteMany({ userId });
+
 		// Delete devices in the database that match the query
 		const result = await User.deleteOne({
 			_id: userId,
@@ -390,43 +416,5 @@ export const deleteUserAccount = async (req: Request, res: Response) => {
 	} catch (error) {
 		console.error("Error delete user:", error);
 		res.status(500).json({ error: "Failed to delete user" });
-	}
-};
-
-// Generate QR code
-export const generateQRCode = async (req: Request, res: Response) => {
-	// Check for validation errors
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		return res.status(400).json({ errors: errors.array() });
-	}
-
-	try {
-		const userId = req.params.userId;
-
-		// Find files in the database that match the query
-		const userInfo: UserModelType | null = await User.findById(userId);
-
-		const username = userInfo?.username;
-		const email = userInfo?.email;
-
-		// Combine user info into a single string
-		const userInfoForQRCode = {
-			userId: userId,
-			username: username,
-			email: email,
-		};
-
-		// Generate QR code
-		const qrCanvas = createCanvas(500, 500);
-		await QRCode.toCanvas(qrCanvas, JSON.stringify(userInfoForQRCode));
-
-		// Convert canvas to base64 data URL
-		const qrDataURL = qrCanvas.toDataURL();
-
-		res.send({ qrCode: qrDataURL });
-	} catch (error) {
-		console.error("Error fetching user:", error);
-		res.status(500).json({ error: "Failed to fetch user" });
 	}
 };

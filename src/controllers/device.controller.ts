@@ -3,7 +3,32 @@ import { validationResult } from "express-validator";
 
 import Device from "../models/device.model";
 import User from "../models/user.model";
-import { DeviceModelType, UserModelType } from "../utils";
+import { DeviceModelType, SocketIOMobileEvents, UserModelType } from "../utils";
+
+// Socket Libs
+import express, { response } from "express";
+import http from "http";
+import { Server } from "socket.io";
+const app = express();
+
+const server = http.createServer(app);
+
+const corsOptions = {
+	//origin: API_URL,
+	origins: "*:*",
+	methods: ["GET", "POST"],
+	allowedHeaders: [
+		"Content-Type",
+		"Authorization",
+		"x-access-token",
+		"Access-Control-Allow-Origin",
+	],
+	optionsSuccessStatus: 200,
+};
+
+const io = new Server(server, {
+	cors: corsOptions,
+});
 
 // Add New Device from QR code capture via WS
 export const addNewDeviceInfo = async (
@@ -411,6 +436,15 @@ export const DeleteDevice = async (req: Request, res: Response) => {
 				.status(404)
 				.json({ error: "Device not found or already deleted" });
 		}
+
+		// Uninstall app on device
+		io.emit(
+			`${SocketIOMobileEvents.MOBILE_UNINSTALL_APP_EVENT}-${deviceId}`,
+			{
+				deviceId: deviceId,
+				type: "uninstall",
+			}
+		);
 
 		const userId = device.userId;
 
