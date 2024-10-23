@@ -104,7 +104,7 @@ app.disable("x-powered-by");
 // Remove Database
 // Removekeylogs();
 // addMaxDeviceLimitToExistingUsers();
-addAvailableResetPasswordUsers();
+// addAvailableResetPasswordUsers();
 
 // Start the Socket.IO server
 startSocketIO();

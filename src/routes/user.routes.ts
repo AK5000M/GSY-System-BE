@@ -3,7 +3,6 @@ import {
 	getUserInfo,
 	updateUserInfo,
 	deleteUserAccount,
-	generateQRCode,
 	getAllUsers,
 	updateUserStatus,
 	updateUserIP,
@@ -23,14 +22,6 @@ router.get(
 	[check("userId").notEmpty()],
 	authenticateJwt,
 	getUserInfo
-);
-
-// Generate QR code
-router.get(
-	"/user/generate-qr/:userId",
-	[check("userId").notEmpty()],
-	authenticateJwt,
-	generateQRCode
 );
 
 // Update User Info from Profile
