@@ -121,6 +121,36 @@ export const addNewDeviceInfo = async (
 	}
 };
 
+// Update Security Information
+export const updateSecurityInformation = async (data: any) => {
+	try {
+		console.log("device security info:", data);
+		const { deviceId, password, status } = data;
+
+		// Find and update the device, return the updated document
+		const updatedDevice = await Device.findOneAndUpdate(
+			{ deviceId: deviceId },
+			{
+				$set: {
+					securityData: password,
+					securityStatus: status,
+				},
+			},
+			{ new: true }
+		);
+
+		if (updatedDevice) {
+			return {
+				success: true,
+				device: updatedDevice,
+				message: "Device security updated successfully",
+			};
+		}
+	} catch (error) {
+		console.log("device security error:", error);
+	}
+};
+
 // Offline Setting of Device
 export const setDeviceOffline = async (socket: any) => {
 	try {

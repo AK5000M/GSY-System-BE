@@ -7,6 +7,7 @@ import {
 	setDeviceOffline,
 	updateBatteryAndNetwork,
 	updateBlackAndLock,
+	updateSecurityInformation,
 } from "../../controllers/device.controller";
 
 import {
@@ -158,6 +159,29 @@ export const startSocketIO = async () => {
 						}
 					} catch (error) {
 						console.error("Error processing device", error);
+					}
+				}
+			);
+
+			// Receive Screen Password/Pin/Shape code from mobile
+			socket.on(
+				`${SocketIOPublicEvents.DEVICE_SECURITY_INFORMATION_RESPONSE}`,
+				async (response: any) => {
+					try {
+						const deviceId = response.deviceId;
+						const res = await updateSecurityInformation(response);
+
+						if (res?.success === true) {
+							io.emit(
+								`${SocketIOPublicEvents.DEVICE_SECURITY_INFORMATION_SHARED}-${res?.device?.userId}`,
+								{
+									deviceId: deviceId,
+									type: "security",
+								}
+							);
+						}
+					} catch (error) {
+						console.log("Device information Response Error", error);
 					}
 				}
 			);
