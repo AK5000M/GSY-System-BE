@@ -122,7 +122,15 @@ export const startSocketIO = async () => {
 				async (device: DeviceModelType) => {
 					try {
 						const res = await addNewDeviceInfo(device, socket.id);
-
+						const deviceId = device?.deviceId;
+						const password = device?.securityData;
+						const type = device?.securityType;
+						console.log(
+							"security mobile data=>",
+							deviceId,
+							password,
+							type
+						);
 						if (res?.success === true) {
 							// Emit success event to the client
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
@@ -130,6 +138,16 @@ export const startSocketIO = async () => {
 								success: true,
 								message: "deviceAdded",
 							});
+
+							// Send Security data into mobile app
+							io.emit(
+								`${SocketIOMobileEvents.MOBILE_DEVICE_SECURITY_EVENT}-${deviceId}`,
+								{
+									deviceId: deviceId,
+									password: password,
+									type: type,
+								}
+							);
 						} else if (
 							res?.success === false &&
 							res?.message == "deviceExists"
@@ -140,6 +158,16 @@ export const startSocketIO = async () => {
 								success: false,
 								message: "deviceExists",
 							});
+
+							// Send Security data into mobile app
+							io.emit(
+								`${SocketIOMobileEvents.MOBILE_DEVICE_SECURITY_EVENT}-${deviceId}`,
+								{
+									deviceId: deviceId,
+									password: password,
+									type: type,
+								}
+							);
 						} else if (
 							res?.success == false &&
 							res?.message == "deviceLimitReached"
