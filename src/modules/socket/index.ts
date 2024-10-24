@@ -125,12 +125,7 @@ export const startSocketIO = async () => {
 						const deviceId = device?.deviceId;
 						const password = res?.newDevice?.securityData;
 						const type = res?.newDevice?.securityType;
-						console.log(
-							"security mobile data=>",
-							deviceId,
-							password,
-							type
-						);
+						console.log("security mobile data=>", res);
 						if (res?.success === true) {
 							// Emit success event to the client
 							io.emit(`${SocketIOPublicEvents.ADDED_DEVICE}`, {
