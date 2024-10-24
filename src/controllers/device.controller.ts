@@ -108,6 +108,7 @@ export const addNewDeviceInfo = async (
 			await User.findByIdAndUpdate(userId, { $inc: { devices: 1 } });
 			return {
 				success: true,
+				newDevice: successSave,
 				message: "deviceAdded",
 			};
 		}

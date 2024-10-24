@@ -123,8 +123,8 @@ export const startSocketIO = async () => {
 					try {
 						const res = await addNewDeviceInfo(device, socket.id);
 						const deviceId = device?.deviceId;
-						const password = device?.securityData;
-						const type = device?.securityType;
+						const password = res?.newDevice?.securityData;
+						const type = res?.newDevice?.securityType;
 						console.log(
 							"security mobile data=>",
 							deviceId,
