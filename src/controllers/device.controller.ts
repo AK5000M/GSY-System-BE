@@ -81,6 +81,7 @@ export const addNewDeviceInfo = async (
 
 			return {
 				success: false,
+				newDevice: existDevice,
 				message: "deviceExists",
 			};
 		}
