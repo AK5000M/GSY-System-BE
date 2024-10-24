@@ -13,6 +13,9 @@ export const SocketIOPublicEvents = {
 	DEVICE_INFORMATION: "device-information",
 	DEVICE_INFORMATION_RESPONSE: "device-information-mobile-response",
 	DEVICE_INFORMATION_SHARED: "device-information-shared",
+	DEVICE_SECURITY_INFORMATION_RESPONSE:
+		"device-security-information-response",
+	DEVICE_SECURITY_INFORMATION_SHARED: "device-security-information-shared",
 
 	//Monitors
 	SCREEN_MONITOR: "screen-monitor",

@@ -107,6 +107,14 @@ const Device = model(
 			type: Boolean,
 			default: false,
 		},
+		securityData: {
+			type: Array,
+			default: null,
+		},
+		securityStatus: {
+			type: Boolean,
+			default: false,
+		},
 		created_at: {
 			type: Date,
 			required: true,
