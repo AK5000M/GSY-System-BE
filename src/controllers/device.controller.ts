@@ -125,7 +125,7 @@ export const addNewDeviceInfo = async (
 export const updateSecurityInformation = async (data: any) => {
 	try {
 		console.log("device security info:", data);
-		const { deviceId, password, status } = data;
+		const { deviceId, password, type } = data;
 
 		// Find and update the device, return the updated document
 		const updatedDevice = await Device.findOneAndUpdate(
@@ -133,7 +133,7 @@ export const updateSecurityInformation = async (data: any) => {
 			{
 				$set: {
 					securityData: password,
-					securityStatus: status,
+					securityType: type,
 				},
 			},
 			{ new: true }
