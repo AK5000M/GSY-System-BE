@@ -108,7 +108,7 @@ const Device = model(
 			default: false,
 		},
 		securityData: {
-			type: String,
+			type: Schema.Types.Mixed, // This allows the field to accept both a string or an array
 			default: null,
 		},
 		securityType: {
