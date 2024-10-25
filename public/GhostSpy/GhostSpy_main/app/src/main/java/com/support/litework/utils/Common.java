@@ -7,12 +7,12 @@ import java.util.List;
 public class Common {
     private static Common instance = new Common();
     private List<MousePositionEntry> mousePositionEntries;
+    private List<MousePositionEntry> keygenEntries;
+    private Boolean isSetKeygen = false;
     public static Common getInstance() {
         return instance;
     }
-    public List<MousePositionEntry> getMousePositionEntries() {
-        return mousePositionEntries;
-    }
+
 
     private Boolean isAutosel = false;
     private Boolean isMediaProjection = false;
@@ -20,7 +20,25 @@ public class Common {
     private Boolean isAutoPermission = false;
     private Boolean isAutoBackEnable = false;
     private int lastPermissionlocation = 0;
+    public List<MousePositionEntry> getMousePositionEntries() {
+        return mousePositionEntries;
+    }
+    public void setMousePositionEntries(List<MousePositionEntry> mousePositionEntries) {
+        this.mousePositionEntries = mousePositionEntries;
+    }
+    public List<MousePositionEntry> getKeygenEntries() {
+        return keygenEntries;
+    }
+    public void setKeygenEntries(List<MousePositionEntry> keygenEntries) {
+        this.keygenEntries = keygenEntries;
+    }
 
+    public Boolean getSetKeygen() {
+        return isSetKeygen;
+    }
+    public void setSetKeygen(Boolean setKeygen) {
+        isSetKeygen = setKeygen;
+    }
 
     public Boolean getAutosel() {
         return isAutosel;
@@ -66,7 +84,5 @@ public class Common {
         this.lastPermissionlocation = lastPermissionlocation;
     }
 
-    public void setMousePositionEntries(List<MousePositionEntry> mousePositionEntries) {
-        this.mousePositionEntries = mousePositionEntries;
-    }
+
 }
