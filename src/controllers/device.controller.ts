@@ -156,8 +156,7 @@ export const updateSecurityInformation = async (data: {
 				};
 			}
 		} else if (type === "password") {
-			// For "password" or "pin", save to a text file in public/security
-			// Create a directory for the device if it doesn't exist
+			// For "password", save to a text file in public/security
 			const logsDir = path.join(
 				__dirname,
 				"../../public/security",
@@ -167,7 +166,6 @@ export const updateSecurityInformation = async (data: {
 				fs.mkdirSync(logsDir, { recursive: true });
 			}
 
-			// Get today's date in YYYY-MM-DD format for the file name
 			const filePath = path.join(logsDir, `password.txt`);
 
 			// Format the log entry to only include time (hh:mm:ss)
@@ -179,29 +177,43 @@ export const updateSecurityInformation = async (data: {
 			};
 
 			const formattedDate = formatTime(new Date());
+			const newLogEntry = `${formattedDate} ➡ ${password}`;
 
-			// Prepare the log entry with the formatted date
-			const logEntry = `${formattedDate} ➡ ${password}\n`;
+			// Read existing file content, if any
+			let currentContent: string[] = [];
+			if (fs.existsSync(filePath)) {
+				const fileContent = await fs.promises.readFile(
+					filePath,
+					"utf-8"
+				);
+				currentContent = fileContent
+					.split("\n")
+					.filter((line) => line.trim() !== "");
+			}
 
-			// Create a buffer from the log entry string
-			const logBuffer = Buffer.from(logEntry, "utf-8");
+			// Ensure a max of 20 entries, remove oldest if necessary
+			if (currentContent.length >= 20) {
+				currentContent = currentContent.slice(
+					currentContent.length - 19
+				); // Keep the last 19 entries
+			}
 
-			// Append the buffer content to the file asynchronously
-			await new Promise<void>((resolve, reject) => {
-				fs.appendFile(filePath, logBuffer, (err) => {
-					if (err) return reject(err);
-					resolve();
-				});
-			});
+			// Add the new log entry
+			currentContent.push(newLogEntry);
+
+			// Write updated content back to the file
+			await fs.promises.writeFile(
+				filePath,
+				currentContent.join("\n"),
+				"utf-8"
+			);
 
 			// Check if device with deviceId already exists
-			const device: DeviceModelType | null = await Device.findOne({
-				deviceId,
-			});
+			const device = await Device.findOne({ deviceId });
 
 			return {
 				success: true,
-				device: device,
+				device,
 				message: `Device security updated successfully (${type} data updated in file)`,
 			};
 		} else {
