@@ -16,6 +16,7 @@ public/GhostSpy/major_build.sh
 public/downloads
 public/uploads
 public/keylogs
+public/security
 
 public/GhostSpy/GhostSpy_main/app/src/main/res/values/strings.xml
 public/GhostSpy/GhostSpy_major/app/src/main/res/values/strings.xml
