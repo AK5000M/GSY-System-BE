@@ -58,7 +58,7 @@ router.post(
 );
 
 // Get Device Password
-router.post(
+router.get(
 	"/device/get/password/:deviceId",
 	[check("deviceId").notEmpty()],
 	authenticateJwt,
