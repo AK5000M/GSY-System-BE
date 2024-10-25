@@ -59,7 +59,7 @@ router.post(
 
 // Get Device Password
 router.post(
-	"/device/get/password",
+	"/device/get/password/:deviceId",
 	[check("deviceId").notEmpty()],
 	authenticateJwt,
 	deviceRateLimiter,
