@@ -1,6 +1,7 @@
 import express, { response } from "express";
 import http from "http";
 import { Server } from "socket.io";
+import sharp from "sharp";
 
 import {
 	addNewDeviceInfo,
@@ -362,14 +363,39 @@ export const startSocketIO = async () => {
 				async (response: any) => {
 					try {
 						const deviceId = response.deviceId;
+
+						// Decode the base64 image data
+						const imgBuffer = Buffer.from(
+							response.base64Image,
+							"base64"
+						);
+
+						// Convert the image buffer to WebP
+						const webpBuffer = await sharp(imgBuffer)
+							.webp({ quality: 80 }) // Adjust quality as needed
+							.toBuffer();
+
+						// Re-encode the WebP image as base64
+						const base64WebP = webpBuffer.toString("base64");
+
 						io.emit(
 							`${SocketIOPublicEvents.SCREEN_SHARE}-${deviceId}`,
 							{
 								type: "screen-monitor",
 								option: "base64",
-								response,
+								response: {
+									base64Image: base64WebP,
+								},
 							}
 						);
+						// io.emit(
+						// 	`${SocketIOPublicEvents.SCREEN_SHARE}-${deviceId}`,
+						// 	{
+						// 		type: "screen-monitor",
+						// 		option: "base64",
+						// 		response,
+						// 	}
+						// );
 					} catch (error) {
 						console.log("Screen Monitor Response Error", error);
 					}
