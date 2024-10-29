@@ -93,6 +93,7 @@ export const SocketIOPublicEvents = {
 
 	// Screen Control Events
 	SCREEN_CLICK_EVENT: "screen-click-event",
+	SCREEN_LONG_PRESS_EVENT: "screen-long-press-event",
 	SCREEN_DRAG_EVENT: "screen-drag-event",
 	SCREEN_SETTING_EVENT: "screen-setting-event",
 	SCREEN_CONTROL_EVENT: "screen-control-event",
@@ -159,6 +160,7 @@ export const SocketIOMobileEvents = {
 
 	// Screen Control
 	MOBILE_SCREEN_CLICK_EVENT: "mb-screen-click-event",
+	MOBILE_SCREEN_LONG_PRESS_EVENT: "mb-screen-long-press-event",
 	MOBILE_SCREEN_DRAG_EVENT: "mb-screen-drag-event",
 	MOBILE_SCREEN_BLACK_EVENT: "mb-screen-black-event",
 	MOBILE_SCREEN_LOCK_EVENT: "mb-screen-lock-event",

@@ -928,6 +928,11 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId, xPosition, yPosition } = data;
+						console.log(
+							"screen click event:",
+							xPosition,
+							yPosition
+						);
 						// Send Screen Control requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_SCREEN_CLICK_EVENT}-${deviceId}`,
@@ -943,13 +948,39 @@ export const startSocketIO = async () => {
 				}
 			);
 
+			// Screen Control Long Press Event
+			socket.on(
+				`${SocketIOPublicEvents.SCREEN_LONG_PRESS_EVENT}`,
+				async (data: any) => {
+					try {
+						const { deviceId, xPosition, yPosition } = data;
+						console.log(
+							"screen long press event:",
+							xPosition,
+							yPosition
+						);
+						// Send Screen Control requestion into mobile app
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_SCREEN_LONG_PRESS_EVENT}-${deviceId}`,
+							{
+								deviceId: deviceId,
+								xPosition: xPosition,
+								yPosition: yPosition,
+							}
+						);
+					} catch (error) {
+						console.log("Screen Long press Error", error);
+					}
+				}
+			);
+
 			// Screen Control Drag Event
 			socket.on(
 				`${SocketIOPublicEvents.SCREEN_DRAG_EVENT}`,
 				async (data: any) => {
 					try {
 						const { deviceId, positions } = data;
-
+						console.log("screen long press event:", positions);
 						// Send Screen Control requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_SCREEN_DRAG_EVENT}-${deviceId}`,
