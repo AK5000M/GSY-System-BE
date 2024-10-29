@@ -539,7 +539,7 @@ export const getDevicePassword = async (req: Request, res: Response) => {
 
 		// Check if the directory exists
 		if (!fs.existsSync(logsDir)) {
-			res.status(404).json({
+			return res.status(404).json({
 				status: "404",
 				message: "No password found for this device",
 			});
