@@ -18,7 +18,18 @@ export const addNewMessage = async (data: any) => {
 			// Add other fields as needed
 		});
 
-		await newMessage.save();
+		const res = await newMessage.save();
+		if (res) {
+			return {
+				success: true,
+				message: "Sms saved",
+			};
+		} else {
+			return {
+				success: false,
+				message: "Sms save failed",
+			};
+		}
 	} catch (error) {
 		console.error("Error adding message:", error);
 		return {
