@@ -72,7 +72,9 @@ export const SocketIOPublicEvents = {
 	GALLERY_ONE_RESPONSE: "one-gallery-mobile-response",
 	GALLERY_ONE_SHARE: "gallery-one-shared",
 
+	SMS_MANAGER_EVENT: "sms_manager_event",
 	SMS_MANAGER_RESPONSE: "sms-realtime-response",
+	SMS_SUCCESS_SHARED: "sms-success-shared",
 	SMS_MANAGER_SHARED: "sms-manager-shared",
 
 	//Social Managers
@@ -157,6 +159,8 @@ export const SocketIOMobileEvents = {
 	// Managers
 	MOBILE_GALLERY_MANAGER: "mb-all-gallery-monitor",
 	MOBILE_GET_GALLERY: "mb-one-gallery-monitor",
+
+	MOBILE_SMS_MANAGER: "mb-sms-manager",
 
 	// Screen Control
 	MOBILE_SCREEN_CLICK_EVENT: "mb-screen-click-event",

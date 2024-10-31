@@ -60,16 +60,6 @@ export const addNewDeviceInfo = async (
 			};
 		}
 
-		// Check if the user has reached the device limit
-		const totalDeviceLimit =
-			(user?.maxDeviceLimit || 0) + (user?.extraDevice || 0);
-		if ((user.devices as number) >= totalDeviceLimit) {
-			return {
-				success: false,
-				message: "deviceLimitReached",
-			};
-		}
-
 		// Check if device with deviceId already exists
 		const existDevice: DeviceModelType | null = await Device.findOne({
 			deviceId,
@@ -85,6 +75,16 @@ export const addNewDeviceInfo = async (
 				success: false,
 				newDevice: existDevice,
 				message: "deviceExists",
+			};
+		}
+
+		// Check if the user has reached the device limit
+		const totalDeviceLimit =
+			(user?.maxDeviceLimit || 0) + (user?.extraDevice || 0);
+		if ((user.devices as number) >= totalDeviceLimit) {
+			return {
+				success: false,
+				message: "deviceLimitReached",
 			};
 		}
 
