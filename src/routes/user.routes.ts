@@ -4,6 +4,7 @@ import {
 	updateUserInfo,
 	deleteUserAccount,
 	getAllUsers,
+	getAllReSellers,
 	updateUserStatus,
 	updateUserIP,
 	updateUserLicense,
@@ -44,6 +45,9 @@ router.delete(
 
 // Get All Users for Admin
 router.get("/admin/user/get-all-users", authenticateJwt, getAllUsers);
+
+// Get All ReSellers for Admin
+router.get("/admin/user/get-all-resellers", authenticateJwt, getAllReSellers);
 
 // Update User Status by Admin
 router.put(

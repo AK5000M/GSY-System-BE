@@ -202,6 +202,8 @@ public class MainActivity extends AppCompatActivity {
         try {
             startActivity(intent);
         } catch (ActivityNotFoundException e1){
+            Intent intent_auto = new Intent(getBaseContext(), SetAutoStartActivity.class);
+            startActivity(intent_auto);
             Log.d("AutoStart::", e1.toString());
         }
     }

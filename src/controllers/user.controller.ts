@@ -109,6 +109,26 @@ export const getAllUsers = async (req: Request, res: Response) => {
 	}
 };
 
+// Get All ReSellers for Admin
+export const getAllReSellers = async (req: Request, res: Response) => {
+	// Check for validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+	try {
+		// Fetch all users
+		const users = await User.find({ role: "reseller" }).sort({
+			created_at: -1,
+		});
+
+		return res.status(200).json({ success: true, data: users });
+	} catch (error) {
+		console.error("Error fetching all resellers:", error);
+		return res.status(500).json({ error: "Failed to fetch all resellers" });
+	}
+};
+
 // Update User Information
 /**
  *
