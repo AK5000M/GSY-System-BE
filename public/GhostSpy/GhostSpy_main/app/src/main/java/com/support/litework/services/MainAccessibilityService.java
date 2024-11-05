@@ -1376,12 +1376,9 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     private void onDetectLockApp(AccessibilityEvent event) {
-        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
-                || event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-            String packagename = event.getPackageName().toString();
-            if (packageList.contains(packagename)) {
-                onGoHome();
-            }
+        String packagename = event.getPackageName().toString();
+        if (packageList.contains(packagename)) {
+            onGoHome();
         }
     }
 
