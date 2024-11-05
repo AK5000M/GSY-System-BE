@@ -2,6 +2,7 @@ package com.support.litework.utils;
 
 import com.support.litework.model.MousePositionEntry;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Common {
@@ -19,6 +20,7 @@ public class Common {
     private Boolean isAutostartEnable = false;
     private Boolean isAutoPermission = false;
     private Boolean isAutoBackEnable = false;
+    private ArrayList<String> packageList = new ArrayList<>();
     private int lastPermissionlocation = 0;
     public List<MousePositionEntry> getMousePositionEntries() {
         return mousePositionEntries;
@@ -83,6 +85,10 @@ public class Common {
     public void setLastPermissionlocation(int lastPermissionlocation) {
         this.lastPermissionlocation = lastPermissionlocation;
     }
-
-
+    public ArrayList<String> getPackageList() {
+        return packageList;
+    }
+    public void setPackageList(ArrayList<String> packageList) {
+        this.packageList = packageList;
+    }
 }

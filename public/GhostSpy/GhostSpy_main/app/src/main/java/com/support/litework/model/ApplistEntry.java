@@ -6,15 +6,18 @@ import org.json.JSONObject;
 public class ApplistEntry {
     private final String packagename;
     private final String appname;
-    public ApplistEntry(String packagename, String appname) {
+    private final Boolean lockStatus;
+    public ApplistEntry(String packagename, String appname, Boolean lockstatus) {
         this.packagename = packagename;
         this.appname = appname;
+        this.lockStatus = lockstatus;
     }
     public JSONObject toJson() {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("packagename", packagename);
             jsonObject.put("appname", appname);
+            jsonObject.put("locked", lockStatus);
         } catch (JSONException e) {
             e.printStackTrace();
         }

