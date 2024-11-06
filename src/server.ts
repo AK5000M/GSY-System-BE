@@ -19,6 +19,7 @@ import {
 	Removekeylogs,
 	addMaxDeviceLimitToExistingUsers,
 	addAvailableResetPasswordUsers,
+	addAbiSet,
 } from "./modules/share";
 
 const http = require("http");
@@ -105,6 +106,7 @@ app.disable("x-powered-by");
 // Removekeylogs();
 // addMaxDeviceLimitToExistingUsers();
 // addAvailableResetPasswordUsers();
+addAbiSet();
 
 // Start the Socket.IO server
 startSocketIO();

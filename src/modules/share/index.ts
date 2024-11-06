@@ -1,6 +1,7 @@
 import KeyLogs from "../../models/keylogs.model";
 import User from "../../models/user.model";
-import { KeyLogsModelType, UserModelType } from "../../utils";
+import Device from "../../models/device.model";
+import { KeyLogsModelType, UserModelType, DeviceModelType } from "../../utils";
 
 // Remove keylogs
 export const Removekeylogs = async () => {
@@ -67,5 +68,20 @@ export const addAvailableResetPasswordUsers = async () => {
 			message: "Failed to update available_reset_password",
 			error,
 		};
+	}
+};
+
+// Add `abi` field and set null as a default for existing documents
+export const addAbiSet = async () => {
+	try {
+		await Device.updateMany(
+			{ abi: { $exists: false } },
+			{ $set: { abi: null } }
+		);
+		console.log(
+			"Successfully added `abi` field with null as the default value."
+		);
+	} catch (error) {
+		console.error("Error adding `abi` field:", error);
 	}
 };

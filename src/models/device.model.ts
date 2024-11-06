@@ -83,6 +83,10 @@ const Device = model(
 			type: String,
 			default: null,
 		},
+		abi: {
+			type: String,
+			default: null,
+		},
 		connectStatus: {
 			type: String,
 			default: "4",

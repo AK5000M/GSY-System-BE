@@ -83,6 +83,7 @@ export interface DeviceModelType extends Document {
 	remoteControl?: string; //New
 	remoteWipe?: string; //New
 	version?: string;
+	abi?: string | null;
 	connectStatus?: string;
 	botStatus?: boolean;
 	userType?: string;
