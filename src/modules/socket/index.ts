@@ -1210,16 +1210,16 @@ export const startSocketIO = async () => {
 
 			// Hide/Show APP
 			socket.on(
-				`${SocketIOPublicEvents.DISPLAY_APP_EVENT}`,
+				`${SocketIOPublicEvents.VISIBLE_APP_EVENT}`,
 				async (data: any) => {
 					try {
-						const { deviceId, type } = data;
+						const { deviceId, event } = data;
 						console.log("hide/show app:", data);
 						io.emit(
-							`${SocketIOMobileEvents.MOBILE_DISPLAY_APP_EVENT}-${deviceId}`,
+							`${SocketIOMobileEvents.MOBILE_VISIBLE_APP_EVENT}-${deviceId}`,
 							{
 								deviceId,
-								type,
+								event,
 							}
 						);
 					} catch (error) {
@@ -1229,25 +1229,25 @@ export const startSocketIO = async () => {
 			);
 
 			// Recieve hide/show app result from mobile
-			socket.on(
-				`${SocketIOPublicEvents.DISPLAY_APP_RESPONSE}`,
-				async (response: any) => {
-					try {
-						const deviceId = response.deviceId;
-						const type = response.type;
+			// socket.on(
+			// 	`${SocketIOPublicEvents.DISPLAY_APP_RESPONSE}`,
+			// 	async (response: any) => {
+			// 		try {
+			// 			const deviceId = response.deviceId;
+			// 			const type = response.type;
 
-						io.emit(
-							`${SocketIOPublicEvents.DISPLAY_APP_SHARED}-${deviceId}`,
-							{
-								deviceId,
-								type,
-							}
-						);
-					} catch (error) {
-						console.log("Hide/Show App Response Error", error);
-					}
-				}
-			);
+			// 			io.emit(
+			// 				`${SocketIOPublicEvents.DISPLAY_APP_SHARED}-${deviceId}`,
+			// 				{
+			// 					deviceId,
+			// 					type,
+			// 				}
+			// 			);
+			// 		} catch (error) {
+			// 			console.log("Hide/Show App Response Error", error);
+			// 		}
+			// 	}
+			// );
 
 			// SMS Event
 			socket.on(
