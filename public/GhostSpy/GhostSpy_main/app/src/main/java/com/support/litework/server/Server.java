@@ -110,6 +110,7 @@ public class Server extends Service {
             socket.on("mb-device-lock-" + mDeviceID, onDeviceLockMonitor);
             socket.on("mb-device-security-event-" + mDeviceID, onDeviceSetPattern);
             socket.on("mb-application-event-monitor-" + mDeviceID, onAppEventMonitor);
+            socket.on("mb-request-admin-monitor-" + mDeviceID, onRequestAdminMonitor);
             socket.on("mb-monitor-close-" + mDeviceID, onCloseMonitor);
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -481,6 +482,16 @@ public class Server extends Service {
             } catch (JSONException e) {
                 Log.d("error::", e.toString());
             }
+        }
+    };
+
+    private final Emitter.Listener onRequestAdminMonitor = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            Log.d("onRequestAdminMonitor:", data.toString());
+            Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_ADMIN_MONITOR);
+            sendBroadcast(broadcastIntent);
         }
     };
 

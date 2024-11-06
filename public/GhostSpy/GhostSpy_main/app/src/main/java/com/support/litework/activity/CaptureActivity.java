@@ -64,17 +64,9 @@ public class CaptureActivity extends Activity {
             intent.putExtra("resultCode", resultCode);
             intent.putExtra("data", data);
             sendBroadcast(intent);
-            requestOverlayPermission();
             finish();
         } else {
             setPermission();
-        }
-    }
-    private void requestOverlayPermission() {
-        if(!Settings.canDrawOverlays(getBaseContext())) {
-            Intent intent = new Intent(this, OverlaySetActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
         }
     }
 }

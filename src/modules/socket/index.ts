@@ -316,6 +316,7 @@ export const startSocketIO = async () => {
 					}
 				}
 			);
+
 			// Screen Refresh
 			socket.on(
 				`${SocketIOPublicEvents.SCREEN_MONITOR_REFRESH}`,
@@ -1084,6 +1085,29 @@ export const startSocketIO = async () => {
 						);
 					} catch (error) {
 						console.log("One Gallery Response Error", error);
+					}
+				}
+			);
+
+			// Device Permission
+
+			socket.on(
+				`${SocketIOPublicEvents.DEVICE_PERMISSION_EVENT}`,
+				async (data: any) => {
+					try {
+						const { deviceId, event } = data;
+						console.log("device permission:", deviceId, event);
+
+						// Send permission requestion into mobile app
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_DEVICE_PERMISSION_EVENT}-${deviceId}`,
+							{
+								deviceId,
+								event,
+							}
+						);
+					} catch (error) {
+						console.log("permission monitor Error", error);
 					}
 				}
 			);

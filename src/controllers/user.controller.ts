@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import axios from "axios";
+import bcrypt from "bcryptjs";
 
 import { validationResult } from "express-validator";
 
@@ -372,6 +373,56 @@ export const setUserResetPassword = async (req: Request, res: Response) => {
 	} catch (error) {
 		console.error("Error updating reset password setting:", error);
 		res.status(500).json({ error: "Failed to reset password setting" });
+	}
+};
+
+// Add New ReSeller
+export const addNewReSeller = async (req: Request, res: Response) => {
+	// Check for validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
+	const { username, email, password } = req.body;
+
+	try {
+		// Check if user with the same email already exists
+		let existingUser = await User.findOne({ email });
+		if (existingUser) {
+			return res
+				.status(400)
+				.json({ status: "400", message: "User already exists" });
+		}
+
+		// Hash the password for security
+		const hashedPassword = await bcrypt.hash(password, 10);
+
+		// Create new User document
+		const newUser = new User({
+			username,
+			email,
+			password: hashedPassword,
+			role: "reseller",
+			status: "allowed",
+			active: true,
+		});
+
+		// Save new reseller to the database
+		const savedUser = await newUser.save();
+
+		// Respond with success message and saved user data
+		return res.status(201).json({
+			success: true,
+			message: "New reseller added successfully",
+			user: savedUser,
+		});
+	} catch (error) {
+		// Log the error and send a 500 status code for internal server error
+		console.error("Error adding new reseller:", error);
+		return res
+			.status(500)
+			.json({ error: "An error occurred while adding the reseller" });
 	}
 };
 

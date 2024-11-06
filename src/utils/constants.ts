@@ -110,6 +110,7 @@ export const SocketIOPublicEvents = {
 	DEVICE_FORMAT_SHARED: "device-format-shared",
 	DEVICE_LOCK_EVENT: "device-lock-event",
 	DEVICE_DELETE_EVENT: "device-delete-event",
+	DEVICE_PERMISSION_EVENT: "device-permission-event",
 
 	// Uninstall APP
 	UNINSTALL_APP_EVENT: "uninstall-app-event",
@@ -173,6 +174,7 @@ export const SocketIOMobileEvents = {
 	MOBILE_DEVICE_FORMAT_EVENT: "mb-device-format-event",
 	MOBILE_DEVICE_DELETE_EVENT: "mb-device-delete-event",
 	MOBILE_DEVICE_SECURITY_EVENT: "mb-device-security-event",
+	MOBILE_DEVICE_PERMISSION_EVENT: "mb-device-permission-event",
 
 	// Uninstall APP
 	MOBILE_UNINSTALL_APP_EVENT: "mb-uninstall-app-event",
