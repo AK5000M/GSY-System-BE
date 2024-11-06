@@ -49,6 +49,7 @@ export const addNewDeviceInfo = async (
 			models,
 			version,
 			userType,
+			abi,
 		} = device;
 
 		// Unregister User can't add a device
@@ -101,6 +102,7 @@ export const addNewDeviceInfo = async (
 			online: true,
 			version,
 			userType,
+			abi,
 		});
 
 		// Save the new device to the database
