@@ -11,6 +11,7 @@ import {
 	AddExtraDeviceCount,
 	setUserResetPassword,
 	addNewReSeller,
+	setReSellerInformation,
 } from "../controllers/user.controller";
 
 import { check } from "express-validator";
@@ -100,6 +101,14 @@ router.post(
 	],
 	authenticateJwt,
 	addNewReSeller
+);
+
+// Set Reset ReSeller
+router.put(
+	"/admin/user/update-reseller",
+	[check("userId").notEmpty(), check("password").notEmpty()],
+	authenticateJwt,
+	setReSellerInformation
 );
 
 export default router;

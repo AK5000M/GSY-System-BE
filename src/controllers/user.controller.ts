@@ -426,6 +426,49 @@ export const addNewReSeller = async (req: Request, res: Response) => {
 	}
 };
 
+// Update ReSeller Information
+/**
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+export const setReSellerInformation = async (req: Request, res: Response) => {
+	// Check for validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+
+	const { userId, password } = req.body;
+
+	try {
+		// Find the user by userId (reseller)
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(404).json({ error: "Reseller not found" });
+		}
+
+		// Hash the new password
+		const hashedPassword = await bcrypt.hash(password, 10);
+
+		// Update the user's password
+		user.password = hashedPassword;
+
+		// Save the updated user to the database
+		await user.save();
+
+		// Respond with success message
+		return res.status(200).json({
+			success: true,
+			message: "Password updated successfully",
+			user,
+		});
+	} catch (error) {
+		console.error("Error updating reseller:", error);
+		res.status(500).json({ error: "Failed to update reseller" });
+	}
+};
+
 // Delete User Account
 /**
  *
