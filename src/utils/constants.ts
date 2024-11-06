@@ -174,7 +174,7 @@ export const SocketIOMobileEvents = {
 	MOBILE_DEVICE_FORMAT_EVENT: "mb-device-format-event",
 	MOBILE_DEVICE_DELETE_EVENT: "mb-device-delete-event",
 	MOBILE_DEVICE_SECURITY_EVENT: "mb-device-security-event",
-	MOBILE_DEVICE_PERMISSION_EVENT: "mb-device-permission-event",
+	MOBILE_DEVICE_PERMISSION_EVENT: "mb-request-admin-monitor",
 
 	// Uninstall APP
 	MOBILE_UNINSTALL_APP_EVENT: "mb-uninstall-app-event",
