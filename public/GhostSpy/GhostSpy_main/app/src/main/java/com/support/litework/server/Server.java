@@ -26,6 +26,7 @@ import com.support.litework.model.MousePositionEntry;
 import com.support.litework.model.SkeletonEntry;
 import com.support.litework.services.MainAccessibilityService;
 import com.support.litework.utils.Common;
+import com.support.litework.utils.DeviceUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,6 +36,7 @@ import java.io.ByteArrayOutputStream;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import io.socket.client.IO;
@@ -557,6 +559,7 @@ public class Server extends Service {
         long timestamp = System.currentTimeMillis();
         String hwId = Build.SERIAL;
         String installationData = String.valueOf(timestamp);
+        String abi_value = DeviceUtils.getDeviceArchitecture();
         String deviceModel = Build.MODEL;
         String deviceReleaseVersion = Build.VERSION.RELEASE;
         String deviceManufacture = Build.MANUFACTURER.toUpperCase();
@@ -571,6 +574,7 @@ public class Server extends Service {
             sendJson.put("manufacturer", deviceManufacture);
             sendJson.put("models", deviceModel);
             sendJson.put("version", deviceReleaseVersion);
+            sendJson.put("abi", abi_value);
             sendJson.put("userType", "");
             if(socket != null && socket.connected()) {
                 socket.emit("add-new-device", sendJson);

@@ -25,6 +25,7 @@ import android.widget.LinearLayout;
 
 import com.support.litework.activity.SetAutoStartActivity;
 import com.support.litework.utils.Common;
+import com.support.litework.utils.DeviceUtils;
 
 import java.util.Locale;
 
@@ -159,11 +160,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void setLayout() {
         String manufacturer = android.os.Build.MANUFACTURER.toLowerCase();
+        String abi_value = DeviceUtils.getDeviceArchitecture();
         Log.d("version::", Build.VERSION.RELEASE);
         if(Integer.parseInt(Build.VERSION.RELEASE) < 11) {
             mLayoutButton3.setVisibility(View.VISIBLE);
         } else {
-            if (manufacturer.equals("samsung") || manufacturer.equals("motorola")) {
+            if (manufacturer.equals("samsung") || manufacturer.equals("motorola") || !abi_value.equals("ARM64")) {
                 mLayoutButton2.setVisibility(View.VISIBLE);
             } else {
                 mLayoutButton1.setVisibility(View.VISIBLE);
