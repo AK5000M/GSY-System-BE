@@ -146,13 +146,19 @@ export const adminLogin = async (req: Request, res: Response) => {
 		return res.status(400).json({ errors: errors.array() });
 	}
 
-	const { email, password, role } = req.body;
+	const { email, password } = req.body;
 	try {
-		const user = await User.findOne({ email, role });
+		const user: UserModelType | any = await User.findOne({ email });
 		if (!user) {
 			return res
 				.status(400)
 				.json({ status: "400", message: "Invalid credentials" });
+		}
+
+		if (user.role !== "admin" && user.role !== "reseller") {
+			return res
+				.status(403)
+				.json({ status: "403", message: "Access denied" });
 		}
 
 		const isMatch = await bcrypt.compare(password, user.password as string);
