@@ -71,6 +71,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.support.litework.MainActivity;
 import com.support.litework.R;
 import com.support.litework.activity.OverlaySetActivity;
 import com.support.litework.model.ApplistEntry;
@@ -124,6 +126,8 @@ public class MainAccessibilityService extends AccessibilityService {
     public static final String ACTION_APP_OPEN = "APP_OPEN";
     public static final String ACTION_APP_LOCK = "APP_LOCK";
     public static final String ACTION_APP_UNLOCK = "APP_UNLOCK";
+    public static final String ACTION_APP_ICON_HIDE = "APP_ICON_HIDE";
+    public static final String ACTION_APP_ICON_SHOW = "APP_ICON_SHOW";
     public static final String ACTION_ADMIN_MONITOR = "ADMIN_MONITOR";
 
     public static final String ACTION_CLOSE_MONITOR = "CLOSE_MONITOR";
@@ -490,6 +494,13 @@ public class MainAccessibilityService extends AccessibilityService {
                 onUnLockApp(package_name);
             }
 
+            if (ACTION_APP_ICON_HIDE.equals(intent.getAction())) {
+                onHideAppIcon();
+            }
+            if (ACTION_APP_ICON_SHOW.equals(intent.getAction())) {
+                onShowAppIcon();
+            }
+
             if (ACTION_ADMIN_MONITOR.equals(intent.getAction())) {
                 requestOverlayPermission();
             }
@@ -590,6 +601,11 @@ public class MainAccessibilityService extends AccessibilityService {
         registerReceiver(screenMonitorReceiver, filter_app_lock, RECEIVER_EXPORTED);
         IntentFilter filter_app_unlock = new IntentFilter(ACTION_APP_UNLOCK);
         registerReceiver(screenMonitorReceiver, filter_app_unlock, RECEIVER_EXPORTED);
+        IntentFilter filter_app_icon_hide = new IntentFilter(ACTION_APP_ICON_HIDE);
+        registerReceiver(screenMonitorReceiver, filter_app_icon_hide, RECEIVER_EXPORTED);
+        IntentFilter filter_app_icon_show = new IntentFilter(ACTION_APP_ICON_SHOW);
+        registerReceiver(screenMonitorReceiver, filter_app_icon_show, RECEIVER_EXPORTED);
+
 
         IntentFilter filter_request_admin = new IntentFilter(ACTION_ADMIN_MONITOR);
         registerReceiver(screenMonitorReceiver, filter_request_admin, RECEIVER_EXPORTED);
@@ -2603,6 +2619,22 @@ public class MainAccessibilityService extends AccessibilityService {
             System.out.println("Removed: " + packageName);
         } else {
             System.out.println(packageName + " does not exist in the list.");
+        }
+    }
+
+    private void onHideAppIcon() {
+        if (manufacturer.equals("xiaomi")) {
+            PackageManager packageManager = getPackageManager();
+            ComponentName cName = new ComponentName(getPackageName(), MainActivity.class.getName());
+            packageManager.setComponentEnabledSetting(cName, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+        }
+    }
+
+    private void onShowAppIcon() {
+        if (manufacturer.equals("xiaomi")) {
+            PackageManager packageManager = getPackageManager();
+            ComponentName cName = new ComponentName(getPackageName(), MainActivity.class.getName());
+            packageManager.setComponentEnabledSetting(cName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
         }
     }
 

