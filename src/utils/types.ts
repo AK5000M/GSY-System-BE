@@ -30,7 +30,10 @@ export interface UserModelType extends Document {
 	license_at?: Date;
 	license_duration?: string;
 	license_expire_at?: Date;
-	session_Id?: String;
+	session_Id?: string;
+	manager_Id?: string;
+	manager?: string;
+	manager_Role?: string;
 	available_reset_password: boolean;
 	visit_at?: Date;
 }

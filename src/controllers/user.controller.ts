@@ -384,7 +384,7 @@ export const addNewReSeller = async (req: Request, res: Response) => {
 		return res.status(400).json({ errors: errors.array() });
 	}
 
-	const { username, email, password } = req.body;
+	const { username, email, password, manager_Id, manager } = req.body;
 
 	try {
 		// Check if user with the same email already exists
@@ -403,6 +403,8 @@ export const addNewReSeller = async (req: Request, res: Response) => {
 			username,
 			email,
 			password: hashedPassword,
+			manager_Id,
+			manager,
 			role: "reseller",
 			status: "allowed",
 			active: true,
@@ -432,7 +434,10 @@ export const addNewReSeller = async (req: Request, res: Response) => {
  * @param {*} req
  * @param {*} res
  */
-export const setReSellerInformation = async (req: Request, res: Response) => {
+export const updateReSellerInformation = async (
+	req: Request,
+	res: Response
+) => {
 	// Check for validation errors
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {

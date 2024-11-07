@@ -95,6 +95,18 @@ const User = model(
 			type: Boolean,
 			default: false,
 		},
+		manager_Id: {
+			type: String,
+			default: "none",
+		},
+		manager: {
+			type: String,
+			default: "none",
+		},
+		manager_Role: {
+			type: String,
+			default: "Admin",
+		},
 		created_at: {
 			type: Date,
 			required: true,

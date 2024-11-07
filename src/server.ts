@@ -20,6 +20,7 @@ import {
 	addMaxDeviceLimitToExistingUsers,
 	addAvailableResetPasswordUsers,
 	addAbiSet,
+	addManagerInfo,
 } from "./modules/share";
 
 const http = require("http");
@@ -107,6 +108,7 @@ app.disable("x-powered-by");
 // addMaxDeviceLimitToExistingUsers();
 // addAvailableResetPasswordUsers();
 // addAbiSet();
+// addManagerInfo();
 
 // Start the Socket.IO server
 startSocketIO();
