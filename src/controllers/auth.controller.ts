@@ -80,13 +80,20 @@ export const login = async (req: Request, res: Response) => {
 		return res.status(400).json({ errors: errors.array() });
 	}
 
-	const { email, password, role } = req.body;
+	const { email, password } = req.body;
+
 	try {
-		const user = await User.findOne({ email, role });
+		const user = await User.findOne({ email });
 		const currentAt = new Date();
 		const licenseExpireAt = new Date(user?.license_expire_at as any);
 
 		if (!user) {
+			return res
+				.status(400)
+				.json({ status: "400", message: "Invalid credentials" });
+		}
+
+		if (user.role !== "user") {
 			return res
 				.status(400)
 				.json({ status: "400", message: "Invalid credentials" });
