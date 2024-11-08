@@ -100,7 +100,7 @@ export const addManagerInfo = async () => {
 				$set: {
 					manager_Id: "66e2fc3b9ec3162febcc2c23",
 					manager: "none",
-					manager_Role: "Admin",
+					manager_Role: "admin",
 				},
 			}
 		);

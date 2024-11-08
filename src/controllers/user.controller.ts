@@ -54,7 +54,6 @@ export const getUserInfo = async (req: Request, res: Response) => {
 
 	try {
 		const userId = req.params.userId;
-
 		// Find files in the database that match the query
 		const userInfo: UserModelType | null = await User.findById(userId);
 
@@ -81,9 +80,15 @@ export const getUserInfo = async (req: Request, res: Response) => {
 			userId: userId,
 		});
 
-		return res
-			.status(200)
-			.json({ success: true, data: { userInfo, devices, apps } });
+		const manageUsers = await User.find({
+			manager_Id: userId,
+			role: "user",
+		});
+
+		return res.status(200).json({
+			success: true,
+			data: { userInfo, devices, apps, manageUsers },
+		});
 	} catch (error) {
 		console.error("Error fetching user:", error);
 		return res.status(500).json({ error: "Failed to fetch user" });
@@ -188,15 +193,25 @@ export const updateUserStatus = async (req: Request, res: Response) => {
 		return res.status(400).json({ errors: errors.array() });
 	}
 
-	const { userId, type } = req.body;
+	const { userId, type, manager_Id, manager, manager_Role } = req.body;
 
 	try {
 		let updateData = {};
 
 		if (type === "allowed") {
-			updateData = { status: "allowed" };
+			updateData = {
+				status: "allowed",
+				manager_Id,
+				manager,
+				manager_Role,
+			};
 		} else if (type === "blocked") {
-			updateData = { status: "blocked" };
+			updateData = {
+				status: "blocked",
+				manager_Id,
+				manager,
+				manager_Role,
+			};
 		} else {
 			return res.status(400).json({ error: "Invalid type" });
 		}
@@ -274,7 +289,7 @@ export const updateUserLicense = async (req: Request, res: Response) => {
 		return res.status(400).json({ errors: errors.array() });
 	}
 
-	const { userId, license } = req.body;
+	const { userId, license, manager_Id, manager, manager_Role } = req.body;
 
 	try {
 		// Current date (timestamp for license_at)
@@ -289,6 +304,9 @@ export const updateUserLicense = async (req: Request, res: Response) => {
 			license_duration: license,
 			license_at: licenseAt,
 			license_expire_at: licenseExpireAt,
+			manager_Id,
+			manager,
+			manager_Role,
 		};
 
 		const user = await User.findByIdAndUpdate(userId, updateData, {
@@ -318,13 +336,20 @@ export const AddExtraDeviceCount = async (req: Request, res: Response) => {
 		return res.status(400).json({ errors: errors.array() });
 	}
 
-	const { userId, extra } = req.body;
+	const { userId, extra, manager_Id, manager, manager_Role } = req.body;
 
 	try {
-		// Find the user and increment the extraDevice field
+		// Find the user and update extraDevice, manager_Id, manager, and manager_Role
 		const user = await User.findByIdAndUpdate(
 			userId,
-			{ $inc: { extraDevice: extra } },
+			{
+				$inc: { extraDevice: extra },
+				$set: {
+					manager_Id: manager_Id || "none",
+					manager: manager || "none",
+					manager_Role: manager_Role || "Admin",
+				},
+			},
 			{ new: true }
 		);
 
@@ -351,13 +376,18 @@ export const setUserResetPassword = async (req: Request, res: Response) => {
 		return res.status(400).json({ errors: errors.array() });
 	}
 
-	const { userId, status } = req.body;
+	const { userId, status, manager_Id, manager, manager_Role } = req.body;
 
 	try {
 		// Find the user and increment the available reset password field
 		const user = await User.findByIdAndUpdate(
 			userId,
-			{ available_reset_password: status },
+			{
+				available_reset_password: status,
+				manager_Id: manager_Id || "none",
+				manager: manager || "none",
+				manager_Role: manager_Role || "Admin",
+			},
 			{ new: true }
 		);
 

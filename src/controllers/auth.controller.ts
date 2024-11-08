@@ -34,12 +34,17 @@ export const register = async (req: Request, res: Response) => {
 				.json({ status: "400", message: "User already exists" });
 		}
 
+		let admin = await User.findOne({ role: "admin" });
+
 		const hashedPassword = await bcrypt.hash(password, 10);
 		user = new User({
 			email,
 			password: hashedPassword,
 			username,
 			ip,
+			manager_Id: admin?._id,
+			manager: admin?.username,
+			manager_Role: admin?.role,
 		});
 
 		const savedUser = await user.save();

@@ -54,7 +54,13 @@ router.get("/admin/user/get-all-resellers", authenticateJwt, getAllReSellers);
 // Update User Status by Admin
 router.put(
 	"/admin/user/status",
-	[check("userId").notEmpty()],
+	[
+		check("userId").notEmpty(),
+		check("type").notEmpty(),
+		check("manager_Id").notEmpty(),
+		check("manager").notEmpty(),
+		check("manager_Role").notEmpty(),
+	],
 	authenticateJwt,
 	updateUserStatus
 );
@@ -70,7 +76,13 @@ router.put(
 // Update User License by Admin
 router.put(
 	"/admin/user/license",
-	[check("userId").notEmpty()],
+	[
+		check("userId").notEmpty(),
+		check("license").notEmpty(),
+		check("manager_Id").notEmpty(),
+		check("manager").notEmpty(),
+		check("manager_Role").notEmpty(),
+	],
 	authenticateJwt,
 	updateUserLicense
 );
@@ -78,7 +90,13 @@ router.put(
 // Extra Device Count by Admin
 router.put(
 	"/admin/user/extra-device",
-	[check("userId").notEmpty(), check("extra").notEmpty()],
+	[
+		check("userId").notEmpty(),
+		check("extra").notEmpty(),
+		check("manager_Id").notEmpty(),
+		check("manager").notEmpty(),
+		check("manager_Role").notEmpty(),
+	],
 	authenticateJwt,
 	AddExtraDeviceCount
 );
@@ -86,7 +104,13 @@ router.put(
 // Set Reset Password by Admin
 router.put(
 	"/admin/user/allow-reset-password",
-	[check("userId").notEmpty(), check("status").notEmpty()],
+	[
+		check("userId").notEmpty(),
+		check("status").notEmpty(),
+		check("manager_Id").notEmpty(),
+		check("manager").notEmpty(),
+		check("manager_Role").notEmpty(),
+	],
 	authenticateJwt,
 	setUserResetPassword
 );
