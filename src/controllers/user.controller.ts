@@ -347,7 +347,7 @@ export const AddExtraDeviceCount = async (req: Request, res: Response) => {
 				$set: {
 					manager_Id: manager_Id || "none",
 					manager: manager || "none",
-					manager_Role: manager_Role || "Admin",
+					manager_Role: manager_Role || "admin",
 				},
 			},
 			{ new: true }
@@ -386,7 +386,7 @@ export const setUserResetPassword = async (req: Request, res: Response) => {
 				available_reset_password: status,
 				manager_Id: manager_Id || "none",
 				manager: manager || "none",
-				manager_Role: manager_Role || "Admin",
+				manager_Role: manager_Role || "admin",
 			},
 			{ new: true }
 		);

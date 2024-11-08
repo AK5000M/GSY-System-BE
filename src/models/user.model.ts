@@ -105,7 +105,7 @@ const User = model(
 		},
 		manager_Role: {
 			type: String,
-			default: "Admin",
+			default: "admin",
 		},
 		created_at: {
 			type: Date,

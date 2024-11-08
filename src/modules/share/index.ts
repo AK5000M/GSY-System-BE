@@ -93,7 +93,7 @@ export const addManagerInfo = async () => {
 			{
 				manager_Id: { $exists: true },
 				manager: { $exists: true },
-				manager_Role: { $exists: false },
+				manager_Role: { $exists: true },
 				role: { $ne: "admin" },
 			},
 			{
