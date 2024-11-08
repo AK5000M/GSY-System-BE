@@ -108,7 +108,7 @@ app.disable("x-powered-by");
 // addMaxDeviceLimitToExistingUsers();
 // addAvailableResetPasswordUsers();
 // addAbiSet();
-addManagerInfo();
+// addManagerInfo();
 
 // Start the Socket.IO server
 startSocketIO();

@@ -89,21 +89,21 @@ export const addAbiSet = async () => {
 // Add `manager_Id` and `manager` as default
 export const addManagerInfo = async () => {
 	try {
-		await User.updateMany(
-			{
-				manager_Id: { $exists: true },
-				manager: { $exists: true },
-				manager_Role: { $exists: true },
-				role: { $ne: "admin" },
-			},
-			{
-				$set: {
-					manager_Id: "66e2fc3b9ec3162febcc2c23",
-					manager: "none",
-					manager_Role: "admin",
-				},
-			}
-		);
+		// await User.updateMany(
+		// 	{
+		// 		manager_Id: { $exists: true },
+		// 		manager: { $exists: true },
+		// 		manager_Role: { $exists: true },
+		// 		role: { $ne: "admin" },
+		// 	},
+		// 	{
+		// 		$set: {
+		// 			manager_Id: "66e2fc3b9ec3162febcc2c23",
+		// 			manager: "none",
+		// 			manager_Role: "admin",
+		// 		},
+		// 	}
+		// );
 		console.log(
 			"Successfully added `manager` field with null as the default value."
 		);
