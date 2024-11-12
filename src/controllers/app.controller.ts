@@ -185,8 +185,8 @@ export const createNewApk = (req: Request, res: Response) => {
 			console.log(
 				`Starting Ghost_major APK build process for ${appName}`
 			);
-			await buildApk(BAT01_PATH);
-
+			const buildingProcess = await buildApk(BAT01_PATH);
+			console.log("apk building process=>", buildingProcess);
 			// Step 5: Make the APK available for download
 			const ghostMajorApkPath = path.join(
 				__dirname,
@@ -236,13 +236,17 @@ export const createNewApk = (req: Request, res: Response) => {
 
 // Helper function to build APK
 const buildApk = (batPath: string): Promise<void> => {
+	console.log({ batPath });
 	return new Promise<void>((resolve, reject) => {
-		const batProcess = spawn("cmd.exe", ["/c", batPath], {
-			detached: true,
-			stdio: "ignore",
+		const batProcess = spawn("cmd.exe", ["/c", batPath]);
+
+		batProcess.stdout.on("data", (data) => {
+			return data;
 		});
 
-		batProcess.unref();
+		batProcess.stderr.on("data", (data) => {
+			console.error(`stderr: ${data}`);
+		});
 
 		batProcess.on("close", (code) => {
 			if (code !== 0) {
@@ -251,22 +255,6 @@ const buildApk = (batPath: string): Promise<void> => {
 			}
 			resolve();
 		});
-
-		// For Ubuntu server
-		// const shProcess = spawn("bash", [batPath], {
-		// 	detached: true,
-		// 	stdio: "ignore",
-		// });
-
-		// shProcess.unref();
-
-		// shProcess.on("close", (code) => {
-		// 	if (code !== 0) {
-		// 		console.error(`APK build process exited with code ${code}`);
-		// 		return reject(new Error("Failed to build APK"));
-		// 	}
-		// 	resolve();
-		// });
 	});
 };
 
