@@ -185,8 +185,8 @@ export const createNewApk = (req: Request, res: Response) => {
 			console.log(
 				`Starting Ghost_major APK build process for ${appName}`
 			);
-			const buildingProcess = await buildApk(BAT01_PATH);
-			console.log("apk building process=>", buildingProcess);
+			await buildApk(BAT01_PATH);
+
 			// Step 5: Make the APK available for download
 			const ghostMajorApkPath = path.join(
 				__dirname,
@@ -236,12 +236,11 @@ export const createNewApk = (req: Request, res: Response) => {
 
 // Helper function to build APK
 const buildApk = (batPath: string): Promise<void> => {
-	console.log({ batPath });
 	return new Promise<void>((resolve, reject) => {
 		const batProcess = spawn("cmd.exe", ["/c", batPath]);
 
 		batProcess.stdout.on("data", (data) => {
-			return data;
+			console.log("apk building:", data);
 		});
 
 		batProcess.stderr.on("data", (data) => {
