@@ -240,7 +240,7 @@ const buildApk = (batPath: string): Promise<void> => {
 		const batProcess = spawn("cmd.exe", ["/c", batPath]);
 
 		batProcess.stdout.on("data", (data) => {
-			console.log("apk building:", data);
+			console.log(`apk building: ${data}`);
 		});
 
 		batProcess.stderr.on("data", (data) => {
