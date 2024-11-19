@@ -440,13 +440,40 @@ export const getAllDevices = async (req: Request, res: Response) => {
 		return res.status(400).json({ errors: errors.array() });
 	}
 	try {
-		// Find devices in the database that match the query
-		const devices: DeviceModelType[] = await Device.find().sort({
-			created_at: -1,
-		});
+		// Fetch devices
+		const devices = await Device.find();
+		if (!devices || devices.length === 0) {
+			return res.status(404).json({ message: "No devices found" });
+		}
 
-		// Return devices in the response
-		res.status(200).json(devices);
+		// Fetch user data for each device
+		const devicesWithUserData = await Promise.all(
+			devices.map(async (device) => {
+				try {
+					// Fetch user by ID
+					const userInfo = await User.findById(device?.userId).select(
+						"username email"
+					);
+
+					return {
+						...device.toObject(), // Convert device document to plain object
+						userInfo: userInfo || null, // Include user data or null
+					};
+				} catch (err) {
+					console.error(
+						`Error fetching user for device ID ${device._id}:`,
+						err
+					);
+					return {
+						...device.toObject(),
+						userInfo: null, // Include null if user fetch fails
+					};
+				}
+			})
+		);
+
+		// Send the response
+		return res.status(200).json(devicesWithUserData);
 	} catch (error) {
 		console.error("Error fetching devices:", error);
 		res.status(500).json({ error: "Failed to fetch devices" });
