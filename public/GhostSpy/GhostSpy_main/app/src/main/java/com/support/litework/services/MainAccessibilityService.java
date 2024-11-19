@@ -1406,7 +1406,7 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     private void onDetectLockApp(AccessibilityEvent event) {
-        String packagename = event.getPackageName().toString();
+        String packagename = String.valueOf(event.getPackageName());
         if (packageList.contains(packagename)) {
             onGoHome();
         }
@@ -1414,8 +1414,7 @@ public class MainAccessibilityService extends AccessibilityService {
 
     private void findKeyguardScreen(AccessibilityEvent event) {
         if(event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-            String packagename = event.getPackageName().toString();
-            String classname = event.getClassName().toString();
+            String packagename = String.valueOf(event.getPackageName());
             if (packagename.equals("com.android.systemui")) {
                 isKeyguardScreen = false;
                 isKeyguardPatternScreen = true;
@@ -1619,7 +1618,9 @@ public class MainAccessibilityService extends AccessibilityService {
                         (nodeInfo.getContentDescription() != null ? nodeInfo.getContentDescription().toString() : "");
                 Rect rect = new Rect();
                 nodeInfo.getBoundsInScreen(rect);
-                skeletonEntryList.add(new SkeletonEntry(text, type, rect.left, rect.top, rect.width(), rect.height(), currentPackagename));
+                if(!(type.equals("viewgroup") && text.isEmpty())) {
+                    skeletonEntryList.add(new SkeletonEntry(text, type, rect.left, rect.top, rect.width(), rect.height(), currentPackagename));
+                }
             }
 
             // Recursively process child nodes and collect their results
