@@ -238,7 +238,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId } = data;
-
 						// Send ScreenMonitor requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_SCREEN_MONITOR}-${deviceId}`,

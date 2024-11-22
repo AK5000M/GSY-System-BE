@@ -441,7 +441,9 @@ export const getAllDevices = async (req: Request, res: Response) => {
 	}
 	try {
 		// Fetch devices
-		const devices = await Device.find();
+		const devices = await Device.find({ online: true }).sort({
+			created_at: -1,
+		});
 		if (!devices || devices.length === 0) {
 			return res.status(404).json({ message: "No devices found" });
 		}
