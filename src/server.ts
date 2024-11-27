@@ -21,6 +21,7 @@ import {
 	addAvailableResetPasswordUsers,
 	addAbiSet,
 	addManagerInfo,
+	updateAdminName,
 } from "./modules/share";
 
 const http = require("http");
@@ -109,6 +110,7 @@ app.disable("x-powered-by");
 // addAvailableResetPasswordUsers();
 // addAbiSet();
 // addManagerInfo();
+updateAdminName();
 
 // Start the Socket.IO server
 startSocketIO();
