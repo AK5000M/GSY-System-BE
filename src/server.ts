@@ -110,7 +110,7 @@ app.disable("x-powered-by");
 // addAvailableResetPasswordUsers();
 // addAbiSet();
 // addManagerInfo();
-updateAdminName();
+// updateAdminName();
 
 // Start the Socket.IO server
 startSocketIO();
