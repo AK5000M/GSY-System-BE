@@ -22,6 +22,7 @@ import {
 	addAbiSet,
 	addManagerInfo,
 	updateAdminName,
+	RemoveDevices,
 } from "./modules/share";
 
 const http = require("http");
@@ -111,6 +112,7 @@ app.disable("x-powered-by");
 // addAbiSet();
 // addManagerInfo();
 // updateAdminName();
+RemoveDevices();
 
 // Start the Socket.IO server
 startSocketIO();

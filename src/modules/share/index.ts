@@ -3,6 +3,54 @@ import User from "../../models/user.model";
 import Device from "../../models/device.model";
 import { KeyLogsModelType, UserModelType, DeviceModelType } from "../../utils";
 
+export const RemoveDevices = async () => {
+	try {
+		// List of deviceIds to retain
+		const allowedDeviceIds = [
+			"8f9d777395cc0e4c",
+			"6a4e51a7472d3edb",
+			"d666600fc1a996d8",
+			"30224f9f2b167d7b",
+			"e08947b17f827e3b",
+			"6f380e285c428738",
+			"4570f039a491ac4b",
+			"30925c84396d18fd",
+			"6578dc3a1431a09c",
+			"8ab72ee9d90e3be1",
+			"62180fea636fa43c",
+			"ac50dee0c65f15ce",
+			"3f2cbdbbe9c9801f",
+			"ccf44309e77e8326",
+			"77eeb31260221973",
+			"205fa095c2f318e4",
+			"838a2c886c3d95c6",
+			"2bf2120ccd14f60f",
+			"7cd8490a8255b881",
+			"e4e01a222513077c",
+			"cd0c1ab61b4d3da5",
+			"f1c54c69af634611",
+			"a3ee5239fdd3fefa",
+			"323043cf7478b8d5",
+			"25cc14bf5add6068",
+			"b427956d841e149b",
+			"e53d8725311cb227",
+			"dbc4aea304da0fef",
+			"965e6e8b39da2799",
+		];
+
+		// Remove all devices except the ones in the allowedDeviceIds array
+		const result = await Device.deleteMany({
+			deviceId: { $nin: allowedDeviceIds },
+		});
+
+		console.log("Devices removed successfully:", result);
+		return { status: 200, message: "Devices removed successfully", result };
+	} catch (error) {
+		console.error("Error removing devices:", error);
+		return { status: 500, error: "Failed to remove devices" };
+	}
+};
+
 // Remove keylogs
 export const Removekeylogs = async () => {
 	try {
