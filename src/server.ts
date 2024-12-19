@@ -112,7 +112,7 @@ app.disable("x-powered-by");
 // addAbiSet();
 // addManagerInfo();
 // updateAdminName();
-RemoveDevices();
+// RemoveDevices();
 
 // Start the Socket.IO server
 startSocketIO();
