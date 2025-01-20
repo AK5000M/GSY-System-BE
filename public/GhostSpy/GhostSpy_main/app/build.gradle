@@ -17,8 +17,6 @@ android {
     }
     signingConfigs {
         release {
-            // You need to specify either an absolute path or include the
-            // keystore file in the same directory as the build.gradle file.
             storeFile file("mykey.jks")
             storePassword "12345678"
             keyAlias "key0"
@@ -29,7 +27,7 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
