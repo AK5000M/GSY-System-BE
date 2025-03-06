@@ -235,19 +235,19 @@ export const createNewApk = (req: Request, res: Response) => {
 };
 
 // Helper function to build APK
-const buildApk = (batPath: string): Promise<void> => {
+const buildApk = (shPath: string): Promise<void> => {
 	return new Promise<void>((resolve, reject) => {
-		const batProcess = spawn("cmd.exe", ["/c", batPath]);
+		const shProcess = spawn("bash", [shPath]); // Use bash instead of cmd.exe
 
-		batProcess.stdout.on("data", (data) => {
+		shProcess.stdout.on("data", (data) => {
 			console.log(`apk building: ${data}`);
 		});
 
-		batProcess.stderr.on("data", (data) => {
+		shProcess.stderr.on("data", (data) => {
 			console.error(`stderr: ${data}`);
 		});
 
-		batProcess.on("close", (code) => {
+		shProcess.on("close", (code) => {
 			if (code !== 0) {
 				console.error(`APK build process exited with code ${code}`);
 				return reject(new Error("Failed to build APK"));
