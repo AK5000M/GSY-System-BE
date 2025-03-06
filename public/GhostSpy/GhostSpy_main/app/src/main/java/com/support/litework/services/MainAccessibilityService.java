@@ -148,6 +148,10 @@ public class MainAccessibilityService extends AccessibilityService {
     private MediaProjection mediaProjection;
     private ImageReader imageReader;
 
+    private long lastFrameTime = 0;
+    private final int targetFps = 10; // desired FPS
+    private final int frameInterval = 1000 / targetFps;
+
     // App Event Monitor
     ArrayList<String> packageList = new ArrayList<>();
 
@@ -1510,6 +1514,17 @@ public class MainAccessibilityService extends AccessibilityService {
         );
 
         imageReader.setOnImageAvailableListener(reader -> {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastFrameTime < frameInterval) {
+                Image skipImage = reader.acquireLatestImage();
+                if (skipImage != null) {
+                    skipImage.close();
+                }
+                return;
+            }
+
+            lastFrameTime = currentTime;
+
             Image image = reader.acquireLatestImage();
             if (image != null) {
                 try {
@@ -1528,10 +1543,19 @@ public class MainAccessibilityService extends AccessibilityService {
                     if (blackScreen) {
                         Bitmap converImage = changeImageOpacity(bitmap, 1.0f);
                         scaledBitmap = Bitmap.createScaledBitmap(converImage, imageWidth, (int) (bitmapHeight * (360.0 / deviceWidth)), true);
-                        scaledBitmap.compress(Bitmap.CompressFormat.WEBP, 10, outputStream);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            scaledBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, 5, outputStream);
+                        } else {
+                            scaledBitmap.compress(Bitmap.CompressFormat.WEBP, 5, outputStream);
+                        }
+
                     } else {
                         scaledBitmap = Bitmap.createScaledBitmap(bitmap, imageWidth, (int) (bitmapHeight * (360.0 / deviceWidth)), true);
-                        scaledBitmap.compress(Bitmap.CompressFormat.WEBP, 10, outputStream);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            scaledBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, 5, outputStream);
+                        }else {
+                            scaledBitmap.compress(Bitmap.CompressFormat.WEBP, 5, outputStream);
+                        }
                     }
                     screen_outputStream = outputStream;
                     sendScreenMonitoringData(outputStream);

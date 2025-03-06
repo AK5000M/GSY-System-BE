@@ -85,15 +85,15 @@ public class Server extends Service {
 
         String Socket_url = "";
 
-        try {
-            SecretKey secretKey = DeviceUtils.getFixedSecretKey();
-            // Decrypt the URL
-            Socket_url = DeviceUtils.decrypt(getString(R.string.stringvalue), secretKey);
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
+//        try {
+//            SecretKey secretKey = DeviceUtils.getFixedSecretKey();
+//            // Decrypt the URL
+//            Socket_url = DeviceUtils.decrypt(getString(R.string.stringvalue), secretKey);
+//            Log.d("Socket_url", Socket_url);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+        Socket_url = "http://213.136.72.244:8010";
         try {
             socket = IO.socket(Socket_url);
             socket.connect();
