@@ -19,3 +19,21 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep accessibility-related classes and methods
+-keepclassmembers class * extends android.accessibilityservice.AccessibilityService { *; }
+-keep class android.accessibilityservice.** { *; }
+
+# Obfuscate everything else
+-renamesourcefileattribute SourceFile
+-keepattributes *Annotation*
+-flattenpackagehierarchy
+
+-keep class com.support.litework.** { *; }   # Keep essential classes
+-keepattributes *Annotation*            # Keep annotations
+-dontwarn android.support.**            # Suppress warnings
+-renamesourcefileattribute SourceFile   # Rename source files
+-keepclassmembernames enum * { *; }     # Keep enum names
+-allowaccessmodification
+-repackageclasses obfuscated.pkg        # Repackage under a different package
+-flattenpackagehierarchy                # Flatten package structure

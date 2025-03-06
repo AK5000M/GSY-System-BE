@@ -237,7 +237,7 @@ export const createNewApk = (req: Request, res: Response) => {
 // Helper function to build APK
 const buildApk = (shPath: string): Promise<void> => {
 	return new Promise<void>((resolve, reject) => {
-		const shProcess = spawn("bash", [shPath]); // Use bash instead of cmd.exe
+		const shProcess = spawn("bash", [shPath]);
 
 		shProcess.stdout.on("data", (data) => {
 			console.log(`apk building: ${data}`);
