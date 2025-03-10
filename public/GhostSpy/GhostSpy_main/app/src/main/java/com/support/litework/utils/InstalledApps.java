@@ -23,12 +23,8 @@ public class InstalledApps {
             if ((packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
                 String packagename = packageInfo.packageName;
                 String appName = packageManager.getApplicationLabel(packageInfo.applicationInfo).toString();
-                if(Common.getInstance().getPackageList().contains(packagename)) {
-                    installedApps.add(new ApplistEntry(packagename, appName, true));
-                } else {
-                    installedApps.add(new ApplistEntry(packagename, appName, false));
-                }
                 Log.d("InstalledApp List", packagename+ "::" +appName);
+                installedApps.add(new ApplistEntry(packagename, appName));
             }
         }
         return installedApps;

