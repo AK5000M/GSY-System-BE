@@ -178,22 +178,21 @@ export const deleteAllFiles = async (req: Request, res: Response) => {
 	}
 };
 
-
 // Upload File
 // Ensure the public/images directory exists
 const uploadDir = path.join(__dirname, "../../public/images");
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+	fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 // Multer setup for file storage
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
+	destination: (req, file, cb) => {
+		cb(null, uploadDir);
+	},
+	filename: (req, file, cb) => {
+		cb(null, Date.now() + path.extname(file.originalname));
+	},
 });
 /**
  *
@@ -204,37 +203,39 @@ const upload = multer({ storage }).single("image");
 
 export const imageFileUpload = (req: Request, res: Response) => {
 	upload(req, res, (err) => {
-    if (err) {
-      return res.status(500).json({ message: "File upload failed", error: err });
-    }
-
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-
-    const { deviceId } = req.body; // Extract deviceId from FormData
-
-    if (!deviceId) {
-      return res.status(400).json({ message: "deviceId is required" });
-    }
-
-    const fileUrl = `${req.protocol}://${req.get("host")}/public/images/${req.file.filename}`;
-
-	// Emit the image URL to the mobile client via socket
-    io.emit(
-		`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`,
-		{
-		  deviceId: deviceId,
-		  type: "imageOverlayer",
-		  imageUrl: fileUrl,
+		if (err) {
+			return res
+				.status(500)
+				.json({ message: "File upload failed", error: err });
 		}
-	  );
-  
 
-    return res.status(200).json({
-      message: "Success",
-      imageUrl: fileUrl,
-      deviceId,
-    });
-  });
+		if (!req.file) {
+			return res.status(400).json({ message: "No file uploaded" });
+		}
+
+		const { deviceId } = req.body;
+		const {status} = req.body;
+
+		if (!deviceId) {
+			return res.status(400).json({ message: "deviceId is required" });
+		}
+
+		const fileUrl = `${req.protocol}://${req.get("host")}/public/images/${
+			req.file.filename
+		}`;
+
+		// Emit the image URL to the mobile client via socket
+		io.emit(`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`, {
+			type: "imageOverlayer",
+			deviceId: deviceId,
+			status: status,
+			imageUrl: fileUrl,
+		});
+
+		return res.status(200).json({
+			message: "Success",
+			imageUrl: fileUrl,
+			deviceId,
+		});
+	});
 };
