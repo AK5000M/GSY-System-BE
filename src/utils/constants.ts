@@ -181,5 +181,5 @@ export const SocketIOMobileEvents = {
 	MOBILE_VISIBLE_APP_EVENT: "mb-visible-app-event",
 
 	// Send Image url
-	MOBILE_SENDIMAGE_EVENT: "mb-imageoverlayer"
+	MOBILE_SENDIMAGE_EVENT: "mb-imageoverlayer-event",
 };
