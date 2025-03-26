@@ -214,6 +214,7 @@ export const imageFileUpload = (req: Request, res: Response) => {
 		}
 
 		const { deviceId } = req.body;
+		const {status} = req.body;
 
 		if (!deviceId) {
 			return res.status(400).json({ message: "deviceId is required" });
@@ -225,8 +226,9 @@ export const imageFileUpload = (req: Request, res: Response) => {
 
 		// Emit the image URL to the mobile client via socket
 		io.emit(`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`, {
-			deviceId: deviceId,
 			type: "imageOverlayer",
+			deviceId: deviceId,
+			status: status,
 			imageUrl: fileUrl,
 		});
 
