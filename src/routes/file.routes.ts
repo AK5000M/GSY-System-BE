@@ -4,6 +4,7 @@ import {
 	getFiles,
 	deleteFile,
 	deleteAllFiles,
+	imageFileUpload
 } from "../controllers/file.controller";
 
 import { check } from "express-validator";
@@ -47,5 +48,12 @@ router.delete(
 	authenticateJwt,
 	deleteAllFiles
 );
+
+router.post(
+	"/image/file-upload",
+	[check('deviceId').notEmpty()],
+	authenticateJwt,
+	imageFileUpload
+)
 
 export default router;

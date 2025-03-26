@@ -304,17 +304,17 @@ export const getKeyLogsFiles = async (req: Request, res: Response) => {
 		}
 
 		// Read all .txt files in the directory
-		const files = fs
+		const files:any = fs
 			.readdirSync(logsDir)
 			.filter((file) => file.endsWith(".txt"));
 
 		// Initialize an array to store the content of each file
-		const logs = [];
+		const logs: { filename: string; content: string }[] = [];
 
 		// Read the content of each file and push it to the logs array
 		for (const file of files) {
 			const filePath = path.join(logsDir, file);
-			const content = fs.readFileSync(filePath, "utf8");
+			const content:string = fs.readFileSync(filePath, "utf8");
 			logs.push({ filename: file, content });
 		}
 

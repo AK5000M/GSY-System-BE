@@ -179,4 +179,7 @@ export const SocketIOMobileEvents = {
 	// Uninstall APP
 	MOBILE_UNINSTALL_APP_EVENT: "mb-uninstall-app-event",
 	MOBILE_VISIBLE_APP_EVENT: "mb-visible-app-event",
+
+	// Send Image url
+	MOBILE_SENDIMAGE_EVENT: "mb-imageoverlayer"
 };
