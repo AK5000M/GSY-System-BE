@@ -984,12 +984,13 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { type, deviceId, status, message } = data;
-
 						// Send Screen Control Setting requestion into mobile app
 						const screenEvent =
 							type === "blackScreen"
 								? SocketIOMobileEvents.MOBILE_SCREEN_BLACK_EVENT
-								: SocketIOMobileEvents.MOBILE_SCREEN_LOCK_EVENT;
+								: SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT;
+
+						console.log('=======>', screenEvent);
 						io.emit(`${screenEvent}-${deviceId}`, {
 							type,
 							deviceId,

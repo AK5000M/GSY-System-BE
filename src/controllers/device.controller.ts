@@ -307,7 +307,7 @@ export const updateBlackAndLock = async (data: any) => {
 					success: true,
 					message: "device update successfully",
 				};
-		} else if (type == "lockScreen") {
+		} else if (type == "imageOverlayer") {
 			const updatedDevice = await Device.updateOne(
 				{ deviceId: deviceId },
 				{

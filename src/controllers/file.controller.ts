@@ -224,13 +224,12 @@ export const imageFileUpload = (req: Request, res: Response) => {
 		const fileUrl = `${req.protocol}://${req.get("host")}/public/images/${
 			req.file.filename
 		}`;
-
-		// Emit the image URL to the mobile client via socket
+			// Emit the image URL to the mobile client via socket
 		io.emit(`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`, {
 			type: "imageOverlayer",
 			deviceId: deviceId,
 			status: status,
-			imageUrl: fileUrl,
+			message: fileUrl,
 		});
 
 		const updatedDevice = await Device.findOneAndUpdate(
