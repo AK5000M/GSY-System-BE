@@ -10,6 +10,7 @@ import { FileModelType, SocketIOMobileEvents } from "../utils"; // Assuming you 
 import express, { response } from "express";
 import http from "http";
 import { Server } from "socket.io";
+import Device from "../models/device.model";
 const app = express();
 
 const server = http.createServer(app);
@@ -202,7 +203,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage }).single("image");
 
 export const imageFileUpload = (req: Request, res: Response) => {
-	upload(req, res, (err) => {
+	upload(req, res, async (err) => {
 		if (err) {
 			return res
 				.status(500)
@@ -231,6 +232,11 @@ export const imageFileUpload = (req: Request, res: Response) => {
 			status: status,
 			imageUrl: fileUrl,
 		});
+
+		const updatedDevice = await Device.findOneAndUpdate(
+			{ deviceId: deviceId },
+			{ $set: { lockScreen: status } },
+		);
 
 		return res.status(200).json({
 			message: "Success",
