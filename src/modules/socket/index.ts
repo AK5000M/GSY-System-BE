@@ -15,8 +15,6 @@ import {
 	updateSecurityInformation,
 } from "../../controllers/device.controller";
 
-import { saveImage } from "../../controllers/file.controller";
-
 import {
 	SocketIOPublicEvents,
 	SocketIOMobileEvents,
@@ -1096,8 +1094,7 @@ export const startSocketIO = async () => {
 				`${SocketIOPublicEvents.SCREEN_IMAGE_EVENT}`,
 				async (data: any) => {
 					try {
-						const { type, deviceId, status, message, fileName } =
-							data;
+						const { type, deviceId, status, message } = data;
 
 						if (!status) {
 							console.log("false event");
@@ -1121,16 +1118,14 @@ export const startSocketIO = async () => {
 							return;
 						}
 
-						const imageUrl = await saveImage(fileName, message);
-						console.log("save file url", imageUrl);
-
+						console.log("success event");
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`,
 							{
 								type,
 								deviceId,
 								status,
-								message: imageUrl,
+								message: message,
 							}
 						);
 
