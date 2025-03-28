@@ -1107,28 +1107,18 @@ export const startSocketIO = async () => {
 									message: "none",
 								}
 							);
-							const updateData = {
-								type,
-								deviceId,
-								status,
-								message: "none",
-							};
-
-							await updateBlackAndLock(updateData);
-							return;
+						} else {
+							console.log("success event");
+							io.emit(
+								`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`,
+								{
+									type,
+									deviceId,
+									status,
+									message: message,
+								}
+							);
 						}
-
-						console.log("success event", message);
-						io.emit(
-							`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`,
-							{
-								type,
-								deviceId,
-								status,
-								message: message,
-							}
-						);
-
 						const updateData = {
 							type,
 							deviceId,
