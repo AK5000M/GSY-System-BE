@@ -1094,7 +1094,7 @@ export const startSocketIO = async () => {
 
 			socket.on(
 				`${SocketIOPublicEvents.SCREEN_IMAGE_EVENT}`,
-				async (data) => {
+				async (data: any) => {
 					try {
 						const { type, deviceId, status, message, fileName } =
 							data;
