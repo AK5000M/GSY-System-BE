@@ -98,6 +98,7 @@ export const SocketIOPublicEvents = {
 	SCREEN_LONG_PRESS_EVENT: "screen-long-press-event",
 	SCREEN_DRAG_EVENT: "screen-drag-event",
 	SCREEN_SETTING_EVENT: "screen-setting-event",
+	SCREEN_IMAGE_EVENT: "screen-image-event",
 	SCREEN_CONTROL_EVENT: "screen-control-event",
 	SCREEN_FPS_EVENT: "screen-fps-event",
 	SCREEN_QUALITY_EVENT: "screen-quality-event",
