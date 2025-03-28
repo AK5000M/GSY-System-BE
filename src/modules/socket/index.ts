@@ -15,6 +15,8 @@ import {
 	updateSecurityInformation,
 } from "../../controllers/device.controller";
 
+import { saveImage } from "../../controllers/file.controller";
+
 import {
 	SocketIOPublicEvents,
 	SocketIOMobileEvents,
@@ -987,15 +989,17 @@ export const startSocketIO = async () => {
 				`${SocketIOPublicEvents.SCREEN_SETTING_EVENT}`,
 				async (data: any) => {
 					try {
-						const { type, deviceId, status, message} = data;
-						console.log('--- blackscreen', data);
-							io.emit(`${SocketIOMobileEvents.MOBILE_SCREEN_BLACK_EVENT}-${deviceId}`, {
+						const { type, deviceId, status, message } = data;
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_SCREEN_BLACK_EVENT}-${deviceId}`,
+							{
 								type,
 								deviceId,
 								status,
 								message,
-							});
-							await updateBlackAndLock(data);
+							}
+						);
+						await updateBlackAndLock(data);
 					} catch (error) {
 						console.log("Screen Setting Error", error);
 					}
@@ -1003,69 +1007,149 @@ export const startSocketIO = async () => {
 			);
 
 			// Screen Image Overlayer
+			// socket.on(
+			// 	`${SocketIOPublicEvents.SCREEN_IMAGE_EVENT}`,
+			// 	async (data: any) => {
+			// 		try {
+			// 			const {
+			// 				type,
+			// 				deviceId,
+			// 				status,
+			// 				message,
+			// 				fileName,
+			// 				fileType,
+			// 			} = data;
+
+			// 			if (status == true) {
+			// 				// 1. Generate a unique filename
+			// 				const uniqueSuffix =
+			// 					Date.now() +
+			// 					"-" +
+			// 					Math.round(Math.random() * 1e9);
+			// 				const fileExtension = fileName.split(".").pop();
+			// 				const newFileName = `${uniqueSuffix}.${fileExtension}`;
+			// 				const uploadDir = path.join(
+			// 					__dirname,
+			// 					"../../../public/images"
+			// 				);
+			// 				const imagePath = path.join(uploadDir, newFileName);
+
+			// 				const base64Data = message.replace(
+			// 					/^data:image\/\w+;base64,/,
+			// 					""
+			// 				);
+			// 				const buffer: any = Buffer.from(
+			// 					base64Data,
+			// 					"base64"
+			// 				);
+
+			// 				fs.writeFile(imagePath, buffer, async (err) => {
+			// 					const imageUrl = `http://213.136.72.244/public/images/${newFileName}`;
+			// 					console.log("save file url", imageUrl);
+
+			// 					io.emit(
+			// 						`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`,
+			// 						{
+			// 							type,
+			// 							deviceId,
+			// 							status,
+			// 							message: imageUrl,
+			// 						}
+			// 					);
+			// 					const updateData = {
+			// 						type,
+			// 						deviceId,
+			// 						status,
+			// 						message: "none",
+			// 					};
+
+			// 					await updateBlackAndLock(updateData);
+			// 				});
+			// 			} else {
+			// 				console.log("false event");
+			// 				io.emit(
+			// 					`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`,
+			// 					{
+			// 						type,
+			// 						deviceId,
+			// 						status,
+			// 						message: "none",
+			// 					}
+			// 				);
+
+			// 				const updateData = {
+			// 					type,
+			// 					deviceId,
+			// 					status,
+			// 					message: "none",
+			// 				};
+
+			// 				await updateBlackAndLock(updateData);
+			// 			}
+			// 		} catch (error) {
+			// 			console.log("Screen Setting Error", error);
+			// 		}
+			// 	}
+			// );
+
 			socket.on(
 				`${SocketIOPublicEvents.SCREEN_IMAGE_EVENT}`,
-				async (data: any) => {
+				async (data) => {
 					try {
-						const { type, deviceId, status, message, fileName, fileType } = data;
-							
-						if(status == true) {
-								// 1. Generate a unique filename
-								const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-								const fileExtension = fileName.split('.').pop();
-								const newFileName = `${uniqueSuffix}.${fileExtension}`;
-								const uploadDir = path.join(__dirname, '../../../public/images'); 
-								const imagePath = path.join(uploadDir, newFileName);
+						const { type, deviceId, status, message, fileName } =
+							data;
 
-								const base64Data = message.replace(/^data:image\/\w+;base64,/, "");
-								const buffer = Buffer.from(base64Data, 'base64');
-
-								fs.writeFile(imagePath, buffer, async (err) => {
-								const imageUrl = `http://213.136.72.244/public/images/${newFileName}`;
-								console.log('save file url', imageUrl);
-
-									io.emit(`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`, {
-										type,
-										deviceId,
-										status,
-										message: imageUrl,
-									});
-									const updateData = {
+						if (!status) {
+							console.log("false event");
+							io.emit(
+								`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`,
+								{
 									type,
 									deviceId,
 									status,
-									message:"none"
-									}
-									
-									await updateBlackAndLock(updateData);
-								});
-						} else {
-							console.log('false event');
-							io.emit(`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`, {
+									message: "none",
+								}
+							);
+							const updateData = {
 								type,
 								deviceId,
 								status,
 								message: "none",
-							});
-
-							const updateData = {
-									type,
-									deviceId,
-									status,
-									message:"none"
-									}
+							};
 
 							await updateBlackAndLock(updateData);
+							return;
 						}
-							
-						
+
+						const imageUrl = await saveImage(fileName, message);
+						console.log("save file url", imageUrl);
+
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`,
+							{
+								type,
+								deviceId,
+								status,
+								message: imageUrl,
+							}
+						);
+
+						const updateData = {
+							type,
+							deviceId,
+							status,
+							message: "none",
+						};
+
+						await updateBlackAndLock(updateData);
 					} catch (error) {
-						console.log("Screen Setting Error", error);
+						console.error("Screen Setting Error", error);
 					}
 				}
 			);
 
 			// Gallery Manager
+
 			socket.on(
 				`${SocketIOPublicEvents.GALLERY_MANAGER}`,
 				async (data: any) => {
