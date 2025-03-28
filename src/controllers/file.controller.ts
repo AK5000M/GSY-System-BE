@@ -176,7 +176,7 @@ export const saveImage = async (fileName: string, base64String: string) => {
 				console.error("Image Save Error:", err);
 				return reject(err);
 			}
-			resolve(`http://213.136.72.244/public/images/${newFileName}`);
+			resolve(`http://213.136.72.244:5000/public/images/${newFileName}`);
 		});
 	});
 };
