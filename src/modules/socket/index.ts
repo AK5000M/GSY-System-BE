@@ -1118,7 +1118,7 @@ export const startSocketIO = async () => {
 							return;
 						}
 
-						console.log("success event");
+						console.log("success event", message);
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`,
 							{
