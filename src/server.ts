@@ -55,7 +55,7 @@ app.use(helmet());
 // });
 
 // Configure the public holder (draft)
-// app.use(express.static("/public"));
+ app.use(express.static("/public"));
 
 
 // Resolve __dirname in ES modules
