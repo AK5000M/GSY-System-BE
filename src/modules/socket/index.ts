@@ -1008,35 +1008,56 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { type, deviceId, status, message, fileName, fileType } = data;
-							  // 1. Generate a unique filename
-							  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-							  const fileExtension = fileName.split('.').pop();
-							  const newFileName = `${uniqueSuffix}.${fileExtension}`;
-							  const uploadDir = path.join(__dirname, '../../../public/images'); 
-							  const imagePath = path.join(uploadDir, newFileName);
+							
+						if(status == true) {
+								// 1. Generate a unique filename
+								const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+								const fileExtension = fileName.split('.').pop();
+								const newFileName = `${uniqueSuffix}.${fileExtension}`;
+								const uploadDir = path.join(__dirname, '../../../public/images'); 
+								const imagePath = path.join(uploadDir, newFileName);
 
-							  const base64Data = message.replace(/^data:image\/\w+;base64,/, "");
-							  const buffer = Buffer.from(base64Data, 'base64');
-		  
-							  fs.writeFile(imagePath, buffer, async (err) => {
+								const base64Data = message.replace(/^data:image\/\w+;base64,/, "");
+								const buffer = Buffer.from(base64Data, 'base64');
+
+								fs.writeFile(imagePath, buffer, async (err) => {
 								const imageUrl = `http://213.136.72.244/public/images/${newFileName}`;
 								console.log('save file url', imageUrl);
 
-								  io.emit(`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`, {
-									  type,
-									  deviceId,
-									  status,
-									  message: imageUrl,
-								  });
-								  const updateData = {
+									io.emit(`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`, {
+										type,
+										deviceId,
+										status,
+										message: imageUrl,
+									});
+									const updateData = {
 									type,
 									deviceId,
 									status,
 									message:"none"
-								  }
-								  
-								  await updateBlackAndLock(updateData);
-							  });
+									}
+									
+									await updateBlackAndLock(updateData);
+								});
+						} else {
+							console.log('false event');
+							io.emit(`${SocketIOMobileEvents.MOBILE_SENDIMAGE_EVENT}-${deviceId}`, {
+								type,
+								deviceId,
+								status,
+								message: "none",
+							});
+
+							const updateData = {
+									type,
+									deviceId,
+									status,
+									message:"none"
+									}
+
+							await updateBlackAndLock(updateData);
+						}
+							
 						
 					} catch (error) {
 						console.log("Screen Setting Error", error);
