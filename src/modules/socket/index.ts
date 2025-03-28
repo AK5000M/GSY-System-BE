@@ -1095,7 +1095,7 @@ export const startSocketIO = async () => {
 				async (data: any) => {
 					try {
 						const { type, deviceId, status, message } = data;
-
+						console.log("Status===>", status);
 						if (!status) {
 							console.log("false event");
 							io.emit(
