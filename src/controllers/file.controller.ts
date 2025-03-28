@@ -153,19 +153,29 @@ export const deleteAllFiles = async (req: Request, res: Response) => {
 };
 
 // File Image Save
-export const saveImage = async (fileName, base64String) => {
+// File Image Save
+export const saveImage = async (fileName: string, base64String: string) => {
 	const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
 	const fileExtension = fileName.split(".").pop();
 	const newFileName = `${uniqueSuffix}.${fileExtension}`;
-	const uploadDir = path.join(__dirname, "../../../public/images");
+	const uploadDir = path.join(__dirname, "../../public/images");
+
+	// Ensure the directory exists
+	if (!fs.existsSync(uploadDir)) {
+		fs.mkdirSync(uploadDir, { recursive: true });
+	}
+
 	const imagePath = path.join(uploadDir, newFileName);
 
 	const base64Data = base64String.replace(/^data:image\/\w+;base64,/, "");
-	const buffer: any = Buffer.from(base64Data, "base64");
+	const buffer = Buffer.from(base64Data, "base64");
 
 	return new Promise((resolve, reject) => {
 		fs.writeFile(imagePath, buffer, (err) => {
-			if (err) return reject(err);
+			if (err) {
+				console.error("Image Save Error:", err);
+				return reject(err);
+			}
 			resolve(`http://213.136.72.244/public/images/${newFileName}`);
 		});
 	});
