@@ -57,6 +57,8 @@ app.use(helmet());
 // Configure the public holder (draft)
 app.use(express.static("/public"));
 
+app.use('/public', express.static(path.join(__dirname, '/public')));
+
 // APK download URL
 app.use("/downloads", express.static(path.join(__dirname, "public/downloads")));
 

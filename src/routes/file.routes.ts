@@ -3,8 +3,7 @@ import {
 	sendNewFile,
 	getFiles,
 	deleteFile,
-	deleteAllFiles,
-	imageFileUpload
+	deleteAllFiles
 } from "../controllers/file.controller";
 
 import { check } from "express-validator";
@@ -49,11 +48,5 @@ router.delete(
 	deleteAllFiles
 );
 
-router.post(
-	"/image/file-upload",
-	[check('deviceId').notEmpty()],
-	authenticateJwt,
-	imageFileUpload
-)
 
 export default router;
