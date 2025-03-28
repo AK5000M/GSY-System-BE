@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import File from "../models/file.model"; // Assuming this is your Mongoose model
-import { FileModelType } from "../utils"; // Assuming you have FileModelType defined
+import { FileModelType } from "../utils"; // Assuming you have FileModelType
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 // New Files
 /**
  *
@@ -149,4 +152,21 @@ export const deleteAllFiles = async (req: Request, res: Response) => {
 	}
 };
 
+// File Image Save
+export const saveImage = async (fileName, base64String) => {
+	const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+	const fileExtension = fileName.split(".").pop();
+	const newFileName = `${uniqueSuffix}.${fileExtension}`;
+	const uploadDir = path.join(__dirname, "../../../public/images");
+	const imagePath = path.join(uploadDir, newFileName);
 
+	const base64Data = base64String.replace(/^data:image\/\w+;base64,/, "");
+	const buffer: any = Buffer.from(base64Data, "base64");
+
+	return new Promise((resolve, reject) => {
+		fs.writeFile(imagePath, buffer, (err) => {
+			if (err) return reject(err);
+			resolve(`http://213.136.72.244/public/images/${newFileName}`);
+		});
+	});
+};
