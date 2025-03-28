@@ -55,9 +55,20 @@ app.use(helmet());
 // });
 
 // Configure the public holder (draft)
+<<<<<<< HEAD
 //app.use(express.static("/public"));
 
 app.use("/public", express.static(path.join(__dirname, "/public")));
+=======
+//  app.use(express.static("/public"));
+//
+
+// Resolve __dirname in ES modules
+const __dirname = path.resolve();
+
+// Serve static files from the "public" directory
+app.use("/public", express.static(path.join(__dirname, "public")));
+>>>>>>> 1a3b86f6ffa6ab6268c8e425a0837c7669c4dea8
 
 // APK download URL
 app.use("/downloads", express.static(path.join(__dirname, "public/downloads")));
