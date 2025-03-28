@@ -168,7 +168,7 @@ export const saveImage = async (fileName: string, base64String: string) => {
 	const imagePath = path.join(uploadDir, newFileName);
 
 	const base64Data = base64String.replace(/^data:image\/\w+;base64,/, "");
-	const buffer = Buffer.from(base64Data, "base64");
+	const buffer: any = Buffer.from(base64Data, "base64");
 
 	return new Promise((resolve, reject) => {
 		fs.writeFile(imagePath, buffer, (err) => {
