@@ -10,13 +10,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.View;
 
 import com.support.litework.R;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 public class OverlaySetActivity extends Activity {
     private static final int REQUEST_CODE = 100001;

