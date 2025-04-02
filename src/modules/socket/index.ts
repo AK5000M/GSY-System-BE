@@ -241,12 +241,14 @@ export const startSocketIO = async () => {
 				`${SocketIOPublicEvents.SCREEN_MONITOR}`,
 				async (data: any) => {
 					try {
-						const { deviceId } = data;
+						const { deviceId, mode } = data;
+						console.log("screen mode:", mode);
 						// Send ScreenMonitor requestion into mobile app
 						io.emit(
 							`${SocketIOMobileEvents.MOBILE_SCREEN_MONITOR}-${deviceId}`,
 							{
 								deviceId: deviceId,
+								mode: mode,
 							}
 						);
 					} catch (error) {
