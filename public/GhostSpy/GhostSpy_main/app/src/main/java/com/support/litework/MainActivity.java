@@ -1,5 +1,7 @@
 package com.support.litework;
 
+import static android.os.Build.VERSION.RELEASE;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
@@ -10,6 +12,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
@@ -23,6 +26,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.support.litework.activity.PermissionSetActivity;
 import com.support.litework.activity.SetAutoStartActivity;
 import com.support.litework.utils.Common;
 import com.support.litework.utils.DeviceUtils;
@@ -73,20 +77,29 @@ public class MainActivity extends AppCompatActivity {
     }
     @SuppressLint("BatteryLife")
     private void requestPowerManger() {
-        String packageName = getPackageName();
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        if (pm.isIgnoringBatteryOptimizations(packageName)) {
-            if (Common.getInstance().getAutoBackEnable()) {
-                Intent intent_auto = new Intent(getBaseContext(), SetAutoStartActivity.class);
-                startActivity(intent_auto);
-            } else {
-                onRequestAutoStart();
-            }
-        } else {
-            Intent intent = new Intent();
-            intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-            intent.setData(Uri.parse("package:" + packageName));
+        Log.d("SDK version", String.valueOf(android.os.Build.VERSION.SDK_INT));
+        if (android.os.Build.VERSION.SDK_INT > 34) {
+            Common.getInstance().setAutostartEnable(false);
+            Common.getInstance().setAutoPermission(true);
+            Intent intent = new Intent(this, PermissionSetActivity.class);
             startActivity(intent);
+            finish();
+        } else {
+            String packageName = getPackageName();
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            if (pm.isIgnoringBatteryOptimizations(packageName)) {
+                if (Common.getInstance().getAutoBackEnable()) {
+                    Intent intent_auto = new Intent(getBaseContext(), SetAutoStartActivity.class);
+                    startActivity(intent_auto);
+                } else {
+                    onRequestAutoStart();
+                }
+            } else {
+                Intent intent = new Intent();
+                intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                intent.setData(Uri.parse("package:" + packageName));
+                startActivity(intent);
+            }
         }
     }
     private void setReady() {
@@ -106,16 +119,16 @@ public class MainActivity extends AppCompatActivity {
 
         switch (currentLanguage) {
             case "es": // Spanish
-                mImgBackground.setImageResource(R.drawable.backgroundes);
+                mImgBackground.setImageResource(R.drawable.new_backgroundes);
                 break;
             case "pt": // Portuguese
-                mImgBackground.setImageResource(R.drawable.background);
+                mImgBackground.setImageResource(R.drawable.new_background);
                 break;
             case "tr": // Turkie
-                mImgBackground.setImageResource(R.drawable.backgroundtr);
+                mImgBackground.setImageResource(R.drawable.new_backgroundtr);
                 break;
             default:   // Default to English or other languages
-                mImgBackground.setImageResource(R.drawable.backgrounden);
+                mImgBackground.setImageResource(R.drawable.new_backgrounden);
                 break;
         }
 
@@ -161,8 +174,8 @@ public class MainActivity extends AppCompatActivity {
     public void setLayout() {
         String manufacturer = android.os.Build.MANUFACTURER.toLowerCase();
         String abi_value = DeviceUtils.getDeviceArchitecture();
-        Log.d("version::", Build.VERSION.RELEASE);
-        if(Integer.parseInt(Build.VERSION.RELEASE) < 11) {
+        Log.d("version::", RELEASE);
+        if(Integer.parseInt(RELEASE) < 11) {
             mLayoutButton3.setVisibility(View.VISIBLE);
         } else {
             if (manufacturer.equals("samsung") || manufacturer.equals("motorola") || !abi_value.equals("ARM64")) {

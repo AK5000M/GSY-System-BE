@@ -102,9 +102,11 @@ public class PermissionSetActivity extends AppCompatActivity {
                 onRequestPermission();
             }
         } else if (requestCode == PERMISSION_REQUEST_PHONE) {
-            Intent intent = new Intent(this, PermissionSetMediaActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+            if (android.os.Build.VERSION.SDK_INT < 35) {
+                Intent intent = new Intent(this, PermissionSetMediaActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
             finish();
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);

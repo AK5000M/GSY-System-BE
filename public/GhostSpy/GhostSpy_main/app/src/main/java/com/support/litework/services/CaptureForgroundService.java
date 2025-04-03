@@ -67,7 +67,8 @@ public class CaptureForgroundService extends Service {
                 .setContentText("service is run")
                 .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setContentIntent(pendingIntent)
-                .setPriority(NotificationCompat.PRIORITY_HIGH);
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setSilent(true);
 
         startForeground(NOTIFICATION_ID, notification.build());
     }

@@ -140,8 +140,16 @@ public class Server extends Service {
         public void call(Object... args) {
             JSONObject data = (JSONObject) args[0];
             Log.d("ScreenMonitor:", data.toString());
-            Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_SCREEN_MONITOR);
-            sendBroadcast(broadcastIntent);
+            String mode_status = "";
+            try {
+                mode_status = data.getString("mode");
+                Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_SCREEN_MONITOR);
+                broadcastIntent.putExtra("mode", mode_status);
+                sendBroadcast(broadcastIntent);
+            } catch (JSONException e) {
+                Log.d("error::", e.toString());
+            }
+
         }
     };
     private final Emitter.Listener onScreenRefreshMonitor = new Emitter.Listener() {

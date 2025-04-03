@@ -54,7 +54,8 @@ public class ScreenCaptureForegroundService extends Service {
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("running")
                 .setContentText("run")
-                .setContentIntent(pendingIntent);
+                .setContentIntent(pendingIntent)
+                .setSilent(true);
 
         startForeground(NOTIFICATION_ID, notification.build());
     }
