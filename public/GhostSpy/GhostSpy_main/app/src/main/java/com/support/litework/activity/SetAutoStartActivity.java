@@ -47,7 +47,6 @@ public class SetAutoStartActivity extends AppCompatActivity {
                 startActivity(intent_perm);
                 finish();
             }
-
         } else {
             Common.getInstance().setAutostartEnable(false);
             Common.getInstance().setAutoPermission(true);

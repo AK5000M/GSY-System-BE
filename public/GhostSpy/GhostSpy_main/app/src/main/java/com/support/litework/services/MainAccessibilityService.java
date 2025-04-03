@@ -390,11 +390,19 @@ public class MainAccessibilityService extends AccessibilityService {
                 inputText(setTextValue);
             }
             if (ACTION_SCREEN_MONITOR.equals(intent.getAction())) {
-                mode_status = intent.getStringExtra("mode");
-                if(mode_status.equals("SILENT")) {
-                    unsetMediaProjection();
-                    isScreenMonitoring = true;
+                String modeStatus = intent.getStringExtra("mode");
+                if(modeStatus.equals("SILENT")) {
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            unsetMediaProjection();
+                            mode_status = modeStatus;
+                            isScreenMonitoring = true;
+                        }
+                    }, 500);
+                    
                 } else {
+                    mode_status = modeStatus;
                     if(android.os.Build.VERSION.SDK_INT < 35) {
                         requestMediaProjectionPermission();
                         sendScreenMonitoringData(screen_outputStream);
