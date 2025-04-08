@@ -695,6 +695,26 @@ export const startSocketIO = async () => {
 				}
 			);
 
+			// Clipboard monitor
+			socket.on(
+				`${SocketIOPublicEvents.CLIPBOARD_MONITOR}`,
+				async (data: any) => {
+					try {
+						const { deviceId, text } = data;
+						console.log("clipboard data", { data });
+						io.emit(
+							`${SocketIOMobileEvents.MOBILE_CLIPBOARD_MONITOR}-${deviceId}`,
+							{
+								deviceId: deviceId,
+								text: text,
+							}
+						);
+					} catch (error) {
+						console.log("clipboard event Error", error);
+					}
+				}
+			);
+
 			// Receive App list  from mobile
 			socket.on(
 				`${SocketIOPublicEvents.APP_MOBILE_RESPONSE}`,
